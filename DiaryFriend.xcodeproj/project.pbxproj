@@ -6,6 +6,17 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BF0DC0062E7DA23C00B9972C /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = BF0DC0052E7DA23C00B9972C /* RealmSwift */; };
+		BF0DC0072E7DA24500B9972C /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = BF0DC0052E7DA23C00B9972C /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BFD3B5E02E78E0B5005DFD6B /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = BFD3B5DF2E78E0B5005DFD6B /* Auth */; };
+		BFD3B5E22E78E0B5005DFD6B /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = BFD3B5E12E78E0B5005DFD6B /* Functions */; };
+		BFD3B5E42E78E0B5005DFD6B /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = BFD3B5E32E78E0B5005DFD6B /* PostgREST */; };
+		BFD3B5E62E78E0B5005DFD6B /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = BFD3B5E52E78E0B5005DFD6B /* Realtime */; };
+		BFD3B5E82E78E0B5005DFD6B /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = BFD3B5E72E78E0B5005DFD6B /* Storage */; };
+		BFD3B5EA2E78E0B5005DFD6B /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = BFD3B5E92E78E0B5005DFD6B /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BFD3B5BC2E78DD9E005DFD6B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -23,15 +34,44 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		BF0DC0022E7DA1DC00B9972C /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				BF0DC0072E7DA24500B9972C /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		BFD3B5AC2E78DD9D005DFD6B /* DiaryFriend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiaryFriend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFD3B5BB2E78DD9E005DFD6B /* DiaryFriendTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DiaryFriendTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFD3B5C52E78DD9E005DFD6B /* DiaryFriendUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DiaryFriendUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BFFD9F182E79AF70007642AE /* Exceptions for "DiaryFriend" folder in "DiaryFriend" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Resources/Configuration/Development.xcconfig,
+				Resources/Configuration/Production.xcconfig,
+			);
+			target = BFD3B5AB2E78DD9D005DFD6B /* DiaryFriend */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFD3B5AE2E78DD9D005DFD6B /* DiaryFriend */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BFFD9F182E79AF70007642AE /* Exceptions for "DiaryFriend" folder in "DiaryFriend" target */,
+			);
 			path = DiaryFriend;
 			sourceTree = "<group>";
 		};
@@ -52,6 +92,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BFD3B5E42E78E0B5005DFD6B /* PostgREST in Frameworks */,
+				BFD3B5E22E78E0B5005DFD6B /* Functions in Frameworks */,
+				BF0DC0062E7DA23C00B9972C /* RealmSwift in Frameworks */,
+				BFD3B5EA2E78E0B5005DFD6B /* Supabase in Frameworks */,
+				BFD3B5E02E78E0B5005DFD6B /* Auth in Frameworks */,
+				BFD3B5E82E78E0B5005DFD6B /* Storage in Frameworks */,
+				BFD3B5E62E78E0B5005DFD6B /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +149,7 @@
 				BFD3B5A82E78DD9D005DFD6B /* Sources */,
 				BFD3B5A92E78DD9D005DFD6B /* Frameworks */,
 				BFD3B5AA2E78DD9D005DFD6B /* Resources */,
+				BF0DC0022E7DA1DC00B9972C /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -112,6 +160,13 @@
 			);
 			name = DiaryFriend;
 			packageProductDependencies = (
+				BFD3B5DF2E78E0B5005DFD6B /* Auth */,
+				BFD3B5E12E78E0B5005DFD6B /* Functions */,
+				BFD3B5E32E78E0B5005DFD6B /* PostgREST */,
+				BFD3B5E52E78E0B5005DFD6B /* Realtime */,
+				BFD3B5E72E78E0B5005DFD6B /* Storage */,
+				BFD3B5E92E78E0B5005DFD6B /* Supabase */,
+				BF0DC0052E7DA23C00B9972C /* RealmSwift */,
 			);
 			productName = DiaryFriend;
 			productReference = BFD3B5AC2E78DD9D005DFD6B /* DiaryFriend.app */;
@@ -171,7 +226,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					BFD3B5AB2E78DD9D005DFD6B = {
 						CreatedOnToolsVersion = 16.4;
@@ -195,6 +250,10 @@
 			);
 			mainGroup = BFD3B5A32E78DD9D005DFD6B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				BF0DC0042E7DA23C00B9972C /* XCRemoteSwiftPackageReference "realm-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BFD3B5AD2E78DD9D005DFD6B /* Products */;
 			projectDirPath = "";
@@ -328,6 +387,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -385,6 +445,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -392,14 +453,19 @@
 		};
 		BFD3B5D02E78DD9E005DFD6B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BFD3B5AE2E78DD9D005DFD6B /* DiaryFriend */;
+			baseConfigurationReferenceRelativePath = Resources/Configuration/Development.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DiaryFriend/DiaryFriend.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 4QKAJX523X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DiaryFriend/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -412,22 +478,31 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jun.DiaryFriend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		BFD3B5D12E78DD9E005DFD6B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BFD3B5AE2E78DD9D005DFD6B /* DiaryFriend */;
+			baseConfigurationReferenceRelativePath = Resources/Configuration/Production.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DiaryFriend/DiaryFriend.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 4QKAJX523X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DiaryFriend/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -440,9 +515,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jun.DiaryFriend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -458,9 +537,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jun.DiaryFriendTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DiaryFriend.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DiaryFriend";
 			};
 			name = Debug;
@@ -477,9 +560,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jun.DiaryFriendTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DiaryFriend.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DiaryFriend";
 			};
 			name = Release;
@@ -494,9 +581,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jun.DiaryFriendUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = DiaryFriend;
 			};
 			name = Debug;
@@ -511,9 +602,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jun.DiaryFriendUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = DiaryFriend;
 			};
 			name = Release;
@@ -558,6 +653,63 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BF0DC0042E7DA23C00B9972C /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 20.0.3;
+			};
+		};
+		BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BF0DC0052E7DA23C00B9972C /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF0DC0042E7DA23C00B9972C /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
+		};
+		BFD3B5DF2E78E0B5005DFD6B /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		BFD3B5E12E78E0B5005DFD6B /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		BFD3B5E32E78E0B5005DFD6B /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		BFD3B5E52E78E0B5005DFD6B /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		BFD3B5E72E78E0B5005DFD6B /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		BFD3B5E92E78E0B5005DFD6B /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD3B5DE2E78E0B5005DFD6B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BFD3B5A42E78DD9D005DFD6B /* Project object */;
 }

@@ -9,6 +9,29 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>GettingStarted (Playground).xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>BFD3B5AB2E78DD9D005DFD6B</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BFD3B5BA2E78DD9E005DFD6B</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BFD3B5C42E78DD9E005DFD6B</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 	</dict>
 </dict>
 </plist>

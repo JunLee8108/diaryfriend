@@ -1,0 +1,9 @@
+//
+//  Development.xcconfig
+//  DiaryFriend
+//
+//  Created by Jun Lee on 9/15/25.
+//
+
+SUPABASE_URL = https:/$()/umtxqeftqjgiyungbvrs.supabase.co
+SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtdHhxZWZ0cWpnaXl1bmdidnJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzkzOTIsImV4cCI6MjA2ODgxNTM5Mn0.dQPYJ3sSjyGp87BIjdJjISW3R9L7nUz8ve06RNQelRE

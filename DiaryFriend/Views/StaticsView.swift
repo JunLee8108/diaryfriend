@@ -1,0 +1,146 @@
+//
+//  StaticsView.swift
+//  DiaryFriend
+//
+
+import SwiftUI
+
+struct StaticsView: View {
+    @EnvironmentObject var statsDataStore: StatsDataStore
+    @State private var currentMonth = Date()
+    @State private var monthPosts: [Post] = []
+    @State private var isLoadingMonth = true
+    
+    // 최소 로딩 시간 (깜빡임 방지)
+    private let minimumLoadingDuration: TimeInterval = 0.5
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 25) {
+                    MonthSelectorHeader(
+                        selectedMonth: $currentMonth,
+                        isLoading: .constant(statsDataStore.isLoading),
+                        onMonthChanged: handleMonthChange
+                    )
+                    
+                    // 간결한 조건문: 로딩 → 빈 상태 → 콘텐츠
+                    if isLoadingMonth {
+                        StatisticsLoadingView()
+                            .transition(.opacity)
+                    } else if monthPosts.isEmpty {
+                        StatisticsEmptyStateCard(month: currentMonth)
+                            .transition(.opacity)
+                    } else {
+                        statisticsContent
+                            .transition(.opacity)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 30)
+                .padding(.bottom, 40)
+            }
+            .background(Color.modernBackground)
+        }
+        .task(id: currentMonth) {
+            await loadCurrentMonth()
+        }
+        .onChange(of: statsDataStore.cachedMonthCount) { oldValue, newValue in
+            Task {
+                await reloadIfNeeded()
+            }
+        }
+    }
+    
+    // MARK: - Statistics Content
+    
+    @ViewBuilder
+    private var statisticsContent: some View {
+        Group {
+            MonthOverviewCard(
+                posts: monthPosts,
+                selectedMonth: currentMonth
+            )
+            
+            DetailedStatsCard(posts: monthPosts)
+            
+            MoodDistributionCard(posts: monthPosts)
+            
+            WritingPatternCalendar(
+                posts: monthPosts,
+                selectedMonth: currentMonth
+            )
+        }
+    }
+    
+    // MARK: - Data Loading
+    
+    private func loadCurrentMonth() async {
+        let monthKey = DateUtility.shared.monthKey(from: currentMonth)
+        print("📊 StaticsView: \(monthKey) 로드 요청")
+        
+        // 캐시된 데이터 먼저 확인
+        let cachedPosts = await statsDataStore.posts(for: currentMonth)
+        let hasCache = !cachedPosts.isEmpty
+        
+        if hasCache {
+            // 캐시가 있으면 즉시 표시 (스켈레톤 스킵)
+            print("✅ StaticsView: \(monthKey) 캐시 사용 (스켈레톤 스킵)")
+            monthPosts = cachedPosts
+            isLoadingMonth = false
+            
+            // 백그라운드에서 조용히 최신화
+            Task.detached(priority: .background) {
+                await statsDataStore.prefetchAdjacent(to: currentMonth, range: 2)
+            }
+        } else {
+            // 캐시가 없으면 로딩 상태 즉시 표시 (EmptyState 깜빡임 방지)
+            print("⏳ StaticsView: \(monthKey) 캐시 없음 (스켈레톤 표시)")
+            isLoadingMonth = true
+            
+            let startTime = Date()
+            
+            // 데이터 로드
+            monthPosts = await statsDataStore.posts(for: currentMonth)
+            
+            // 경과 시간 계산
+            let elapsedTime = Date().timeIntervalSince(startTime)
+            let remainingTime = max(0, minimumLoadingDuration - elapsedTime)
+            
+            // 최소 로딩 시간 보장 (깜빡임 방지)
+            if remainingTime > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(remainingTime * 1_000_000_000))
+            }
+            
+            // 로딩 상태 해제
+            withAnimation(.easeInOut(duration: 0.3)) {
+                isLoadingMonth = false
+            }
+            
+            // 백그라운드에서 인접 월 프리페치
+            Task.detached(priority: .background) {
+                await statsDataStore.prefetchAdjacent(to: currentMonth, range: 2)
+            }
+        }
+    }
+    
+    private func reloadIfNeeded() async {
+        let monthKey = DateUtility.shared.monthKey(from: currentMonth)
+        
+        // 현재 보고 있는 월의 캐시가 무효화되었는지 확인
+        let currentPosts = await statsDataStore.posts(for: currentMonth)
+        
+        // 포스트 개수가 변경되었으면 업데이트
+        if currentPosts.count != monthPosts.count {
+            print("🔄 StaticsView: \(monthKey) 자동 새로고침 (변경 감지)")
+            withAnimation(.easeInOut(duration: 0.3)) {
+                monthPosts = currentPosts
+            }
+        }
+    }
+    
+    private func handleMonthChange(_ newMonth: Date) async {
+        let monthKey = DateUtility.shared.monthKey(from: newMonth)
+        print("📅 StaticsView: 월 변경 → \(monthKey)")
+    }
+}

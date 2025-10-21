@@ -424,7 +424,7 @@ struct EmptyCommentsView: View {
                 .font(.system(size: 32))
                 .foregroundColor(.secondary.opacity(0.5))
             
-            Text("아직 댓글이 없습니다")
+            Text("No AI Insights yet")
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
         }

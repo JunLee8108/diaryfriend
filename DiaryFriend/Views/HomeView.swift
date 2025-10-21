@@ -59,8 +59,11 @@ struct HomeView: View {
                     .padding(.bottom, 40)
                     
                     // Recent Posts 섹션
-                    RecentPostsSection(posts: dataStore.recentPosts(limit: 3))
-                        .padding(.bottom, 20)
+                    RecentPostsSection(
+                        posts: dataStore.recentPosts(for: currentMonth, limit: 3),
+                        currentMonth: currentMonth  // 월 레이블 표시용
+                    )
+                    .padding(.bottom, 20)
                 }
             }
             .refreshable {

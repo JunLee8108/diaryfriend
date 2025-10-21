@@ -107,11 +107,19 @@ class DataStore: ObservableObject {
     // MARK: - Computed Properties (메모리에서 계산)
     
     /// 최근 포스트 N개 (날짜당 최신 1개만)
-    func recentPosts(limit: Int = 3) -> [Post] {
-        let groupedByDate = Dictionary(grouping: posts) { $0.entry_date }
+    func recentPosts(for month: Date, limit: Int = 3) -> [Post] {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: month)
+        let monthNum = calendar.component(.month, from: month)
         
-        let latestPostPerDay = groupedByDate.compactMap { (date, postsOnDate) -> Post? in
-            return postsOnDate.sorted { $0.created_at > $1.created_at }.first
+        // 기존 메서드 재사용
+        let monthPosts = posts(for: year, month: monthNum)
+        
+        // 날짜당 최신 1개만 그룹화
+        let groupedByDate = Dictionary(grouping: monthPosts) { $0.entry_date }
+        
+        let latestPostPerDay = groupedByDate.compactMap { (_, postsOnDate) -> Post? in
+            postsOnDate.max(by: { $0.created_at < $1.created_at })  // sorted보다 효율적
         }
         
         return Array(

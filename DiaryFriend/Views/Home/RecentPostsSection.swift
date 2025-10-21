@@ -52,10 +52,22 @@ struct PostDisplayItem {
 // MARK: - Recent Posts Section
 struct RecentPostsSection: View {
     let posts: [Post]
+    let currentMonth: Date
     
-    // 포스트를 미리 변환
     private var displayItems: [PostDisplayItem] {
         posts.map { PostDisplayItem(from: $0) }
+    }
+    
+    private var monthLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM"
+        return formatter.string(from: currentMonth).uppercased()
+    }
+    
+    private var monthKey: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return formatter.string(from: currentMonth)
     }
     
     var body: some View {
@@ -66,24 +78,52 @@ struct RecentPostsSection: View {
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.primary)
                     .tracking(1.2)
-                    .modernHighlight()  // ← 여기에 추가!
+                    .modernHighlight()
+                
+                Text(monthLabel)
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(.secondary)
+                    .tracking(1.0)
+                    .id(monthLabel)
+                    .transition(.opacity)
                 
                 Spacer()
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 16)
+            .animation(.easeInOut(duration: 0.3), value: monthLabel)
             
-            // 포스트 리스트
-            if displayItems.isEmpty {
-                EmptyRecentView()
-            } else {
+            // ⭐ 콘텐츠 영역 - 애니메이션 분리
+            contentView
+                .id(monthKey)  // 월 변경 시 뷰 재생성
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: monthKey)
+    }
+    
+    // ⭐ 별도 View로 분리 - Empty ↔ Posts 애니메이션
+    @ViewBuilder
+    private var contentView: some View {
+        ZStack(alignment: .topLeading) {
+            // Empty State
+            EmptyRecentView(currentMonth: currentMonth)  // ✅ currentMonth 전달
+                .frame(maxWidth: .infinity, alignment: .center)
+                .opacity(displayItems.isEmpty ? 1 : 0)
+                .scaleEffect(displayItems.isEmpty ? 1 : 0.9)
+            
+            // Posts List
+            LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(displayItems, id: \.id) { item in
                     RecentPostItemView(item: item)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .opacity(displayItems.isEmpty ? 0 : 1)
+            .scaleEffect(displayItems.isEmpty ? 0.9 : 1)
         }
+        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: displayItems.isEmpty)
     }
 }
 
@@ -147,30 +187,28 @@ struct RecentPostItemView: View {
 }
 
 // MARK: - Empty State
-struct EmptyRecentView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(Color(hex:"00C896").opacity(0.1))
-                    .frame(width: 60, height: 60)
-                
-                Image(systemName: "pencil.and.outline")
-                    .font(.system(size: 24))
-                    .foregroundColor(Color(hex:"00C896"))
-            }
-            
-            VStack(spacing: 6) {
-                Text("Your story begins here")
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
 
-                Text("Write your first memory today")
-                    .font(.system(size: 13, design: .rounded))
-                    .foregroundColor(.secondary)
-            }
+struct EmptyRecentView: View {
+    let currentMonth: Date
+    
+    private var monthName: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM"
+        return formatter.string(from: currentMonth)
+    }
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            // 📅 작은 캘린더 아이콘
+            Image(systemName: "calendar")
+                .font(.system(size: 25, weight: .light))
+                .foregroundColor(Color(hex:"00C896"))
+            
+            Text("No posts in \(monthName)")
+                .font(.system(size: 14, weight: .regular, design: .rounded))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 50)
+        .padding(.vertical, 40)
     }
 }

@@ -17,23 +17,23 @@ struct StaticsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 25) {
+                VStack(spacing: 25) {
                     MonthSelectorHeader(
                         selectedMonth: $currentMonth,
                         isLoading: .constant(statsDataStore.isLoading),
                         onMonthChanged: handleMonthChange
                     )
                     
-                    // 간결한 조건문: 로딩 → 빈 상태 → 콘텐츠
+                    // ⭐ transition 제거 + id로 강제 재생성
                     if isLoadingMonth {
                         StatisticsLoadingView()
-                            .transition(.opacity)
+                            .id("loading")
                     } else if monthPosts.isEmpty {
                         StatisticsEmptyStateCard(month: currentMonth)
-                            .transition(.opacity)
+                            .id("empty-\(currentMonth.timeIntervalSince1970)")
                     } else {
                         statisticsContent
-                            .transition(.opacity)
+                            .id("content-\(monthPosts.count)-\(currentMonth.timeIntervalSince1970)")
                     }
                 }
                 .padding(.horizontal, 20)
@@ -44,11 +44,6 @@ struct StaticsView: View {
         }
         .task(id: currentMonth) {
             await loadCurrentMonth()
-        }
-        .onChange(of: statsDataStore.cachedMonthCount) { oldValue, newValue in
-            Task {
-                await reloadIfNeeded()
-            }
         }
     }
     
@@ -112,29 +107,12 @@ struct StaticsView: View {
                 try? await Task.sleep(nanoseconds: UInt64(remainingTime * 1_000_000_000))
             }
             
-            // 로딩 상태 해제
-            withAnimation(.easeInOut(duration: 0.3)) {
-                isLoadingMonth = false
-            }
+            // ⭐ withAnimation 제거 - iOS 18 버그 방지
+            isLoadingMonth = false
             
             // 백그라운드에서 인접 월 프리페치
             Task.detached(priority: .background) {
                 await statsDataStore.prefetchAdjacent(to: currentMonth, range: 2)
-            }
-        }
-    }
-    
-    private func reloadIfNeeded() async {
-        let monthKey = DateUtility.shared.monthKey(from: currentMonth)
-        
-        // 현재 보고 있는 월의 캐시가 무효화되었는지 확인
-        let currentPosts = await statsDataStore.posts(for: currentMonth)
-        
-        // 포스트 개수가 변경되었으면 업데이트
-        if currentPosts.count != monthPosts.count {
-            print("🔄 StaticsView: \(monthKey) 자동 새로고침 (변경 감지)")
-            withAnimation(.easeInOut(duration: 0.3)) {
-                monthPosts = currentPosts
             }
         }
     }

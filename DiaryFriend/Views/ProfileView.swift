@@ -10,6 +10,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
     @StateObject private var characterStore = CharacterStore.shared
+    @ObservedObject private var profileStore = UserProfileStore.shared
     
     // Sign Out 관련 State
     @State private var showSignOutConfirmation = false
@@ -119,7 +120,7 @@ struct ProfileView: View {
                 .foregroundColor(Color.modernSurfaceTertiary)
             
             VStack(alignment: .leading, spacing: 5) {
-                Text(UserProfileStore.shared.currentDisplayName)
+                Text(profileStore.currentDisplayName)
                     .font(.headline)
                 
                 Text(authService.currentUser?.email ?? "User")

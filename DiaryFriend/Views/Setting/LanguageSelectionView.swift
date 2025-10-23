@@ -98,11 +98,17 @@ struct LanguageSelectionView: View {
         Task {
             do {
                 try await onSelect(language)
-                
+
                 // ⭐ LocalizationManager 즉시 업데이트
                 await MainActor.run {
                     let appLanguage: AppLanguage = (language == .korean) ? .korean : .english
                     LocalizationManager.shared.setLanguage(appLanguage)
+                }
+
+                // 1.5초 대기 후 닫기
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+
+                await MainActor.run {
                     dismiss()
                 }
             } catch {

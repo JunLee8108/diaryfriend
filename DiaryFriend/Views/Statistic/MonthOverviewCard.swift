@@ -9,6 +9,11 @@ struct MonthOverviewCard: View {
     let posts: [Post]
     let selectedMonth: Date
     
+    // ⭐ 다국어 적용
+    @Localized(.stats_this_month) var thisMonthText
+    @Localized(.stats_posts) var postsLabel
+    @Localized(.stats_writing_frequency) var writingFrequencyLabel
+    
     private var postCount: Int {
         posts.count
     }
@@ -29,11 +34,11 @@ struct MonthOverviewCard: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header - Outside Card
             HStack {
-                Text("THIS MONTH")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundColor(.primary)
-                        .tracking(1.2)
-                        .modernHighlight()  // ← 여기에 추가!
+                Text(thisMonthText)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundColor(.primary)
+                    .tracking(1.2)
+                    .modernHighlight()
                 
                 Spacer()
             }
@@ -50,7 +55,7 @@ struct MonthOverviewCard: View {
                             .foregroundColor(Color(hex: "00C896"))
                             .contentTransition(.numericText())
                         
-                        Text("Posts")
+                        Text(postsLabel)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -61,7 +66,7 @@ struct MonthOverviewCard: View {
                 // Progress Bar
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("Writing Frequency")
+                        Text(writingFrequencyLabel)
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.secondary)
                         

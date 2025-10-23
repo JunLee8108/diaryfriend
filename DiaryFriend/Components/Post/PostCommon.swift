@@ -26,11 +26,23 @@ enum Mood: String, CaseIterable, Identifiable {
         }
     }
     
+    // ⭐ title 제거 또는 deprecated
+    @available(*, deprecated, message: "Use localizedTitle() in View instead")
     var title: String {
+        // fallback만 제공
         switch self {
         case .neutral: return "Neutral"
         case .happy: return "Happy"
         case .sad: return "Sad"
+        }
+    }
+    
+    // ⭐ 데이터 표시용 아이콘 추가
+    var filledIcon: String {
+        switch self {
+        case .neutral: return "cloud"
+        case .happy: return "sun.max.fill"
+        case .sad: return "cloud.rain.fill"
         }
     }
     
@@ -56,6 +68,14 @@ enum Mood: String, CaseIterable, Identifiable {
         case .happy: return Color(hex: "FF8C00")
         case .sad: return Color(hex: "1E90FF")
         }
+    }
+    
+    // ⭐ String에서 Mood로 변환
+    static func from(_ moodString: String?) -> Mood {
+        guard let moodString = moodString?.lowercased() else {
+            return .neutral
+        }
+        return Mood(rawValue: moodString) ?? .neutral
     }
 }
 

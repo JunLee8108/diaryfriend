@@ -72,28 +72,3 @@ struct HighlightedText: View {
         return attributedString
     }
 }
-
-#Preview {
-    VStack(alignment: .leading, spacing: 20) {
-        HighlightedText(
-            text: "Today was a happy day! I felt so happy.",
-            searchQuery: "happy",
-            font: .system(size: 15)
-        )
-        .padding()
-        
-        HighlightedText(
-            text: "I went to the beach and enjoyed the sunny weather.",
-            searchQuery: "beach",
-            font: .system(size: 15)
-        )
-        .padding()
-        
-        HighlightedText(
-            text: "No match here",
-            searchQuery: "test",
-            font: .system(size: 15)
-        )
-        .padding()
-    }
-}

@@ -9,6 +9,9 @@ import SwiftUI
 
 // MARK: - 검색 시작 전
 struct EmptySearchView: View {
+    @Localized(.search_empty_title) var title
+    @Localized(.search_empty_description) var description
+    
     var body: some View {
         VStack(spacing: 16) {
             ZStack {
@@ -22,11 +25,11 @@ struct EmptySearchView: View {
             }
             
             VStack(spacing: 6) {
-                Text("Search your memories")
+                Text(title)
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                 
-                Text("Find posts by content or mood")
+                Text(description)
                     .font(.system(size: 13, design: .rounded))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -42,6 +45,13 @@ struct EmptySearchView: View {
 struct NoResultsView: View {
     let query: String
     
+    @Localized(.search_no_results) var noResultsText
+    @Localized(.search_try_different) var tryDifferentText
+    
+    private var searchedForText: String {
+        String(format: LocalizationManager.shared.localized(.search_searched_for), query)
+    }
+    
     var body: some View {
         VStack(spacing: 16) {
             ZStack {
@@ -55,11 +65,11 @@ struct NoResultsView: View {
             }
             
             VStack(spacing: 6) {
-                Text("No results found")
+                Text(noResultsText)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.primary)
                 
-                Text("Try different keywords or dates")
+                Text(tryDifferentText)
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -67,7 +77,7 @@ struct NoResultsView: View {
             
             // 검색어 표시
             if !query.isEmpty {
-                Text("Searched for: \"\(query)\"")
+                Text(searchedForText)
                     .font(.system(size: 12))
                     .foregroundColor(.secondary.opacity(0.7))
                     .padding(.top, 4)
@@ -76,12 +86,4 @@ struct NoResultsView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 80)
     }
-}
-
-#Preview("Empty Search") {
-    EmptySearchView()
-}
-
-#Preview("No Results") {
-    NoResultsView(query: "test query")
 }

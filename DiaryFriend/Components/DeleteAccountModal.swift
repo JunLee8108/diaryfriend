@@ -20,7 +20,17 @@ struct DeleteAccountModal: View {
     @State private var showModal = false
     @FocusState private var isInputFocused: Bool
     
-    private let requiredText = "DELETE ACCOUNT"
+    // ⭐ 다국어 적용
+    @Localized(.delete_modal_title) var title
+    @Localized(.delete_modal_warning) var warning
+    @Localized(.delete_modal_required_text) var requiredText
+    @Localized(.delete_modal_cancel) var cancelButton
+    @Localized(.delete_modal_delete) var deleteButton
+    
+    private var instructionText: String {
+        // String(format:) 사용하여 %@ 치환
+        String(format: LocalizationManager.shared.localized(.delete_modal_instruction), requiredText)
+    }
     
     private var isDeleteEnabled: Bool {
         inputText == requiredText
@@ -83,12 +93,12 @@ struct DeleteAccountModal: View {
             
             // 텍스트 영역
             VStack(spacing: 4) {
-                Text("Delete Account?")
+                Text(title)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
                 
-                Text("This action cannot be undone.")
+                Text(warning)
                     .font(.system(size: 12, weight: .regular, design: .rounded))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -97,7 +107,7 @@ struct DeleteAccountModal: View {
             
             // 입력 필드 영역
             VStack(alignment: .leading, spacing: 8) {
-                Text("Type \"\(requiredText)\" to confirm:")
+                Text(instructionText)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.secondary)
                 
@@ -118,11 +128,14 @@ struct DeleteAccountModal: View {
                                 lineWidth: 1.5
                             )
                     )
-                    .contentShape(Rectangle()) // 이 줄 추가
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         isInputFocused = true
                     }
-                    .autocapitalization(.allCharacters)
+                    .autocapitalization(
+                        // ⭐ 한국어는 자동 대문자 불필요
+                        LocalizationManager.shared.currentLanguage == .korean ? .none : .allCharacters
+                    )
                     .disableAutocorrection(true)
                     .disabled(isProcessing)
             }
@@ -135,7 +148,7 @@ struct DeleteAccountModal: View {
                         dismissModal()
                     }
                 }) {
-                    Text("Cancel")
+                    Text(cancelButton)
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundColor(.primary)
                         .frame(maxWidth: .infinity)
@@ -163,7 +176,7 @@ struct DeleteAccountModal: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.8)
                         } else {
-                            Text("Delete")
+                            Text(deleteButton)
                                 .font(.system(size: 15, weight: .medium, design: .rounded))
                                 .foregroundColor(.white)
                         }

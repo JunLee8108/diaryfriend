@@ -38,16 +38,16 @@ struct PostAIReviewView: View {
     @State private var errorMessage = ""
     @FocusState private var isTextEditorFocused: Bool
     
+    @Localized(.common_save) var saveText
+    
     // Date formatting
     private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d"
-        return formatter.string(from: selectedDate)
+        return DateUtility.shared.monthDay(from: selectedDate)
     }
     
     // Validation
     private var isValid: Bool {
-        editedContent.count >= 10 && editedContent.count <= 1000
+        editedContent.count >= 5 && editedContent.count <= 1000
     }
     
     init(characterId: Int, selectedDate: Date, sessionId: UUID,
@@ -96,7 +96,7 @@ struct PostAIReviewView: View {
                         Image(systemName: "sparkles")
                             .font(.system(size: 12))
                         Text("AI Generated")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
                     }
                     .foregroundColor(Color(hex: "00A077"))
                     .padding(.horizontal, 12)
@@ -155,7 +155,7 @@ struct PostAIReviewView: View {
                             .progressViewStyle(CircularProgressViewStyle())
                             .scaleEffect(0.8)
                     } else {
-                        Text("Save")
+                        Text(saveText)
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
                             .foregroundColor(isValid ? Color(hex: "00A077") : Color.gray)
                     }
@@ -315,19 +315,5 @@ struct AddHashtagSheetForAI: View {
             }
             isPresented = false
         }
-    }
-}
-
-// MARK: - Preview
-#Preview {
-    NavigationStack {
-        PostAIReviewView(
-            characterId: 1,
-            selectedDate: Date(),
-            sessionId: UUID(),
-            generatedContent: "<p>Today was a wonderful day!</p>",
-            aiMood: "happy",
-            aiHashtags: ["daily", "mood"]
-        )
     }
 }

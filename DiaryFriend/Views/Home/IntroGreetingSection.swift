@@ -21,18 +21,18 @@ struct IntroGreetingSection: View {
     
     @ObservedObject private var profileStore = UserProfileStore.shared
     
-    // Time-based greeting
+    // ⭐ Time-based greeting (다국어 적용)
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: currentDate)
         switch hour {
         case 5..<12:
-            return "Good morning"
+            return LocalizationManager.shared.localized(.greeting_morning)
         case 12..<17:
-            return "Good afternoon"
+            return LocalizationManager.shared.localized(.greeting_afternoon)
         case 17..<22:
-            return "Good evening"
+            return LocalizationManager.shared.localized(.greeting_evening)
         default:
-            return "Good night"
+            return LocalizationManager.shared.localized(.greeting_night)
         }
     }
     
@@ -104,23 +104,4 @@ struct IntroGreetingSection: View {
             streakAnimated = true
         }
     }
-}
-
-// MARK: - Preview
-#Preview("Morning") {
-    IntroGreetingSection()
-        .padding()
-        .background(Color.gray.opacity(0.1))
-}
-
-#Preview("Not Animated") {
-    IntroGreetingSection()
-        .padding()
-        .background(Color.gray.opacity(0.1))
-}
-
-#Preview("Animated") {
-    IntroGreetingSection()
-        .padding()
-        .background(Color.gray.opacity(0.1))
 }

@@ -10,6 +10,9 @@ struct SocialLoginSection: View {
     @Binding var errorMessage: String
     @Binding var showError: Bool
     
+    @Localized(.login_apple) var appleText
+    @Localized(.login_google) var googleText
+    
     var body: some View {
         VStack(spacing: 16) {
             // Apple Sign In 버튼 (상단 배치 - Apple 가이드라인 권장)
@@ -32,7 +35,7 @@ struct SocialLoginSection: View {
                     .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
                     .frame(width: 20) // 고정 너비 추가
                 
-                Text("Continue with Apple")
+                Text(appleText)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
             }
@@ -62,7 +65,7 @@ struct SocialLoginSection: View {
                     .frame(width: 20, height: 20)
                     .frame(width: 20) // 고정 너비 추가
                 
-                Text("Continue with Google")
+                Text(googleText)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
             }

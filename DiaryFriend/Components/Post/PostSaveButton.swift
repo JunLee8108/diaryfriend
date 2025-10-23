@@ -16,18 +16,33 @@ struct InlineSaveButton: View {
     let isSaving: Bool
     let action: () -> Void
     
+    // ⭐ LocalizationManager 직접 참조로 실시간 업데이트
     private var buttonText: String {
         if isSaving {
-            return "Saving..."
+            return LocalizationManager.shared.localized(.post_saving)
         } else if !isValid {
-            return "Complete your entry"
+            return LocalizationManager.shared.localized(.post_complete_entry)
         } else {
-            return "Save Entry"
+            return LocalizationManager.shared.localized(.post_save_entry)
         }
     }
     
     private var buttonColor: Color {
         isValid ? Color(hex: "E8826B") : Color.modernSurfacePrimary.opacity(0.8)
+    }
+    
+    // ⭐ 접근성 레이블
+    private var accessibilityLabelText: String {
+        isValid
+        ? LocalizationManager.shared.localized(.post_accessibility_save_label)
+        : LocalizationManager.shared.localized(.post_accessibility_complete_label)
+    }
+    
+    // ⭐ 접근성 힌트
+    private var accessibilityHintText: String {
+        isValid
+        ? LocalizationManager.shared.localized(.post_accessibility_save_hint)
+        : LocalizationManager.shared.localized(.post_accessibility_complete_hint)
     }
     
     var body: some View {
@@ -57,48 +72,7 @@ struct InlineSaveButton: View {
         }
         .disabled(!isValid || isSaving)
         .padding(.horizontal, 24)
-        .accessibilityLabel(isValid ? "Save your diary entry" : "Complete your entry to save")
-        .accessibilityHint(isValid ? "Tap to save your diary entry" : "Fill in at least 10 characters to enable saving")
+        .accessibilityLabel(accessibilityLabelText)
+        .accessibilityHint(accessibilityHintText)
     }
-}
-
-// MARK: - Preview
-
-#Preview("Valid State") {
-    VStack {
-        Spacer()
-        InlineSaveButton(
-            isValid: true,
-            isSaving: false,
-            action: {}
-        )
-        .padding(.bottom, 34)
-    }
-    .background(Color.modernBackground)
-}
-
-#Preview("Invalid State") {
-    VStack {
-        Spacer()
-        InlineSaveButton(
-            isValid: false,
-            isSaving: false,
-            action: {}
-        )
-        .padding(.bottom, 34)
-    }
-    .background(Color.modernBackground)
-}
-
-#Preview("Saving State") {
-    VStack {
-        Spacer()
-        InlineSaveButton(
-            isValid: true,
-            isSaving: true,
-            action: {}
-        )
-        .padding(.bottom, 34)
-    }
-    .background(Color.modernBackground)
 }

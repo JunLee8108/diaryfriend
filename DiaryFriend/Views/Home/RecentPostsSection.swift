@@ -29,7 +29,7 @@ struct PostDisplayItem {
         self.id = post.id
         self.postId = post.id
         
-        // 날짜 정보 한 번만 계산
+        // ⭐ DateUtility가 이제 locale을 자동으로 적용!
         self.dayNumber = DateUtility.shared.dayNumber(from: post.entry_date)
         self.monthString = DateUtility.shared.monthShortName(from: post.entry_date).uppercased()
         self.weekday = DateUtility.shared.weekdayShort(from: post.entry_date)
@@ -54,12 +54,17 @@ struct RecentPostsSection: View {
     let posts: [Post]
     let currentMonth: Date
     
+    // ⭐ 다국어 적용
+    @Localized(.recent_posts_title) var recentTitle
+    
     private var displayItems: [PostDisplayItem] {
         posts.map { PostDisplayItem(from: $0) }
     }
     
+    // ⭐ locale 적용
     private var monthLabel: String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "MMM"
         return formatter.string(from: currentMonth).uppercased()
     }
@@ -74,7 +79,7 @@ struct RecentPostsSection: View {
         LazyVStack(alignment: .leading, spacing: 0) {
             // RECENT 헤더
             HStack {
-                Text("RECENT")
+                Text(recentTitle)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.primary)
                     .tracking(1.2)
@@ -106,7 +111,7 @@ struct RecentPostsSection: View {
     private var contentView: some View {
         ZStack(alignment: .topLeading) {
             // Empty State
-            EmptyRecentView(currentMonth: currentMonth)  // ✅ currentMonth 전달
+            EmptyRecentView(currentMonth: currentMonth)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .opacity(displayItems.isEmpty ? 1 : 0)
                 .scaleEffect(displayItems.isEmpty ? 1 : 0.9)
@@ -187,14 +192,20 @@ struct RecentPostItemView: View {
 }
 
 // MARK: - Empty State
-
 struct EmptyRecentView: View {
     let currentMonth: Date
     
-    private var monthName: String {
+    // ⭐ 다국어 적용
+    private var noPostsMessage: String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "MMMM"
-        return formatter.string(from: currentMonth)
+        let monthName = formatter.string(from: currentMonth)
+        
+        return String(
+            format: LocalizationManager.shared.localized(.recent_no_posts),
+            monthName
+        )
     }
     
     var body: some View {
@@ -204,7 +215,7 @@ struct EmptyRecentView: View {
                 .font(.system(size: 25, weight: .light))
                 .foregroundColor(Color(hex:"00C896"))
             
-            Text("No posts in \(monthName)")
+            Text(noPostsMessage)
                 .font(.system(size: 14, weight: .regular, design: .rounded))
                 .foregroundColor(.secondary)
         }

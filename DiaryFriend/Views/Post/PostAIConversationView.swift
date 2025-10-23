@@ -31,6 +31,8 @@ struct PostAIConversationView: View {
     @State private var showDiaryButton = false
     @FocusState private var isInputFocused: Bool
     
+    @Localized(.ai_conversation_header) var aiConversationHeader: String
+    
     // Constants
     private let maxConversations = 10
     private let warningThreshold = 8
@@ -67,6 +69,11 @@ struct PostAIConversationView: View {
     
     private var aiMessageCount: Int {
         activeMessages.filter { $0.sender == .ai }.count
+    }
+    
+    private var isDiaryAlreadyGenerated: Bool {
+        guard let sessionId = sessionInfo?.sessionId else { return false }
+        return chatService.isDiaryGenerated(sessionId: sessionId)
     }
     
     var body: some View {
@@ -125,9 +132,7 @@ struct PostAIConversationView: View {
                                 } else {
                                     HStack {
                                         Spacer()
-                                        // ✅ 조건부 버튼 렌더링
-                                        if let sessionId = sessionInfo?.sessionId,
-                                           chatService.isDiaryGenerated(sessionId: sessionId) {
+                                        if isDiaryAlreadyGenerated {
                                             // 이미 생성됨 → "다시보기" 버튼
                                             ViewGeneratedDiaryButton(onView: handleGenerateDiary)
                                                 .transition(.scale.combined(with: .opacity))
@@ -231,7 +236,7 @@ struct PostAIConversationView: View {
                         maxLength: maxMessageLength,
                         shouldShowCharCount: shouldShowCharCount,
                         charCountColor: inputCharCountColor,
-                        isDisabled: isLimitReached || isAITyping || isCreatingSession,
+                        isDisabled: isLimitReached || isAITyping || isCreatingSession || isDiaryAlreadyGenerated,
                         onSend: sendMessage
                     )
                 }
@@ -241,7 +246,7 @@ struct PostAIConversationView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text("Chat with AI")
+                Text(aiConversationHeader)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
             }
         }
@@ -503,6 +508,9 @@ struct GenerateDiaryButton: View {
     let onGenerate: () -> Void
     @State private var isPressed = false
     
+    @Localized(.ai_conversation_generate) var aiConversationGenerate: String
+    @Localized(.ai_conversation_plenty_shared) var aiConversationPlentyShared: String
+    
     var body: some View {
         Button(action: onGenerate) {
             HStack(spacing: 10) {
@@ -510,11 +518,11 @@ struct GenerateDiaryButton: View {
 //                    .font(.system(size: 12, weight: .semibold))
                 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Generate your diary!")
+                    Text(aiConversationGenerate)
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .fixedSize(horizontal: true, vertical: false)
                     
-                    Text("Plenty has been shared.")
+                    Text(aiConversationPlentyShared)
                         .font(.system(size: 11, design: .rounded))
                         .foregroundColor(.white.opacity(0.85))
                         .fixedSize(horizontal: true, vertical: false)
@@ -548,12 +556,14 @@ struct GenerateDiaryButton: View {
 }
 
 struct GeneratingDiaryIndicator: View {
+    @Localized(.ai_conversation_processing) var aiConversationProcessing: String
+    
     var body: some View {
         HStack(spacing: 12) {
             ProgressView()
                 .scaleEffect(0.8)
                 .tint(.secondary)
-            Text("Generating your diary...")
+            Text(aiConversationProcessing)
                 .font(.system(size: 14, design: .rounded))
                 .foregroundColor(.secondary)
         }
@@ -572,9 +582,20 @@ struct GeneratedDiaryData {
 }
 
 struct ChatHeaderView: View {
+    @EnvironmentObject var localizationManager: LocalizationManager
+    
     let character: CharacterWithAffinity
     let date: Date
     let messageCount: Int
+    
+    // 언어별 표시 텍스트 계산
+    private var isKorean: Bool {
+        localizationManager.currentLanguage == .korean
+    }
+    
+    private var displayName: String {
+        character.localizedName(isKorean: isKorean)
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -583,11 +604,11 @@ struct ChatHeaderView: View {
                 CachedAvatarImage(
                     url: character.avatar_url,
                     size: 40,
-                    initial: String(character.name.prefix(1)).uppercased()
+                    initial: String(displayName.prefix(1)).uppercased()
                 )
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(character.name)
+                    Text(displayName)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                     
@@ -607,7 +628,7 @@ struct ChatHeaderView: View {
                 if messageCount > 0 {
                     Text("\(messageCount)/10")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundColor(messageCount >= 8 ? .orange : .secondary)
+                        .foregroundColor(messageCount >= 10 ? .red : messageCount >= 8 ? .orange : .secondary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(
@@ -774,17 +795,23 @@ struct ChatInputView: View {
 struct ConversationWarningBanner: View {
     let remainingCount: Int
     
+    @Localized(.ai_conversation_messages_remaining) var messagesRemainingFormat: String
+    
     private var bannerColor: Color {
         if remainingCount <= 1 { return Color(hex: "FF6B6B") }
         if remainingCount <= 2 { return Color(hex: "FFA500") }
         return Color(hex: "FFD700")
     }
     
+    private var localizedText: String {
+        String(format: messagesRemainingFormat, remainingCount)
+    }
+    
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 12))
-            Text("\(remainingCount) messages remaining")
+            Text(localizedText)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
         }
         .foregroundColor(bannerColor.darker(by: 0.3))
@@ -795,11 +822,13 @@ struct ConversationWarningBanner: View {
 }
 
 struct LimitReachedBanner: View {
+    @Localized(.ai_conversation_limit_reached) var limitReachedText: String
+    
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "xmark.circle.fill")
                 .font(.system(size: 12))
-            Text("Conversation limit reached (10 messages)")
+            Text(limitReachedText)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
         }
         .foregroundColor(Color(hex: "FF6B6B"))
@@ -829,6 +858,9 @@ struct ViewGeneratedDiaryButton: View {
     let onView: () -> Void
     @State private var isPressed = false
     
+    @Localized(.ai_conversation_view_diary) var aiConversationViewDiary: String
+    @Localized(.ai_conversation_ready_save) var aiConversationReadySave: String
+    
     var body: some View {
         Button(action: onView) {
             HStack(spacing: 10) {
@@ -836,11 +868,11 @@ struct ViewGeneratedDiaryButton: View {
                     .font(.system(size: 14, weight: .semibold))
                 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("View your diary")
+                    Text(aiConversationViewDiary)
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .fixedSize(horizontal: true, vertical: false)
                     
-                    Text("Generated and ready to save")
+                    Text(aiConversationReadySave)
                         .font(.system(size: 11, design: .rounded))
                         .foregroundColor(.white.opacity(0.85))
                         .fixedSize(horizontal: true, vertical: false)
@@ -878,16 +910,5 @@ struct ViewGeneratedDiaryButton: View {
 extension Color {
     func darker(by percentage: Double = 0.2) -> Color {
         return self.opacity(1 - percentage)
-    }
-}
-
-// MARK: - Preview
-
-#Preview {
-    NavigationStack {
-        PostAIConversationView(
-            characterId: 1,
-            selectedDate: Date()
-        )
     }
 }

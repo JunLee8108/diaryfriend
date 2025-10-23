@@ -36,6 +36,10 @@ enum OnlineStatus: CaseIterable {
 struct CharacterDetailSheet: View {
     let character: CharacterWithAffinity
     let onFollowToggle: () async -> Void
+    
+    // ✅ LocalizationManager 주입
+    @EnvironmentObject var localizationManager: LocalizationManager
+    
     @Environment(\.dismiss) private var dismiss
     @State private var isTogglingFollow = false
     @State private var displayedAffinity: Int = 0
@@ -43,6 +47,23 @@ struct CharacterDetailSheet: View {
     @State private var onlineStatus: OnlineStatus = .random
     @State private var animationTimer: Timer?
     @State private var scrollOffset: CGFloat = 0
+    
+    // ✅ 언어별 표시 텍스트 계산
+    private var isKorean: Bool {
+        localizationManager.currentLanguage == .korean
+    }
+    
+    private var displayName: String {
+        character.localizedName(isKorean: isKorean)
+    }
+    
+    private var displayDescription: String? {
+        character.localizedDescription(isKorean: isKorean)
+    }
+    
+    @Localized(.character_personality) var personalityLabel
+    @Localized(.character_affinity_level) var affinityLabel
+    @Localized(.character_about) var aboutLabel
     
     // Pastel tone color palette
     func getAffinityColor(for value: Int) -> Color {
@@ -156,14 +177,14 @@ struct CharacterDetailSheet: View {
                                 // Main Info Overlay
                                 VStack(alignment: .leading, spacing: 16) {
                                     // Name
-                                    Text(character.name)
+                                    Text(displayName)
                                         .font(.system(size: 25, weight: .bold, design: .rounded))
                                         .foregroundColor(.white)
                                         .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 2)
                                         .fixedSize(horizontal: false, vertical: true)
                                     
                                     // Short Description
-                                    if let description = character.description {
+                                    if let description = displayDescription {
                                         Text(description)
                                             .font(.system(size: 14))
                                             .foregroundColor(.white.opacity(0.9))
@@ -225,19 +246,20 @@ struct CharacterDetailSheet: View {
                             // Detail Sections
                             VStack(alignment: .leading, spacing: 0) {
                                 // Personality Section
-                                if let personalities = character.personality, !personalities.isEmpty {
+                                let localizedPersonalities = character.localizedPersonalities(isKorean: isKorean)
+                                if !localizedPersonalities.isEmpty {
                                     VStack(alignment: .leading, spacing: 16) {
                                         HStack(spacing: 8) {
                                             Image(systemName: "sparkles")
                                                 .font(.system(size: 14))
-                                            Text("Personality")
+                                            Text(personalityLabel)
                                                 .font(.system(size: 16, weight: .semibold))
                                         }
                                         .foregroundColor(.primary)
                                         
                                         ScrollView(.horizontal, showsIndicators: false) {
                                             HStack(spacing: 10) {
-                                                ForEach(personalities, id: \.self) { trait in
+                                                ForEach(localizedPersonalities, id: \.self) { trait in
                                                     Text(trait)
                                                         .font(.system(size: 13, weight: .medium))
                                                         .padding(.horizontal, 14)
@@ -266,7 +288,7 @@ struct CharacterDetailSheet: View {
                                         Image(systemName: "heart.fill")
                                             .font(.system(size: 14))
                                             .foregroundColor(getAffinityColor(for: character.affinity))
-                                        Text("Affinity Level")
+                                        Text(affinityLabel)
                                             .font(.system(size: 16, weight: .semibold))
                                     }
                                     .foregroundColor(.primary)
@@ -318,12 +340,12 @@ struct CharacterDetailSheet: View {
                                
                                 
                                 // About Section
-                                if let description = character.description {
+                                if let description = displayDescription {
                                     VStack(alignment: .leading, spacing: 16) {
                                         HStack(spacing: 8) {
                                             Image(systemName: "text.alignleft")
                                                 .font(.system(size: 14))
-                                            Text("About")
+                                            Text(aboutLabel)
                                                 .font(.system(size: 16, weight: .semibold))
                                         }
                                         .foregroundColor(.primary)

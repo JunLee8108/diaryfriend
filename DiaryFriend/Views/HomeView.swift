@@ -22,6 +22,12 @@ struct HomeView: View {
     @State private var showSyncError = false
     @State private var syncErrorMessage = ""
     
+    // 다국어 적용
+    @Localized(.home_future_date_title) var futureDateTitle
+    @Localized(.home_future_date_message) var futureDateMessage
+    @Localized(.home_no_internet_title) var noInternetTitle
+    @Localized(.home_no_internet_message) var noInternetMessage
+    
     // item 기반 sheet를 위한 구조체
     struct DayPostsData: Identifiable {
         let id = UUID()
@@ -37,9 +43,9 @@ struct HomeView: View {
                 LazyVStack(spacing: 0) {
                     // 🎯 NEW: Intro Section
                     IntroGreetingSection()
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .padding(.bottom, 20)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 20)
                     
                     // 슬라이드 캘린더
                     SlideCalendarView(
@@ -86,57 +92,56 @@ struct HomeView: View {
             .sheet(item: $dayPostsData) { data in
                 DayPostsSheet(
                     dateString: data.dateString
-                    // posts 전달 제거
                 )
                 // EnvironmentObject는 자동 전파되지만 명시적으로 추가 (안전성)
                 .environmentObject(dataStore)
             }
             .navigationDestination(for: PostDestination.self) { destination in
-                           switch destination {
-                           case .methodChoice(let date):
-                               PostMethodChoiceView(selectedDate: date)
-                                   .environmentObject(navigationCoordinator)
-                           case .aiSelect:
-                               PostAISelectView()
-                                   .environmentObject(navigationCoordinator)
-                           case .aiConversation(let characterId):
-                               PostAIConversationView(
-                                   characterId: characterId,
-                                   selectedDate: PostCreationManager.shared.selectedDate ?? Date()
-                               )
-                               .environmentObject(navigationCoordinator)
-                           case .aiReview(let data):
-                               PostAIReviewView(
-                                   characterId: data.characterId,
-                                   selectedDate: data.selectedDate,
-                                   sessionId: data.sessionId,
-                                   generatedContent: data.content,
-                                   aiMood: data.mood,
-                                   aiHashtags: data.hashtags
-                               )
-                               .environmentObject(navigationCoordinator)
-                           case .manualWrite:
-                               PostManualWriteView()
-                                   .environmentObject(navigationCoordinator)
-                           case .detail(let postId):
-                               PostDetailView(postId: postId)
-                                   .environmentObject(navigationCoordinator)
-                           }
-                       }
+                switch destination {
+                case .methodChoice(let date):
+                    PostMethodChoiceView(selectedDate: date)
+                        .environmentObject(navigationCoordinator)
+                case .aiSelect:
+                    PostAISelectView()
+                        .environmentObject(navigationCoordinator)
+                case .aiConversation(let characterId):
+                    PostAIConversationView(
+                        characterId: characterId,
+                        selectedDate: PostCreationManager.shared.selectedDate ?? Date()
+                    )
+                    .environmentObject(navigationCoordinator)
+                case .aiReview(let data):
+                    PostAIReviewView(
+                        characterId: data.characterId,
+                        selectedDate: data.selectedDate,
+                        sessionId: data.sessionId,
+                        generatedContent: data.content,
+                        aiMood: data.mood,
+                        aiHashtags: data.hashtags
+                    )
+                    .environmentObject(navigationCoordinator)
+                case .manualWrite:
+                    PostManualWriteView()
+                        .environmentObject(navigationCoordinator)
+                case .detail(let postId):
+                    PostDetailView(postId: postId)
+                        .environmentObject(navigationCoordinator)
+                }
+            }
             .safeAreaInset(edge: .bottom) {
                 Color.clear.frame(height: 20)
             }
             .infoModal(
                 isPresented: $showFutureDateInfo,
-                title: "Future Date",
-                message: "You cannot create entries for future dates.",
+                title: futureDateTitle,
+                message: futureDateMessage,
                 icon: "calendar.badge.exclamationmark",
                 iconColor: Color(hex: "FF6961")
             )
             .infoModal(
                 isPresented: $showOfflineAlert,
-                title: "No Internet",
-                message: "Please check your internet connection.",
+                title: noInternetTitle,
+                message: noInternetMessage,
                 icon: "wifi.slash",
                 iconColor: Color(hex: "FF6961")
             )
@@ -148,35 +153,35 @@ struct HomeView: View {
                 iconColor: Color(hex: "FF6961")
             )
             .background(Color.modernBackground)
-
+            
         }
     }
     
     private func handleDateTap(_ date: Date) {
-          let calendar = Calendar.current
-          let startOfToday = calendar.startOfDay(for: Date())
-          let startOfSelectedDate = calendar.startOfDay(for: date)
-          
-          if startOfSelectedDate > startOfToday {
-              showFutureDateInfo = true
-              return
-          }
-          
-          selectedDate = date
-          let dateString = DateUtility.shared.dateString(from: date)
-          let posts = dataStore.posts(for: dateString)
-          
-          if posts.isEmpty {
-              // ✅ NavigationCoordinator 사용
-              PostCreationManager.shared.setSelectedDate(date)
-              navigationCoordinator.push(.methodChoice(date))
-          } else if posts.count == 1 {
-              // ✅ NavigationCoordinator 사용
-              navigationCoordinator.push(.detail(posts.first!.id))
-          } else {
-              dayPostsData = DayPostsData(dateString: dateString)
-          }
-      }
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        let startOfSelectedDate = calendar.startOfDay(for: date)
+        
+        if startOfSelectedDate > startOfToday {
+            showFutureDateInfo = true
+            return
+        }
+        
+        selectedDate = date
+        let dateString = DateUtility.shared.dateString(from: date)
+        let posts = dataStore.posts(for: dateString)
+        
+        if posts.isEmpty {
+            // ✅ NavigationCoordinator 사용
+            PostCreationManager.shared.setSelectedDate(date)
+            navigationCoordinator.push(.methodChoice(date))
+        } else if posts.count == 1 {
+            // ✅ NavigationCoordinator 사용
+            navigationCoordinator.push(.detail(posts.first!.id))
+        } else {
+            dayPostsData = DayPostsData(dateString: dateString)
+        }
+    }
 }
 
 // MARK: - 슬라이드 캘린더
@@ -248,16 +253,39 @@ struct CalendarHeader: View {
     let onPreviousMonth: () -> Void
     let onNextMonth: () -> Void
     
+    // ⭐ 월 이름
     private var monthName: String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "MMMM"
         return formatter.string(from: currentMonth)
     }
     
+    // ⭐ 연도
     private var yearString: String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "yyyy"
         return formatter.string(from: currentMonth)
+    }
+    
+    // ⭐ 한국어에서 "년" 추가
+    private var yearWithSuffix: String {
+        if LocalizationManager.shared.currentLanguage == .korean {
+            return "\(yearString)년"
+        } else {
+            return yearString
+        }
+    }
+    
+    // ⭐ 한국어에서 "월" 추가
+    private var monthWithSuffix: String {
+        if LocalizationManager.shared.currentLanguage == .korean {
+            let monthNumber = Calendar.current.component(.month, from: currentMonth)
+            return "\(monthNumber)월"
+        } else {
+            return monthName
+        }
     }
     
     var body: some View {
@@ -271,14 +299,31 @@ struct CalendarHeader: View {
             
             Spacer()
             
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(monthName)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
-                
-                Text(yearString)
-                    .font(.system(size: 15, weight: .regular, design: .rounded))
-                    .foregroundColor(.primary.opacity(0.65))
+            // ⭐ 언어별 순서 분기
+            if LocalizationManager.shared.currentLanguage == .korean {
+                // 한국어: 2025년 1월
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(yearWithSuffix)
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(.primary.opacity(0.85))
+                    
+                    Text(monthWithSuffix)
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(.primary)
+                    
+                    
+                }
+            } else {
+                // 영어: January 2025
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(monthName)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundColor(.primary)
+                    
+                    Text(yearString)
+                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .foregroundColor(.primary.opacity(0.65))
+                }
             }
             
             Spacer()
@@ -295,7 +340,11 @@ struct CalendarHeader: View {
 
 // MARK: - 요일 헤더
 struct WeekdayHeader: View {
-    private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private var weekdays: [String] {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
+        return formatter.shortWeekdaySymbols
+    }
     
     private let sundayColor = Color(hex:"00A077")
     private let saturdayColor = Color(hex:"FF7AB2")
@@ -492,9 +541,4 @@ struct MonthData {
     func date(for day: Int) -> Date? {
         DateUtility.shared.date(year: year, month: month, day: day)
     }
-}
-
-#Preview {
-    HomeView()
-        .environmentObject(DataStore.shared)
 }

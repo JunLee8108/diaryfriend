@@ -1,17 +1,3 @@
-//
-//  LanguageSelectionView.swift
-//  DiaryFriend
-//
-//  Created by Jun Lee on 10/1/25.
-//
-
-//
-//  LanguageSelectionView.swift
-//  DiaryFriend
-//
-//  Language 선택 Sheet
-//
-
 import SwiftUI
 
 struct LanguageSelectionView: View {
@@ -25,6 +11,14 @@ struct LanguageSelectionView: View {
     @State private var errorMessage: String?
     @State private var showError = false
     
+    // ⭐ 다국어
+    @Localized(.language_select_title) var title
+    @Localized(.language_updating) var updatingMessage
+    @Localized(.language_english_desc) var englishDesc
+    @Localized(.language_korean_desc) var koreanDesc
+    @Localized(.error_title) var errorTitle
+    @Localized(.common_ok) var okButton
+    
     init(currentLanguage: Language, onSelect: @escaping (Language) async throws -> Void) {
         self.currentLanguage = currentLanguage
         self.onSelect = onSelect
@@ -34,39 +28,13 @@ struct LanguageSelectionView: View {
     var body: some View {
         NavigationStack {
             List {
-//                ForEach(Language.allCases, id: \.self) { language in
-//                    HStack {
-//                        VStack(alignment: .leading, spacing: 4) {
-//                            Text(language.displayName)
-//                                .font(.body)
-//                            
-//                            // 언어별 설명 추가
-//                            Text(languageDescription(for: language))
-//                                .font(.caption)
-//                                .foregroundColor(.secondary)
-//                        }
-//                        
-//                        Spacer()
-//                        
-//                        if selectedLanguage == language {
-//                            Image(systemName: "checkmark")
-//                                .foregroundColor(.blue)
-//                                .fontWeight(.semibold)
-//                        }
-//                    }
-//                    .contentShape(Rectangle())
-//                    .onTapGesture {
-//                        selectLanguage(language)
-//                    }
-//                    .disabled(isLoading)
-//                }
-                ForEach(Language.allCases.filter { $0 != .korean }, id: \.self) { language in
+                // ⭐ Korean 필터 제거!
+                ForEach(Language.allCases, id: \.self) { language in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(language.displayName)
                                 .font(.body)
                             
-                            // 언어별 설명 추가
                             Text(languageDescription(for: language))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -88,21 +56,21 @@ struct LanguageSelectionView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Select Language")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .overlay {
                 if isLoading {
                     Color.black.opacity(0.3)
                         .ignoresSafeArea()
-                    ProgressView("Updating...")
+                    ProgressView(updatingMessage)
                         .padding()
                         .background(Color(.systemBackground))
                         .cornerRadius(10)
                         .shadow(radius: 5)
                 }
             }
-            .alert("Error", isPresented: $showError) {
-                Button("OK") { }
+            .alert(errorTitle, isPresented: $showError) {
+                Button(okButton) { }
             } message: {
                 Text(errorMessage ?? "Failed to update language")
             }
@@ -112,14 +80,13 @@ struct LanguageSelectionView: View {
     private func languageDescription(for language: Language) -> String {
         switch language {
         case .english:
-            return "Use English for all app content"
+            return englishDesc
         case .korean:
-            return "모든 앱 콘텐츠를 한국어로 표시"
+            return koreanDesc
         }
     }
     
     private func selectLanguage(_ language: Language) {
-        // 같은 언어를 선택한 경우 무시
         guard language != currentLanguage else {
             dismiss()
             return
@@ -132,13 +99,14 @@ struct LanguageSelectionView: View {
             do {
                 try await onSelect(language)
                 
+                // ⭐ LocalizationManager 즉시 업데이트
                 await MainActor.run {
-                    // 성공 시 자동으로 닫기
+                    let appLanguage: AppLanguage = (language == .korean) ? .korean : .english
+                    LocalizationManager.shared.setLanguage(appLanguage)
                     dismiss()
                 }
             } catch {
                 await MainActor.run {
-                    // 에러 발생 시 원래 언어로 되돌리기
                     selectedLanguage = currentLanguage
                     errorMessage = error.localizedDescription
                     showError = true
@@ -147,13 +115,4 @@ struct LanguageSelectionView: View {
             }
         }
     }
-}
-
-#Preview {
-    LanguageSelectionView(
-        currentLanguage: .english,
-        onSelect: { _ in
-            // Preview action
-        }
-    )
 }

@@ -5,8 +5,6 @@
 //  Created by Jun Lee on 9/29/25.
 //
 
-// Views/Post/Components/PostMood.swift
-
 import SwiftUI
 
 // MARK: - Mood Selection Section
@@ -15,9 +13,12 @@ struct MoodSelectionSection: View {
     @Binding var selectedMood: Mood
     @State private var animateSelection = false
     
+    // ⭐ 다국어 적용
+    @Localized(.mood_selection_title) var selectionTitle
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("How are you feeling?")
+            Text(selectionTitle)
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .foregroundColor(.primary)
                 .padding(.horizontal, 24)
@@ -51,6 +52,18 @@ struct MoodCard: View {
     let isSelected: Bool
     let action: () -> Void
     
+    // ⭐ View에서 직접 다국어 처리 (실시간 업데이트)
+    private var moodTitle: String {
+        switch mood {
+        case .happy:
+            return LocalizationManager.shared.localized(.mood_happy)
+        case .sad:
+            return LocalizationManager.shared.localized(.mood_sad)
+        case .neutral:
+            return LocalizationManager.shared.localized(.mood_neutral)
+        }
+    }
+    
     var body: some View {
         Button(action: action) {
             VStack(spacing: 12) {
@@ -59,7 +72,7 @@ struct MoodCard: View {
                     .foregroundColor(mood.iconColor)
                     .symbolRenderingMode(.hierarchical)
                 
-                Text(mood.title)
+                Text(moodTitle)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(isSelected ? mood.accentColor : .secondary)
             }

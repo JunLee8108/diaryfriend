@@ -5,8 +5,6 @@
 //  Created by Jun Lee on 9/29/25.
 //
 
-// Views/Post/Components/PostDiary.swift
-
 import SwiftUI
 
 // MARK: - Diary Text Section
@@ -14,6 +12,10 @@ import SwiftUI
 struct DiaryTextSection: View {
     @Binding var diaryText: String
     @FocusState var isTextEditorFocused: Bool
+    
+    @Localized(.diary_section_title) var sectionTitle
+    @Localized(.diary_placeholder) var placeholder
+    @Localized(.common_done) var doneText
     
     private let maxCharacters = 1000
     
@@ -33,7 +35,7 @@ struct DiaryTextSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Today's story")
+            Text(sectionTitle)
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .foregroundColor(.primary)
                 .padding(.horizontal, 24)
@@ -49,8 +51,8 @@ struct DiaryTextSection: View {
                     ZStack(alignment: .topLeading) {
                         // Placeholder
                         if diaryText.isEmpty {
-                            Text("Share your thoughts, feelings, or anything that happened today...")
-                                .font(.system(size: 16, design: .rounded))
+                            Text(placeholder)
+                                .font(.system(size: 15, design: .rounded))
                                 .lineSpacing(8)
                                 .foregroundColor(.secondary.opacity(0.4))
                                 .padding(.horizontal, 20)
@@ -71,7 +73,7 @@ struct DiaryTextSection: View {
                             .toolbar {
                                 ToolbarItemGroup(placement: .keyboard) {
                                     Spacer()
-                                    Button("Done") {
+                                    Button(doneText) {
                                         isTextEditorFocused = false
                                     }
                                     .font(.system(size: 14, weight: .semibold, design: .rounded))
@@ -99,7 +101,7 @@ struct DiaryTextSection: View {
                     }
                 }
             }
-            .frame(height: 200)
+            .frame(height: 250)
             .padding(.horizontal, 24)
         }
     }

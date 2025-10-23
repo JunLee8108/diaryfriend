@@ -12,6 +12,20 @@ struct ProfileView: View {
     @StateObject private var characterStore = CharacterStore.shared
     @ObservedObject private var profileStore = UserProfileStore.shared
     
+    // ⭐ 다국어 적용
+    @Localized(.settings_title) var settingsTitle
+    @Localized(.profile_sign_out_title) var signOutTitle
+    @Localized(.profile_sign_out_message) var signOutMessage
+    @Localized(.profile_sign_out_confirm) var signOutConfirm
+    @Localized(.common_cancel) var cancelText
+    @Localized(.profile_sign_out_failed) var signOutFailedTitle
+    @Localized(.profile_sign_out_error) var signOutErrorMessage
+    @Localized(.common_ok) var okText
+    @Localized(.profile_ai_characters) var aiCharactersTitle
+    @Localized(.profile_following) var followingText
+    @Localized(.profile_no_characters) var noCharactersText
+    @Localized(.profile_show_less) var showLessText
+    
     // Sign Out 관련 State
     @State private var showSignOutConfirmation = false
     @State private var signOutError: String?
@@ -43,6 +57,11 @@ struct ProfileView: View {
         max(0, characterStore.allCharacters.count - initialDisplayCount)
     }
     
+    // ⭐ "Show X More" 동적 텍스트
+    private var showMoreText: String {
+        String(format: LocalizationManager.shared.localized(.profile_show_more), remainingCount)
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -59,7 +78,6 @@ struct ProfileView: View {
                 .padding(.horizontal)
             }
             .padding(.top, 40)
-//            .navigationTitle("Profile")
             .safeAreaInset(edge: .bottom) {
                 // TabBar 높이를 고려한 안전 영역 확보
                 Color.clear.frame(height: 20)
@@ -80,11 +98,11 @@ struct ProfileView: View {
             // ConfirmationModal로 교체
             .confirmationModal(
                 isPresented: $showSignOutConfirmation,
-                title: "Sign Out",
-                message: "Are you sure you want to sign out?",
+                title: signOutTitle,
+                message: signOutMessage,
                 icon: "rectangle.portrait.and.arrow.right",
-                confirmText: "Sign Out",
-                cancelText: "Cancel",
+                confirmText: signOutConfirm,
+                cancelText: cancelText,
                 isDestructive: true,
                 onConfirm: {
                     do {
@@ -96,18 +114,18 @@ struct ProfileView: View {
                 }
             )
             // Sign Out 실패 시 에러 알림
-            .alert("Sign Out Failed", isPresented: $showSignOutError) {
-                Button("OK", role: .cancel) { }
+            .alert(signOutFailedTitle, isPresented: $showSignOutError) {
+                Button(okText, role: .cancel) { }
             } message: {
-                Text(signOutError ?? "Failed to sign out. Please try again.")
+                Text(signOutError ?? signOutErrorMessage)
             }
         }
         .onAppear {
-            print("🔍 ProfileView - Current user: \(authService.currentUserId?.uuidString.prefix(8) ?? "none")")
-            print("🔍 Characters count: \(characterStore.allCharacters.count)")
+            print("📍 ProfileView - Current user: \(authService.currentUserId?.uuidString.prefix(8) ?? "none")")
+            print("📍 Characters count: \(characterStore.allCharacters.count)")
             if let first = characterStore.allCharacters.first {
-                print("🔍 First character following: \(first.isFollowing)")
-                print("🔍 User_Character: \(first.User_Character?.first?.is_following ?? false)")
+                print("📍 First character following: \(first.isFollowing)")
+                print("📍 User_Character: \(first.User_Character?.first?.is_following ?? false)")
             }
         }
     }
@@ -130,7 +148,7 @@ struct ProfileView: View {
             
             Spacer()
             
-            // Sign Out Button - Icon Only (ProgressView 제거)
+            // Sign Out Button - Icon Only
             Button(action: {
                 showSignOutConfirmation = true
             }) {
@@ -149,7 +167,7 @@ struct ProfileView: View {
     private var settingsButton: some View {
         NavigationLink(destination: SettingsView()) {
             HStack {
-                Label("Settings", systemImage: "gearshape")
+                Label(settingsTitle, systemImage: "gearshape")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.primary)
                 Spacer()
@@ -168,13 +186,13 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             HStack {
-                Text("AI Characters")
+                Text(aiCharactersTitle)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                 
                 Spacer()
                 
-                Text("\(characterStore.followingCharacters.count) following")
-                    .font(.system(size: 14))
+                Text("\(characterStore.followingCharacters.count) \(followingText)")
+                    .font(.system(size: 12))
                     .foregroundColor(.secondary)
             }
             
@@ -184,7 +202,7 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
             } else if characterStore.allCharacters.isEmpty {
-                Text("No characters available")
+                Text(noCharactersText)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
@@ -224,11 +242,11 @@ struct ProfileView: View {
                                 Spacer()
                                 
                                 if isExpanded {
-                                    Label("Show Less", systemImage: "chevron.up")
+                                    Label(showLessText, systemImage: "chevron.up")
                                         .font(.system(size: 14, weight: .medium))
                                 } else {
                                     HStack(spacing: 4) {
-                                        Text("Show \(remainingCount) More")
+                                        Text(showMoreText)
                                         Image(systemName: "chevron.down")
                                     }
                                     .font(.system(size: 14, weight: .medium))
@@ -252,10 +270,4 @@ struct ProfileView: View {
             }
         }
     }
-}
-
-// MARK: - Preview
-#Preview {
-    ProfileView()
-        .environmentObject(AuthService())
 }

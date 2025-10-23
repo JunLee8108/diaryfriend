@@ -14,6 +14,8 @@ struct PostAISelectView: View {
     @State private var charactersWithSession: Set<Int> = []
     @State private var showCharacterSelection = false
     
+    @Localized(.ai_select_header) var aiSelectHeader
+    
     private var selectedDate: Date {
         creationManager.selectedDate ?? Date()
     }
@@ -51,7 +53,7 @@ struct PostAISelectView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text("AI Chat")
+                Text(aiSelectHeader)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
             }
         }
@@ -117,12 +119,9 @@ struct PostAISelectView: View {
 
 private struct ReadOnlyDateHeader: View {
     let date: Date
-    // deletedCount 파라미터 제거
     
     private var dateString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d, yyyy"
-        return formatter.string(from: date)
+        return DateUtility.shared.fullDate(from: date)
     }
     
     var body: some View {
@@ -274,11 +273,14 @@ private struct CharacterListView: View {
     let showWarning: Bool  // 🎯 NEW
     let onSelect: (CharacterWithAffinity) -> Void
     
+    @Localized(.ai_select_title) var aiSelectTitle
+    @Localized(.ai_select_last_chance) var aiSelectLastChance
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {  // spacing 조정: 24 → 16
                 // Title
-                Text("Who would you like to chat with?")
+                Text(aiSelectTitle)
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                     .padding(.top, 8)
@@ -290,7 +292,7 @@ private struct CharacterListView: View {
                             .font(.system(size: 11))
                             .foregroundColor(Color(hex: "FF6B35"))
                         
-                        Text("Last rewrite chance for this date (1/2)")
+                        Text(aiSelectLastChance)
                             .font(.system(size: 11, weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
                     }
@@ -320,9 +322,28 @@ private struct CharacterListView: View {
 // MARK: - Character Bubble Card
 
 private struct CharacterBubbleCard: View {
+    @EnvironmentObject var localizationManager: LocalizationManager
+    
     let character: CharacterWithAffinity
     let hasSession: Bool  // 🎯 NEW
     let onTap: () -> Void
+    
+    @Localized(.ai_select_chatted) var aiSelectChattedText: String
+    
+    // ✅ 언어 체크
+    private var isKorean: Bool {
+        localizationManager.currentLanguage == .korean
+    }
+    
+    // ✅ 다국어 이름
+    private var displayName: String {
+        character.localizedName(isKorean: isKorean)
+    }
+    
+    // ✅ 다국어 설명
+    private var displayDescription: String? {
+        character.localizedDescription(isKorean: isKorean)
+    }
     
     var body: some View {
         Button(action: onTap) {
@@ -332,7 +353,7 @@ private struct CharacterBubbleCard: View {
                     CachedAvatarImage(
                         url: character.avatar_url,
                         size: 50,
-                        initial: String(character.name.prefix(1)).uppercased()
+                        initial: String(displayName.prefix(1)).uppercased()
                     )
                     
                     // 🎯 NEW: Session badge
@@ -352,13 +373,13 @@ private struct CharacterBubbleCard: View {
                 // Character Info
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Text(character.name)
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        Text(displayName)
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(.primary)
                         
                         // 🎯 NEW: "Chatted" label
                         if hasSession {
-                            Text("Chatted")
+                            Text(aiSelectChattedText)
                                 .font(.system(size: 9, weight: .semibold, design: .rounded))
                                 .foregroundColor(Color(hex: "00C896"))
                                 .padding(.horizontal, 6)
@@ -370,7 +391,7 @@ private struct CharacterBubbleCard: View {
                         }
                     }
                     
-                    if let description = character.description {
+                    if let description = displayDescription {
                         Text(description)
                             .font(.system(size: 12, design: .rounded))
                             .foregroundColor(.secondary)
@@ -405,20 +426,20 @@ private struct CharacterBubbleCard: View {
 private struct EmptyStateView: View {
     @Binding var showCharacterSelection: Bool  // Binding으로 변경
     
+    @Localized(.ai_select_no_friends) var aiSelectNoFriendsText
+    @Localized(.ai_select_follow_friends) var aiSelectFollowFriendsText
+    @Localized(.ai_select_find_friends) var aiSelectFindFriendsText
+    
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
             
-//            Image(systemName: "sparkles.square.filled.on.square")
-//                .font(.system(size: 40))
-//                .foregroundColor(Color(hex: "00C896").opacity(0.5))
-            
             VStack(spacing: 8) {
-                Text("No AI Friends Yet")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                Text(aiSelectNoFriendsText)
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                 
-                Text("Follow AI characters to start chatting")
+                Text(aiSelectFollowFriendsText)
                     .font(.system(size: 14, design: .rounded))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -429,7 +450,7 @@ private struct EmptyStateView: View {
             }) {
                 HStack {
                     Image(systemName: "magnifyingglass")
-                    Text("Find Characters")
+                    Text(aiSelectFindFriendsText)
                 }
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundColor(.white)
@@ -445,13 +466,5 @@ private struct EmptyStateView: View {
             Spacer()
         }
         .padding(.horizontal, 40)
-    }
-}
-
-// MARK: - Preview
-
-#Preview {
-    NavigationStack {
-        PostAISelectView()
     }
 }

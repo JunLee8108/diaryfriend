@@ -55,6 +55,47 @@ struct CharacterWithAffinity: Codable {
 // Identifiable 프로토콜 추가 (sheet item용)
 extension CharacterWithAffinity: Identifiable { }
 
+// MARK: - Localization Support
+extension CharacterWithAffinity {
+    /// 현재 언어에 맞는 이름 반환
+    func localizedName(isKorean: Bool) -> String {
+        if isKorean, let koreanName = korean_name, !koreanName.isEmpty {
+            return koreanName
+        }
+        return name
+    }
+    
+    /// 현재 언어에 맞는 설명 반환
+    func localizedDescription(isKorean: Bool) -> String? {
+        if isKorean, let koreanDesc = korean_description, !koreanDesc.isEmpty {
+            return koreanDesc
+        }
+        return description
+    }
+    
+    func localizedPersonalities(isKorean: Bool) -> [String] {
+        guard isKorean, let personalities = personality else {
+            return personality ?? []
+        }
+        
+        return personalities.map { eng in
+            let keyString = "personality.\(eng.lowercased())"
+            if let key = LocalizationKey(rawValue: keyString) {
+                return LocalizationManager.shared.localized(key)
+            }
+            return eng // 매핑이 없으면 원본 영어 반환
+        }
+    }
+    
+    /// 현재 언어에 맞는 인사말 반환
+    func localizedGreetings(isKorean: Bool) -> [String] {
+        if isKorean {
+            return koreanGreetings.isEmpty ? englishGreetings : koreanGreetings
+        }
+        return englishGreetings.isEmpty ? koreanGreetings : englishGreetings
+    }
+}
+
 struct UserCharacterRelation: Codable {
     let id: Int
     var is_following: Bool

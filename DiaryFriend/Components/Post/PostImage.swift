@@ -27,6 +27,9 @@ struct ImageAttachmentSection: View {
     @State private var errorMessage = ""
     @State private var selectedImageForViewing: IdentifiableImage? = nil
     
+    @Localized(.image_section_title) var sectionTitle
+    @Localized(.image_processing) var processingText
+    
     private let maxImages = 3
     
     private var remainingSlots: Int {
@@ -37,7 +40,7 @@ struct ImageAttachmentSection: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack {
-                Text("Photo")
+                Text(sectionTitle)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                 
@@ -95,7 +98,7 @@ struct ImageAttachmentSection: View {
                             .progressViewStyle(CircularProgressViewStyle())
                             .scaleEffect(1.2)
                         
-                        Text("Processing images...")
+                        Text(processingText)
                             .font(.system(size: 13, design: .rounded))
                             .foregroundColor(.white)
                     }
@@ -287,13 +290,15 @@ struct ImageThumbnailCard: View {
 // MARK: - Add Image Button Content
 
 struct AddImageButtonContent: View {
+    @Localized(.image_add_photo) var addPhotoText
+    
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "plus.circle.fill")
                 .font(.system(size: 32))
                 .foregroundColor(Color(hex: "FFB6A3"))
             
-            Text("Add photo")
+            Text(addPhotoText)
                 .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundColor(Color(hex: "FFB6A3"))
         }
@@ -357,40 +362,4 @@ extension UIImage {
         let bytes = totalPixels * bytesPerPixel
         return Double(bytes) / 1_048_576  // MB로 변환
     }
-}
-
-// MARK: - Preview
-
-#Preview("Empty State") {
-    VStack {
-        ImageAttachmentSection(
-            selectedImages: .constant([])
-        )
-    }
-    .background(Color.modernBackground)
-}
-
-#Preview("With Images") {
-    VStack {
-        ImageAttachmentSection(
-            selectedImages: .constant([
-                UIImage(systemName: "photo")!.withTintColor(.gray, renderingMode: .alwaysOriginal),
-                UIImage(systemName: "photo.fill")!.withTintColor(.gray, renderingMode: .alwaysOriginal)
-            ])
-        )
-    }
-    .background(Color.modernBackground)
-}
-
-#Preview("Full (3 images)") {
-    VStack {
-        ImageAttachmentSection(
-            selectedImages: .constant([
-                UIImage(systemName: "photo")!.withTintColor(.gray, renderingMode: .alwaysOriginal),
-                UIImage(systemName: "photo.fill")!.withTintColor(.gray, renderingMode: .alwaysOriginal),
-                UIImage(systemName: "photo.circle")!.withTintColor(.gray, renderingMode: .alwaysOriginal)
-            ])
-        )
-    }
-    .background(Color.modernBackground)
 }

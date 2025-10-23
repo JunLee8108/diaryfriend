@@ -19,6 +19,11 @@ struct PostDetailView: View {
     
     @Environment(\.dismiss) private var dismiss
     
+    @Localized(.post_detail_delete_title) var deleteTitle: String
+    @Localized(.post_detail_delete_message) var deleteMessage: String
+    @Localized(.common_cancel) var cancelText
+    @Localized(.common_delete) var deleteText
+    
     var body: some View {
         Group {
             if isLoading {
@@ -56,11 +61,11 @@ struct PostDetailView: View {
         .background(Color.modernBackground)
         .confirmationModal(
             isPresented: $showDeleteConfirmation,
-            title: "Delete Post",
-            message: "Are you sure you want to delete this post? This action cannot be undone.",
+            title: deleteTitle,
+            message: deleteMessage,
             icon: "trash",
-            confirmText: "Delete",
-            cancelText: "Cancel",
+            confirmText: deleteText,
+            cancelText: cancelText,
             isDestructive: true,
             onConfirm: {
                 await performDelete()
@@ -82,12 +87,15 @@ struct PostDetailView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        @Localized(.common_edit) var editText
+        @Localized(.common_delete) var deleteText
+        
         ToolbarItem(placement: .navigationBarTrailing) {
             Menu {
-                Button("Edit", systemImage: "pencil") {
+                Button(editText, systemImage: "pencil") {
                     showEditView = true
                 }
-                Button("Delete", systemImage: "trash", role: .destructive) {
+                Button(deleteText, systemImage: "trash", role: .destructive) {
                     showDeleteConfirmation = true
                 }
             } label: {
@@ -180,8 +188,8 @@ struct EnrichedComment: Identifiable {
     
     var id: Int { comment.id }
     
-    var displayName: String {
-        character.name
+    func localizedName(isKorean: Bool) -> String {
+        character.localizedName(isKorean: isKorean)
     }
     
     var avatarUrl: String? {
@@ -366,8 +374,20 @@ struct IdentifiableString: Identifiable {
 
 // MARK: - Comment Row
 struct CommentRowView: View {
+    @EnvironmentObject var localizationManager: LocalizationManager
+    
     let enrichedComment: EnrichedComment
     let onCharacterTap: () -> Void
+    
+    // ✅ 언어 체크
+    private var isKorean: Bool {
+        localizationManager.currentLanguage == .korean
+    }
+    
+    // ✅ 다국어 이름
+    private var displayName: String {
+        enrichedComment.localizedName(isKorean: isKorean)
+    }
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -381,7 +401,7 @@ struct CommentRowView: View {
             .buttonStyle(PlainButtonStyle())
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(enrichedComment.displayName)
+                Text(displayName)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                 
                 Text(enrichedComment.comment.message)
@@ -397,17 +417,20 @@ struct CommentRowView: View {
 
 // MARK: - AI Processing View
 struct AIProcessingView: View {
+    @Localized(.post_detail_processing) var postDetailProcessing: String
+    @Localized(.post_detail_wait) var postDetailWait: String
+    
     var body: some View {
         VStack(spacing: 12) {
             ProgressView()
                 .scaleEffect(1.2)
                 .tint(.secondary)
             
-            Text("Your AI friends are writing comments...")
+            Text(postDetailProcessing)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
             
-            Text("Please wait a moment")
+            Text(postDetailWait)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary.opacity(0.7))
         }
@@ -418,13 +441,15 @@ struct AIProcessingView: View {
 
 // MARK: - Empty Comments View
 struct EmptyCommentsView: View {
+    @Localized(.post_detail_empty) var postDetailEmpty: String
+    
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "bubble.left.and.bubble.right")
                 .font(.system(size: 32))
                 .foregroundColor(.secondary.opacity(0.5))
             
-            Text("No AI Insights yet")
+            Text(postDetailEmpty)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
         }

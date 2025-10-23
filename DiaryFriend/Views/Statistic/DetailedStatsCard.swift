@@ -8,6 +8,10 @@ import SwiftUI
 struct DetailedStatsCard: View {
     let posts: [Post]
     
+    @Localized(.stats_manual_or_ai) var headerText
+    @Localized(.stats_manual_written) var manualWrittenText
+    @Localized(.stats_ai_generated) var aiGeneratedText
+    
     private var aiGeneratedCount: Int {
         posts.filter { $0.ai_generated == true }.count
     }
@@ -20,7 +24,7 @@ struct DetailedStatsCard: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header - Outside Card
             HStack {
-                Text("MANUAL or AI")
+                Text(headerText)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.primary)
                     .tracking(1.2)
@@ -34,7 +38,7 @@ struct DetailedStatsCard: View {
                 StatRow(
                     icon: "pencil.line",
                     iconColor: Color(hex: "00C896"),
-                    title: "Manual Written",
+                    title: manualWrittenText,
                     value: manualCount,
                     total: posts.count
                 )
@@ -42,7 +46,7 @@ struct DetailedStatsCard: View {
                 StatRow(
                     icon: "cpu.fill",
                     iconColor: Color(hex: "00C896"),
-                    title: "AI Generated",
+                    title: aiGeneratedText,
                     value: aiGeneratedCount,
                     total: posts.count
                 )

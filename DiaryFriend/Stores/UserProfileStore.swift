@@ -192,6 +192,12 @@ class UserProfileStore: ObservableObject {
             
             try await fetchUserProfile(userId: userId)
             
+            // ⭐ LocalizationManager와 동기화
+            await MainActor.run {
+                let appLanguage: AppLanguage = (language == "Korean") ? .korean : .english
+                LocalizationManager.shared.setLanguage(appLanguage)
+            }
+            
             print("✅ Language updated successfully")
             
             await MainActor.run {

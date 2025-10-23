@@ -9,9 +9,21 @@ struct WritingPatternCalendar: View {
     let posts: [Post]
     let selectedMonth: Date
     
+    // ⭐ 다국어 적용
+    @Localized(.stats_entry_tracker) var headerText
+    @Localized(.stats_no_entry) var noEntryText
+    @Localized(.stats_entry) var entryText
+    
     private let calendar = Calendar.current
-    private let weekdays = ["S", "M", "T", "W", "T", "F", "S"]
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
+    
+    // ⭐ DateFormatter로 요일 이름 자동 생성
+    private var weekdays: [String] {
+        let formatter = DateFormatter()
+        let languageCode = LocalizationManager.shared.currentLanguage.code
+        formatter.locale = Locale(identifier: languageCode)
+        return formatter.veryShortWeekdaySymbols
+    }
     
     private var postDatesSet: Set<String> {
         Set(posts.map { $0.entry_date })
@@ -25,11 +37,11 @@ struct WritingPatternCalendar: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header - Outside Card
             HStack {
-                Text("ENTRY TRACKER")
+                Text(headerText)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.primary)
                     .tracking(1.2)
-                    .modernHighlight()  // ← 여기에 추가!
+                    .modernHighlight()
                 
                 Spacer()
             }
@@ -72,7 +84,7 @@ struct WritingPatternCalendar: View {
                         Circle()
                             .fill(Color.secondary.opacity(0.15))
                             .frame(width: 12, height: 12)
-                        Text("No entry")
+                        Text(noEntryText)
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -81,7 +93,7 @@ struct WritingPatternCalendar: View {
                         Circle()
                             .fill(Color(hex: "00C896"))
                             .frame(width: 12, height: 12)
-                        Text("Entry")
+                        Text(entryText)
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.secondary)
                     }

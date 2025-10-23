@@ -11,6 +11,9 @@ struct LoginView: View {
     @State private var errorMessage = ""
     @State private var showHelp = false  // Help Sheet State
     
+    @Localized(.login_subtitle) var loginSubtitle
+    @Localized(.login_why_signin) var whySignInText
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -55,7 +58,7 @@ struct LoginView: View {
             Text("DiaryFriend")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
             
-            Text("Sign in to start diary journy with AI friends!")
+            Text(loginSubtitle)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
         }
@@ -66,7 +69,7 @@ struct LoginView: View {
         Button(action: {
             showHelp = true
         }) {
-            Text("Why sign in?")
+            Text(whySignInText)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundColor(.secondary)
                 .underline()

@@ -12,12 +12,20 @@ struct RootView: View {
     @StateObject private var statsDataStore = StatsDataStore.shared
     @StateObject private var characterStore = CharacterStore.shared
     
+    // ⭐ LocalizationManager EnvironmentObject로 받기
+    @EnvironmentObject var localizationManager: LocalizationManager
+    
     @State private var isInitialized = false
     @State private var currentUserId: UUID?
     
     @State private var showLaunchScreen = true
     @State private var showSessionExpiredModal = false
-    @State private var expiredUserId: UUID?  // ← 추가
+    @State private var expiredUserId: UUID?
+    
+    // ⭐ 다국어 적용
+    @Localized(.session_expired_title) var sessionExpiredTitle
+    @Localized(.session_expired_message) var sessionExpiredMessage
+    @Localized(.common_ok) var okButton
     
     var body: some View {
         ZStack {
@@ -85,11 +93,11 @@ struct RootView: View {
         }
         .infoModal(
             isPresented: $showSessionExpiredModal,
-            title: "Session Expired",
-            message: "Your session has expired. Please sign in again to continue.",
+            title: sessionExpiredTitle,        // ⭐ 다국어 적용
+            message: sessionExpiredMessage,     // ⭐ 다국어 적용
             icon: "exclamationmark.triangle",
             iconColor: Color(hex: "FF9800"),
-            buttonText: "OK",
+            buttonText: okButton,               // ⭐ 다국어 적용
             onDismiss: {
                 Task {
                     await handleSessionExpiration()
@@ -108,6 +116,9 @@ struct RootView: View {
         if let userId = authService.currentUserId {
             await setupUserData(userId)
             currentUserId = userId
+            
+            // ⭐ 인증 후 UserProfile과 언어 동기화
+            await localizationManager.syncWithUserProfile()
         }
         
         isInitialized = true
@@ -127,7 +138,7 @@ struct RootView: View {
             print("⚠️ Session invalid: \(error)")
             
             await MainActor.run {
-                expiredUserId = userId  // ← 변경
+                expiredUserId = userId
                 showSessionExpiredModal = true
             }
         }
@@ -173,6 +184,9 @@ struct RootView: View {
         
         if let userId = newUserId {
             await setupUserData(userId)
+            
+            // ⭐ 사용자 변경 시에도 언어 동기화
+            await localizationManager.syncWithUserProfile()
         }
         
         currentUserId = newUserId
@@ -229,16 +243,20 @@ struct RootView: View {
 
 // MARK: - Loading View
 struct LoadingView: View {
+    // ⭐ 다국어 적용
+    @Localized(.app_diary_friend) var appName
+    @Localized(.app_loading) var loadingText
+    
     var body: some View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
             
-            Text("DiaryFriend")
+            Text(appName)
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text("Loading...")
+            Text(loadingText)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -248,4 +266,5 @@ struct LoadingView: View {
 // MARK: - Preview
 #Preview {
     RootView()
+        .environmentObject(LocalizationManager.shared)
 }

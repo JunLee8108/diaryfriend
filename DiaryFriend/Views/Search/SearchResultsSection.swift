@@ -44,31 +44,3 @@ struct SearchResultsSection: View {
         }
     }
 }
-
-#Preview {
-    ScrollView {
-        SearchResultsSection(
-            posts: [
-                Post(
-                    id: 1,
-                    content: "Today was a great day!",
-                    mood: "happy",
-                    entry_date: "2025-01-15",
-                    created_at: "2025-01-15T10:00:00Z",
-                    user_id: UUID(),
-                    ai_generated: false
-                ),
-                Post(
-                    id: 2,
-                    content: "Feeling a bit sad today",
-                    mood: "sad",
-                    entry_date: "2025-01-14",
-                    created_at: "2025-01-14T10:00:00Z",
-                    user_id: UUID(),
-                    ai_generated: false
-                )
-            ],
-            searchQuery: "day"
-        )
-    }
-}

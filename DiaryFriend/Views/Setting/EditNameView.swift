@@ -2,13 +2,6 @@
 //  EditNameView.swift
 //  DiaryFriend
 //
-//  Created by Jun Lee on 10/1/25.
-//
-
-//
-//  EditNameView.swift
-//  DiaryFriend
-//
 //  Display Name 편집 Sheet
 //
 
@@ -24,6 +17,17 @@ struct EditNameView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showError = false
+    
+    // ⭐ 다국어 적용
+    @Localized(.edit_name_title) var title
+    @Localized(.edit_name_display_name) var displayNameLabel
+    @Localized(.edit_name_placeholder) var placeholder
+    @Localized(.edit_name_save) var saveButton
+    @Localized(.edit_name_saving) var savingMessage
+    @Localized(.edit_name_too_long) var tooLongError
+    @Localized(.edit_name_cannot_empty) var cannotEmptyError
+    @Localized(.error_title) var errorTitle
+    @Localized(.common_ok) var okButton
     
     // 유효성 검사
     private var isNameValid: Bool {
@@ -50,22 +54,22 @@ struct EditNameView: View {
             VStack(spacing: 20) {
                 // Text Field Section
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Display Name")
+                    Text(displayNameLabel)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    TextField("Enter your name", text: $newName)
+                    TextField(placeholder, text: $newName)
                         .textFieldStyle(.roundedBorder)
                         .disabled(isLoading)
                     
                     // Character Count
                     HStack {
                         if characterCount > 30 {
-                            Text("Name is too long")
+                            Text(tooLongError)
                                 .font(.caption)
                                 .foregroundColor(.red)
                         } else if newName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !newName.isEmpty {
-                            Text("Name cannot be empty")
+                            Text(cannotEmptyError)
                                 .font(.caption)
                                 .foregroundColor(.red)
                         }
@@ -82,12 +86,12 @@ struct EditNameView: View {
                 
                 Spacer()
             }
-            .navigationTitle("Edit Name")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // Save Button
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button(saveButton) {
                         saveChanges()
                     }
                     .fontWeight(.semibold)
@@ -98,17 +102,17 @@ struct EditNameView: View {
                 if isLoading {
                     Color.black.opacity(0.3)
                         .ignoresSafeArea()
-                    ProgressView("Saving...")
+                    ProgressView(savingMessage)
                         .padding()
                         .background(Color(.systemBackground))
                         .cornerRadius(10)
                         .shadow(radius: 5)
                 }
             }
-            .alert("Error", isPresented: $showError) {
-                Button("OK") { }
+            .alert(errorTitle, isPresented: $showError) {
+                Button(okButton) { }
             } message: {
-                Text(errorMessage ?? "Failed to update name")
+                Text(errorMessage ?? LocalizationManager.shared.localized(.edit_name_update_failed))
             }
             .onAppear {
                 newName = currentName
@@ -148,4 +152,5 @@ struct EditNameView: View {
             // Preview save action
         }
     )
+    .environmentObject(LocalizationManager.shared)
 }

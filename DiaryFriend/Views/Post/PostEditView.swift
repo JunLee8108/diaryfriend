@@ -30,6 +30,9 @@ struct PostEditView: View {
     @State private var showHashtagSheet = false
     @FocusState private var isTextEditorFocused: Bool
     
+    @Localized(.common_cancel) var cancelText
+    @Localized(.common_save) var saveText
+    
     init(postDetail: PostDetail) {
         self.postDetail = postDetail
         _editedContent = State(initialValue: postDetail.plainContent)
@@ -55,9 +58,7 @@ struct PostEditView: View {
         guard let date = DateUtility.shared.date(from: postDetail.entry_date) else {
             return "Unknown Date"
         }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d"
-        return formatter.string(from: date)
+        return DateUtility.shared.monthDay(from: date)
     }
     
     var body: some View {
@@ -101,7 +102,7 @@ struct PostEditView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
+                Button(cancelText) {
                     if hasChanges {
                         showDiscardAlert = true
                     } else {
@@ -117,7 +118,7 @@ struct PostEditView: View {
                             .progressViewStyle(CircularProgressViewStyle())
                             .scaleEffect(0.8)
                     } else {
-                        Text("Save")
+                        Text(saveText)
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
                             .foregroundColor(isValid && hasChanges ? Color(hex: "FFB6A3") : Color.gray)
                     }

@@ -26,6 +26,8 @@ struct PostManualWriteView: View {
     @State private var showCharacterSelection = false
     @FocusState private var isTextEditorFocused: Bool
     
+    @Localized(.common_save) var saveText
+    
     // Computed Properties
     private var hasFollowingCharacters: Bool {
         !characterStore.followingCharacters.isEmpty
@@ -34,14 +36,12 @@ struct PostManualWriteView: View {
     // Date formatting
     private var dateTitle: String {
         guard let date = creationManager.selectedDate else { return "Today" }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d"
-        return formatter.string(from: date)
+        return DateUtility.shared.monthDay(from: date)
     }
     
     // Validation
     private var isValid: Bool {
-        diaryText.count >= 10 && diaryText.count <= 200
+        diaryText.count >= 5 && diaryText.count <= 1000
     }
     
     var body: some View {
@@ -113,7 +113,7 @@ struct PostManualWriteView: View {
                             .progressViewStyle(CircularProgressViewStyle())
                             .scaleEffect(0.8)
                     } else {
-                        Text("Save")
+                        Text(saveText)
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
                             .foregroundColor(isValid ? Color(hex: "E8826B") : Color.gray)
                     }

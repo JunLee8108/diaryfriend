@@ -8,7 +8,11 @@ import SwiftData
 
 @main
 struct DiaryFriendApp: App {
+    @StateObject private var localizationManager = LocalizationManager.shared
+    
     init() {
+        LocalizationManager.shared.loadSavedLanguage()
+        
         // Configuration 출력
         #if DEBUG
         Config.printConfiguration()
@@ -20,6 +24,7 @@ struct DiaryFriendApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environmentObject(localizationManager)
                 .frame(maxWidth: 500)
                 .frame(maxWidth: .infinity)
         }

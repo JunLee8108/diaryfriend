@@ -1,0 +1,274 @@
+//
+//  Localizable.strings
+//  DiaryFriend
+//
+//  Created by Jun Lee on 10/21/25.
+//
+
+/* App Level */
+"app.loading" = "Loading...";
+"app.diary_friend" = "DiaryFriend";
+
+/* Session */
+"session.expired_title" = "Session Expired";
+"session.expired_message" = "Your session has expired. Please sign in again to continue.";
+
+/* Settings ✅ */
+"settings.title" = "Settings";
+"settings.profile" = "Profile";
+"settings.name" = "Name";
+"settings.language" = "Language";
+"settings.help" = "Help";
+"settings.about" = "About";
+"settings.version" = "Version";
+"settings.developer" = "Developer";
+"settings.delete_account" = "Delete Account";
+
+/* Language Selection ✅ */
+"language.select_title" = "Select Language";
+"language.english_description" = "Use English for all app content";
+"language.korean_description" = "Use Korean for all app content";
+"language.updating" = "Updating...";
+
+/* Edit Name ✅ */
+"edit_name.title" = "Edit Name";
+"edit_name.display_name" = "Display Name";
+"edit_name.placeholder" = "Enter your name";
+"edit_name.save" = "Save";
+"edit_name.saving" = "Saving...";
+"edit_name.too_long" = "Name is too long";
+"edit_name.cannot_empty" = "Name cannot be empty";
+"edit_name.character_count" = "%d/30";
+"edit_name.update_failed" = "Failed to update name";
+
+/* Delete Account Modal ✅ */
+"delete_modal.title" = "Delete Account?";
+"delete_modal.warning" = "This action cannot be undone.";
+"delete_modal.instruction" = "Type \"%@\" to confirm:";
+"delete_modal.required_text" = "DELETE ACCOUNT";
+"delete_modal.placeholder" = "";
+"delete_modal.cancel" = "Cancel";
+"delete_modal.delete" = "Delete";
+
+/* Help View */
+"help.close" = "Close";
+"help.previous" = "Previous";
+"help.next" = "Next";
+"help.done" = "Done";
+
+/* Help Slide 1 - Follow */
+"help.slide1.title" = "Follow AI Characters";
+"help.slide1.description" = "Find and follow AI characters who can chat with you for diary writing and provide insights on your entries.";
+
+/* Help Slide 2 - Choose */
+"help.slide2.title" = "Choose Your AI Friend";
+"help.slide2.description" = "Select an AI friend to chat with for your diary writing.";
+
+/* Help Slide 3 - Generate */
+"help.slide3.title" = "Generate Your Diary";
+"help.slide3.description" = "Once you've had enough conversation, tap the Generate button to create your diary entry.";
+
+/* Help Slide 4 - Review */
+"help.slide4.title" = "Review and Edit";
+"help.slide4.description" = "Check the AI-generated diary and customize the content, mood, tags, and photos as you like.";
+
+/* Help Slide 5 - View */
+"help.slide5.title" = "View Your Diary";
+"help.slide5.description" = "Check your completed diary. If AI Insight is enabled, AI friends will have left comments based on your entry!";
+
+/* Character Detail Sheet */
+"character.personality" = "Personality";
+"character.affinity_level" = "Affinity Level";
+"character.about" = "About";
+
+/* Profile View */
+"profile.sign_out" = "Sign Out";
+"profile.sign_out_title" = "Sign Out";
+"profile.sign_out_message" = "Are you sure you want to sign out?";
+"profile.sign_out_confirm" = "Sign Out";
+"profile.sign_out_failed" = "Sign Out Failed";
+"profile.sign_out_error" = "Failed to sign out. Please try again.";
+"profile.ai_characters" = "AI Characters";
+"profile.following" = "following";
+"profile.no_characters" = "No characters available";
+"profile.show_more" = "Show %d More";
+"profile.show_less" = "Show Less";
+
+/* Search View */
+"search.placeholder" = "Search posts, dates, moods...";
+"search.empty_title" = "Search your memories";
+"search.empty_description" = "Find posts by content or mood";
+"search.no_results" = "No results found";
+"search.try_different" = "Try different keywords or dates";
+"search.searched_for" = "Searched for: \"%@\"";
+
+/* Month Names */
+"month.jan" = "Jan";
+"month.feb" = "Feb";
+"month.mar" = "Mar";
+"month.apr" = "Apr";
+"month.may" = "May";
+"month.jun" = "Jun";
+"month.jul" = "Jul";
+"month.aug" = "Aug";
+"month.sep" = "Sep";
+"month.oct" = "Oct";
+"month.nov" = "Nov";
+"month.dec" = "Dec";
+
+/* Month Picker */
+"month_picker.select_year" = "Select Year";
+"month_picker.done" = "Done";
+
+/* Statistics View */
+"stats.this_month" = "THIS MONTH";
+"stats.posts" = "Posts";
+"stats.writing_frequency" = "Writing Frequency";
+"stats.manual_or_ai" = "MANUAL or AI";
+"stats.manual_written" = "Manual Written";
+"stats.ai_generated" = "AI Generated";
+"stats.mood_stats" = "MOOD STATS";
+"stats.no_mood_data" = "No mood data available";
+"stats.entry_tracker" = "ENTRY TRACKER";
+"stats.no_entry" = "No entry";
+"stats.entry" = "Entry";
+
+/* Mood Names */
+"mood.happy" = "Happy";
+"mood.sad" = "Sad";
+"mood.neutral" = "Neutral";
+
+/* Greetings */
+"greeting.morning" = "Good morning";
+"greeting.afternoon" = "Good afternoon";
+"greeting.evening" = "Good evening";
+"greeting.night" = "Good night";
+
+/* Recent Posts */
+"recent_posts.title" = "RECENT";
+"recent_posts.no_posts" = "No posts in %@";
+
+/* Home View Modals */
+"home.future_date_title" = "Future Date";
+"home.future_date_message" = "You cannot create entries for future dates.";
+"home.no_internet_title" = "No Internet";
+"home.no_internet_message" = "Please check your internet connection.";
+
+/* Post Method Choice */
+"post_method.choice_title" = "How would you like to write today?";
+"post_method.ai_title" = "Chat with AI";
+"post_method.ai_description" = "Let AI help you express your thoughts";
+"post_method.manual_title" = "Write Freely";
+"post_method.manual_description" = "Express yourself in your own words";
+
+/* Diary Text Section */
+"diary.section_title" = "Today's story";
+"diary.placeholder" = "Share your thoughts, feelings, or anything that happened today...";
+
+/* Diary Mood Title */
+"mood.selection_title" = "How are you feeling?";
+
+/* Hashtag Section */
+"hashtag.section_title" = "Tag";
+"hashtag.add_tag" = "Add tag";
+"hashtag.sheet_title" = "Add a tag";
+"hashtag.placeholder" = "Enter tag";
+
+/* Image Section */
+"image.section_title" = "Photo";
+"image.processing" = "Processing...";
+"image.add_photo" = "Add photo";
+
+/* AI Insights */
+"ai_insights.title" = "AI Insights";
+"ai_insights.description" = "Get thoughtful AI feedback on your entry";
+"ai_insights.no_character_message" = "Follow a character to enable AI insights";
+"ai_insights.find_characters" = "Find Characters";
+
+/* Post Save Button */
+"post.saving" = "Saving...";
+"post.complete_entry" = "Complete your diary";
+"post.save_entry" = "Save diary";
+"post.accessibility_save_label" = "Save your diary entry";
+"post.accessibility_complete_label" = "Complete your entry to save";
+"post.accessibility_save_hint" = "Tap to save your diary entry";
+"post.accessibility_complete_hint" = "Fill in at least 10 characters to enable saving";
+
+/* loginView */
+"login.subtitle" = "Sign in to start diary journy with AI friends!";
+"login.apple" = "Continue with Apple";
+"login.google" = "Continue with Google";
+"login.why_signin" = "Why sign in?";
+
+/* PostAISelectView */
+"ai_select.header" = "AI Chat";
+"ai_select.title" = "Who would you like to chat with?";
+"ai_select.last_chance" = "Last rewrite chance for this date!";
+"ai_select.chatted" = "Chatted";
+"ai_select.no_friends" = "No AI Friends Yet";
+"ai_select.follow_friends" = "Follow AI Characters to start chatting";
+"ai_select.find_friends" = "Find Characters";
+
+/* PostDetailView */
+"post_detail.processing" = "Your AI friends are writing comments...";
+"post_detail.wait" = "Please wait a moment";
+"post_detail.empty" = "No AI Insights yet";
+"post_detail.delete_title" = "Delete Post";
+"post_detail.delete_message" = "Are you sure you want to delete this post? This action cannot be undone.";
+
+/* PostAIConversation */
+"ai_conversation.header" = "Chat with AI";
+"ai_conversation.generate" = "Generate your diary!";
+"ai_conversation.plenty_shared" = "Plenty has been shared.";
+"ai_conversation.processing" = "Generating your diary...";
+"ai_conversation.view_diary" = "View your diary";
+"ai_conversation.ready_save" = "Generated and ready to save";
+"ai_conversation.messages_remaining" = "%d messages remaining";
+"ai_conversation.limit_reached" = "Conversation limit reached (10 messages)";
+
+/* Personality Types */
+"personality.wise" = "Wise";
+"personality.strategic" = "Strategic";
+"personality.composed" = "Composed";
+"personality.witty" = "Witty";
+"personality.resourceful" = "Resourceful";
+"personality.adventurous" = "Adventurous";
+"personality.rebellious" = "Rebellious";
+"personality.lively" = "Lively";
+"personality.confident" = "Confident";
+"personality.clever" = "Clever";
+"personality.playful" = "Playful";
+"personality.unpredictable" = "Unpredictable";
+"personality.loyal" = "Loyal";
+"personality.disciplined" = "Disciplined";
+"personality.honorable" = "Honorable";
+"personality.calm" = "Calm";
+"personality.spiritual" = "Spiritual";
+"personality.protective" = "Protective";
+"personality.radiant" = "Radiant";
+"personality.nurturing" = "Nurturing";
+"personality.optimistic" = "Optimistic";
+"personality.alluring" = "Alluring";
+"personality.warm" = "Warm";
+"personality.intuitive" = "Intuitive";
+"personality.cunning" = "Cunning";
+"personality.mysterious" = "Mysterious";
+"personality.graceful" = "Graceful";
+"personality.creative" = "Creative";
+"personality.magnetic" = "Magnetic";
+
+/* Errors */
+"error.title" = "Error";
+"error.network_required" = "Internet connection is required to delete your account. Please check your connection and try again.";
+"error.not_authenticated" = "Authentication error. Please sign in again.";
+"error.generic" = "An error occurred";
+
+/* Common */
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.loading" = "Loading...";
+"common.done" = "Done";
+"common.add" = "Add";
+"common.edit" = "Edit";
+"common.delete" = "Delete";

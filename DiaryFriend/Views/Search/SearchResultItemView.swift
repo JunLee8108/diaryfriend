@@ -66,38 +66,3 @@ struct SearchResultItemView: View {
         .buttonStyle(PlainButtonStyle())
     }
 }
-
-#Preview {
-    NavigationStack {
-        ScrollView {
-            VStack(spacing: 16) {
-                SearchResultItemView(
-                    item: PostDisplayItem(from: Post(
-                        id: 1,
-                        content: "Today was a happy day! I felt so happy.",
-                        mood: "happy",
-                        entry_date: "2025-01-15",
-                        created_at: "2025-01-15T10:00:00Z",
-                        user_id: UUID(),
-                        ai_generated: false
-                    )),
-                    searchQuery: "happy"
-                )
-                
-                SearchResultItemView(
-                    item: PostDisplayItem(from: Post(
-                        id: 2,
-                        content: "Went to the beach today",
-                        mood: "sunny",
-                        entry_date: "2025-01-14",
-                        created_at: "2025-01-14T10:00:00Z",
-                        user_id: UUID(),
-                        ai_generated: false
-                    )),
-                    searchQuery: "beach"
-                )
-            }
-            .padding()
-        }
-    }
-}

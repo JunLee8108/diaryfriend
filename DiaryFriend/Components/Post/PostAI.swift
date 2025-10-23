@@ -5,14 +5,16 @@
 //  Created by Jun Lee on 9/29/25.
 //
 
-// Views/Post/Components/PostAI.swift
-
 import SwiftUI
 
 // MARK: - AI Comment Toggle Section
 
 struct AICommentToggleSection: View {
     @Binding var isEnabled: Bool
+    
+    // ⭐ 다국어 적용
+    @Localized(.ai_insights_title) var title
+    @Localized(.ai_insights_description) var description
     
     var body: some View {
         HStack {
@@ -22,12 +24,12 @@ struct AICommentToggleSection: View {
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "00C896"))
                     
-                    Text("AI Insights")
+                    Text(title)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                 }
                 
-                Text("Get thoughtful AI feedback on your entry")
+                Text(description)
                     .font(.system(size: 12, weight: .regular, design: .rounded))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -54,6 +56,12 @@ struct AICommentToggleSection: View {
 struct NoFollowingCharactersSection: View {
     let onNavigateToProfile: () -> Void
     
+    // ⭐ 다국어 적용
+    @Localized(.ai_insights_title) var title
+    @Localized(.ai_insights_description) var description
+    @Localized(.ai_insights_no_character_message) var noCharacterMessage
+    @Localized(.ai_insights_find_characters) var findCharactersText
+    
     var body: some View {
         VStack(spacing: 12) {
             // Disabled AI Toggle UI
@@ -64,12 +72,12 @@ struct NoFollowingCharactersSection: View {
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
                         
-                        Text("AI Insights")
+                        Text(title)
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundColor(.gray)
                     }
                     
-                    Text("Get thoughtful AI feedback on your entry")
+                    Text(description)
                         .font(.system(size: 12, weight: .regular, design: .rounded))
                         .foregroundColor(.gray.opacity(0.7))
                         .fixedSize(horizontal: false, vertical: true)
@@ -95,7 +103,7 @@ struct NoFollowingCharactersSection: View {
             .opacity(0.8)
             
             // Simplified Guide Message & Button
-            Text("Follow a character to enable AI insights")
+            Text(noCharacterMessage)
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .foregroundColor(.primary.opacity(0.8))
                 .padding(.top, 10)
@@ -104,7 +112,7 @@ struct NoFollowingCharactersSection: View {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                         .font(.system(size: 12, weight: .medium))
-                    Text("Find Characters")
+                    Text(findCharactersText)
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                 }
                 .foregroundColor(.white)

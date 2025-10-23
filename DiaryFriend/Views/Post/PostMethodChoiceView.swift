@@ -6,15 +6,20 @@ struct PostMethodChoiceView: View {
     @StateObject private var creationManager = PostCreationManager.shared
     @EnvironmentObject var navigationCoordinator: NavigationCoordinator
     
+    // ⭐ 다국어 적용
+    @Localized(.post_method_choice_title) var choiceTitle
+    @Localized(.post_method_ai_title) var aiTitle
+    @Localized(.post_method_ai_description) var aiDescription
+    @Localized(.post_method_manual_title) var manualTitle
+    @Localized(.post_method_manual_description) var manualDescription
+    
     // Navigation states
     @State private var navigateToAISelect = false
     @State private var navigateToManual = false
     
-    // Date title generation
+    // ⭐ DateUtility 사용으로 간소화
     private var dateTitle: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d"
-        return formatter.string(from: selectedDate)
+        DateUtility.shared.monthDay(from: selectedDate)
     }
     
     var body: some View {
@@ -30,7 +35,7 @@ struct PostMethodChoiceView: View {
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
                         
-                        Text("How would you like to write today?")
+                        Text(choiceTitle)
                             .font(.system(size: 14, weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
                     }
@@ -44,8 +49,8 @@ struct PostMethodChoiceView: View {
                             BubbleCard(
                                 icon: "bubble.left.and.bubble.right.fill",
                                 iconColor: Color(hex: "00A077"),
-                                title: "Chat with AI",
-                                description: "Let AI help you express your thoughts"
+                                title: aiTitle,
+                                description: aiDescription
                             )
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -57,8 +62,8 @@ struct PostMethodChoiceView: View {
                             BubbleCard(
                                 icon: "pencil",
                                 iconColor: Color(hex: "FFB6A3"),
-                                title: "Write Freely",
-                                description: "Express yourself in your own words"
+                                title: manualTitle,
+                                description: manualDescription
                             )
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -165,13 +170,5 @@ extension Color {
             blue:  Double(b) / 255,
             opacity: Double(a) / 255
         )
-    }
-}
-
-// MARK: - Preview
-
-#Preview {
-    NavigationStack {
-        PostMethodChoiceView(selectedDate: Date())
     }
 }

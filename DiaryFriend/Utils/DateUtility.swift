@@ -1,11 +1,3 @@
-//
-//  DateUtility.swift
-//  DiaryFriend
-//
-//  앱 전체에서 사용하는 날짜 관련 유틸리티
-//  entry_date는 date-only 필드이므로 시간대 변환 없이 처리
-//
-
 import Foundation
 import SwiftUI
 
@@ -21,6 +13,20 @@ class DateUtility {
         self.dateFormatter = DateFormatter()
         // 시간대 설정을 하지 않음 - date-only 필드이므로
         // DateFormatter는 기본적으로 시스템 시간대 사용
+    }
+    
+    // ⭐ 새로운 메서드: 현재 언어의 locale 가져오기
+    private var currentLocale: Locale {
+        let languageCode = LocalizationManager.shared.currentLanguage.code
+        return Locale(identifier: languageCode)
+    }
+    
+    // ⭐ 헬퍼: locale 적용된 formatter
+    private func configuredFormatter(dateFormat: String) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = currentLocale
+        formatter.dateFormat = dateFormat
+        return formatter
     }
     
     // MARK: - Core Date String 변환 (yyyy-MM-dd)
@@ -51,7 +57,7 @@ class DateUtility {
         return dateFormatter.date(from: monthKey)
     }
     
-    // MARK: - Display Components (표시용 컴포넌트)
+    // MARK: - Display Components (표시용 컴포넌트) - ⭐ locale 적용
     
     /// 일(day) 숫자만 추출 (예: "05", "31")
     func dayNumber(from dateString: String) -> String {
@@ -60,18 +66,18 @@ class DateUtility {
         return String(format: "%02d", day)
     }
     
-    /// 월 짧은 이름 추출 (예: "Jan", "Feb", "Mar")
+    /// 월 짧은 이름 추출 (예: "Jan", "Feb", "Mar" / "1월", "2월", "3월")
     func monthShortName(from dateString: String) -> String {
         guard let date = self.date(from: dateString) else { return "" }
-        dateFormatter.dateFormat = "MMM"
-        return dateFormatter.string(from: date)
+        let formatter = configuredFormatter(dateFormat: "MMM")
+        return formatter.string(from: date)
     }
     
-    /// 월 전체 이름 추출 (예: "January", "February")
+    /// 월 전체 이름 추출 (예: "January", "February" / "1월", "2월")
     func monthFullName(from dateString: String) -> String {
         guard let date = self.date(from: dateString) else { return "" }
-        dateFormatter.dateFormat = "MMMM"
-        return dateFormatter.string(from: date)
+        let formatter = configuredFormatter(dateFormat: "MMMM")
+        return formatter.string(from: date)
     }
     
     /// 년도 추출 (예: "2025")
@@ -81,49 +87,88 @@ class DateUtility {
         return dateFormatter.string(from: date)
     }
     
-    /// 요일 짧은 이름 (예: "Mon", "Tue")
+    /// 요일 짧은 이름 (예: "Mon", "Tue" / "월", "화")
     func weekdayShort(from dateString: String) -> String {
         guard let date = self.date(from: dateString) else { return "" }
-        dateFormatter.dateFormat = "EEE"
-        return dateFormatter.string(from: date)
+        
+        // ⭐ 언어별 형식 분기
+        let languageCode = LocalizationManager.shared.currentLanguage.code
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: languageCode)
+        
+        if LocalizationManager.shared.currentLanguage == .korean {
+            formatter.dateFormat = "EEEE"  // 전체 이름: 월요일, 화요일
+        } else {
+            formatter.dateFormat = "EEE"   // 짧은 이름: Mon, Tue
+        }
+        
+        return formatter.string(from: date)
     }
     
-    /// 요일 전체 이름 (예: "Monday", "Tuesday")
+    /// 요일 전체 이름 (예: "Monday", "Tuesday" / "월요일", "화요일")
     func weekdayFull(from dateString: String) -> String {
         guard let date = self.date(from: dateString) else { return "" }
-        dateFormatter.dateFormat = "EEEE"
-        return dateFormatter.string(from: date)
+        let formatter = configuredFormatter(dateFormat: "EEEE")
+        return formatter.string(from: date)
     }
     
-    // MARK: - Formatted Display Strings (조합된 표시 문자열)
+    // MARK: - Formatted Display Strings (조합된 표시 문자열) - ⭐ locale 적용
     
-    /// "MMM d, yyyy" 형식 (예: "Sep 17, 2025")
+    /// "MMM d, yyyy" 형식 (예: "Sep 17, 2025" / "9월 17, 2025")
     func displayDate(from dateString: String) -> String {
         guard let date = self.date(from: dateString) else { return dateString }
-        dateFormatter.dateFormat = "MMM d, yyyy"
-        return dateFormatter.string(from: date)
+        let formatter = configuredFormatter(dateFormat: "MMM d, yyyy")
+        return formatter.string(from: date)
     }
     
-    /// "MMM yyyy" 형식 (예: "Sep 2025")
+    /// "MMM yyyy" 형식 (예: "Sep 2025" / "9월 2025")
     func monthYear(from dateString: String) -> String {
         guard let date = self.date(from: dateString) else { return "" }
-        dateFormatter.dateFormat = "MMM yyyy"
-        return dateFormatter.string(from: date)
+        let formatter = configuredFormatter(dateFormat: "MMM yyyy")
+        return formatter.string(from: date)
     }
     
-    /// "MMMM yyyy" 형식 (예: "September 2025")
+    /// "MMMM yyyy" 형식 (예: "September 2025" / "9월 2025")
     func monthYearFull(from dateString: String) -> String {
         guard let date = self.date(from: dateString) else { return "" }
-        dateFormatter.dateFormat = "MMMM yyyy"
-        return dateFormatter.string(from: date)
+        let formatter = configuredFormatter(dateFormat: "MMMM yyyy")
+        return formatter.string(from: date)
     }
     
-    // MARK: - Date from Date String (Date 객체 반환)
+    // MARK: - Date from Date String (Date 객체 반환) - ⭐ locale 적용
     
     /// "MMM yyyy" 형식에서 Date 반환 (캘린더 헤더용)
     func monthYear(from date: Date) -> String {
-        dateFormatter.dateFormat = "MMM yyyy"
-        return dateFormatter.string(from: date)
+        let formatter = configuredFormatter(dateFormat: "MMM yyyy")
+        return formatter.string(from: date)
+    }
+    
+    /// "MMMM d" 형식 (예: "January 15" / "1월 15일")
+    func monthDay(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = currentLocale
+        
+        if LocalizationManager.shared.currentLanguage == .korean {
+            formatter.dateFormat = "M월 d일"
+        } else {
+            formatter.dateFormat = "MMMM d"
+        }
+        
+        return formatter.string(from: date)
+    }
+    
+    /// 전체 날짜 형식 (예: "October 21, 2025" / "2025년 10월 21일")
+    func fullDate(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = currentLocale
+        
+        if LocalizationManager.shared.currentLanguage == .korean {
+            formatter.dateFormat = "yyyy년 M월 d일"  // 2025년 10월 21일
+        } else {
+            formatter.dateFormat = "MMMM d, yyyy"    // October 21, 2025
+        }
+        
+        return formatter.string(from: date)
     }
     
     // MARK: - Date Range Helpers (날짜 범위 헬퍼)
@@ -149,8 +194,8 @@ class DateUtility {
     
     /// 날짜 문자열이 오늘인지 확인
     func isToday(_ dateString: String) -> Bool {
-            let todayString = self.dateString(from: Date())
-            return dateString == todayString
+        let todayString = self.dateString(from: Date())
+        return dateString == todayString
     }
     
     /// 날짜 문자열이 특정 월에 속하는지 확인
@@ -249,35 +294,3 @@ class MoodMapper {
         return moodData[mood]?.label ?? defaultMood.2
     }
 }
-
-// MARK: - Debug Extension
-#if DEBUG
-extension DateUtility {
-    /// 테스트용 날짜 문자열 생성
-    func testDateStrings(daysFromToday: Int...) -> [String] {
-        var results: [String] = []
-        for days in daysFromToday {
-            if let date = date(byAddingDays: days, to: Date()) {
-                results.append(dateString(from: date))
-            }
-        }
-        return results
-    }
-    
-    /// 날짜 포맷 테스트 출력
-    func printFormats(for dateString: String) {
-        print("""
-        📅 Date Formats for: \(dateString)
-        - Day Number: \(dayNumber(from: dateString))
-        - Month Short: \(monthShortName(from: dateString))
-        - Month Full: \(monthFullName(from: dateString))
-        - Year: \(year(from: dateString))
-        - Weekday Short: \(weekdayShort(from: dateString))
-        - Weekday Full: \(weekdayFull(from: dateString))
-        - Display Date: \(displayDate(from: dateString))
-        - Month Year: \(monthYear(from: dateString))
-        - Is Today: \(isToday(dateString))
-        """)
-    }
-}
-#endif

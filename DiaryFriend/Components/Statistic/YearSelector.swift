@@ -11,10 +11,8 @@ struct YearSelector: View {
     private let currentYear = Calendar.current.component(.year, from: Date())
     private let minYear = 2020
     
-    // ⭐ Popover 표시 여부
     @State private var showYearPicker = false
     
-    // ⭐ Year를 포맷 없이 String으로 변환
     private var yearString: String {
         String(format: "%d", selectedYear)
     }
@@ -36,7 +34,7 @@ struct YearSelector: View {
             }
             .disabled(selectedYear <= minYear)
             
-            // ⭐ Year Display - 클릭 가능한 버튼으로 변경
+            // Year Display
             Button(action: {
                 showYearPicker = true
             }) {
@@ -75,7 +73,7 @@ struct YearSelector: View {
     }
 }
 
-// ⭐ Wheel Picker를 담은 Popover 컨텐츠
+// Wheel Picker를 담은 Popover 컨텐츠
 struct YearWheelPicker: View {
     @Binding var selectedYear: Int
     let minYear: Int
@@ -83,8 +81,11 @@ struct YearWheelPicker: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    // 임시 선택값 (Done 버튼 누르기 전까지는 실제 값 변경 안함)
     @State private var tempYear: Int
+    
+    // ⭐ 다국어 적용
+    @Localized(.month_picker_select_year) var selectYearText
+    @Localized(.month_picker_done) var doneText
     
     init(selectedYear: Binding<Int>, minYear: Int, maxYear: Int) {
         self._selectedYear = selectedYear
@@ -96,7 +97,7 @@ struct YearWheelPicker: View {
     var body: some View {
         VStack(spacing: 12) {
             // 타이틀
-            Text("Select Year")
+            Text(selectYearText)
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundColor(.secondary)
                 .padding(.top, 16)
@@ -119,7 +120,7 @@ struct YearWheelPicker: View {
                 selectedYear = tempYear
                 dismiss()
             }) {
-                Text("Done")
+                Text(doneText)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
                     .foregroundColor(Color(hex: "00C896"))
                     .frame(maxWidth: .infinity)
@@ -135,16 +136,4 @@ struct YearWheelPicker: View {
         .frame(width: 200)
         .background(Color(.systemBackground))
     }
-}
-
-#Preview {
-    VStack(spacing: 20) {
-        YearSelector(selectedYear: .constant(2025))
-        
-        YearSelector(selectedYear: .constant(2020))
-        
-        YearSelector(selectedYear: .constant(Calendar.current.component(.year, from: Date())))
-    }
-    .padding()
-    .background(Color.modernBackground)
 }

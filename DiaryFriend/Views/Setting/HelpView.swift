@@ -2,18 +2,16 @@
 //  HelpView.swift
 //  DiaryFriend
 //
-//  Help 화면 - 앱 사용 가이드 슬라이드
-//
 
 import SwiftUI
 
 // MARK: - Help Slide Model
 
 struct HelpSlide: Identifiable {
-    let id = UUID()
+    let id: Int  // ← UUID 대신 Int 사용!
     let title: String
     let description: String
-    let imageName: String      // Asset 이미지 이름
+    let imageName: String
     let iconColor: Color
 }
 
@@ -44,9 +42,9 @@ struct HelpSlideView: View {
                 
                 Spacer(minLength: 0)
                 
-                // 하단 75% - 이미지 영역 (하단 꽉 차게)
+                // 하단 75% - 이미지 영역
                 ZStack {
-                    // 배경 그라데이션
+                    // 배경 그라디언션
                     LinearGradient(
                         colors: [
                             slide.iconColor.opacity(0.15),
@@ -76,38 +74,60 @@ struct HelpView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var currentPage = 0
     
-    private let slides: [HelpSlide] = [
-        HelpSlide(
-            title: "Follow AI Characters",
-            description: "Find and follow AI characters who can chat with you for diary writing and provide insights on your entries.",
-            imageName: "help-follow",  // ⭐ Asset 이미지 이름
-            iconColor: Color(hex: "00C896")
-        ),
-        HelpSlide(
-            title: "Choose Your AI Friend",
-            description: "Select an AI friend to chat with for your diary writing.",
-            imageName: "help-choose",  // ⭐ Asset 이미지 이름
-            iconColor: Color(hex: "FFD93D")
-        ),
-        HelpSlide(
-            title: "Generate Your Diary",
-            description: "Once you've had enough conversation, tap the Generate button to create your diary entry.",
-            imageName: "help-generate",  // ⭐ Asset 이미지 이름
-            iconColor: Color(hex: "A78BFA")
-        ),
-        HelpSlide(
-            title: "Review and Edit",
-            description: "Check the AI-generated diary and customize the content, mood, tags, and photos as you like.",
-            imageName: "help-review",  // ⭐ Asset 이미지 이름
-            iconColor: Color(hex: "FF7AB2")
-        ),
-        HelpSlide(
-            title: "View Your Diary",
-            description: "Check your completed diary. If AI Insight is enabled, AI friends will have left comments based on your entry!",
-            imageName: "help-view",  // ⭐ Asset 이미지 이름
-            iconColor: Color(hex: "6BCF7F")
-        )
-    ]
+    // ⭐ 다국어 적용
+    @Localized(.help_done) var doneText
+    
+    @Localized(.help_slide1_title) var slide1Title
+    @Localized(.help_slide1_description) var slide1Desc
+    @Localized(.help_slide2_title) var slide2Title
+    @Localized(.help_slide2_description) var slide2Desc
+    @Localized(.help_slide3_title) var slide3Title
+    @Localized(.help_slide3_description) var slide3Desc
+    @Localized(.help_slide4_title) var slide4Title
+    @Localized(.help_slide4_description) var slide4Desc
+    @Localized(.help_slide5_title) var slide5Title
+    @Localized(.help_slide5_description) var slide5Desc
+    
+    // ⭐ computed property (ID는 고정값 사용)
+    private var slides: [HelpSlide] {
+        [
+            HelpSlide(
+                id: 0,  // ← 고정 ID
+                title: slide1Title,
+                description: slide1Desc,
+                imageName: "help-follow",
+                iconColor: Color(hex: "00C896")
+            ),
+            HelpSlide(
+                id: 1,  // ← 고정 ID
+                title: slide2Title,
+                description: slide2Desc,
+                imageName: "help-choose",
+                iconColor: Color(hex: "FFD93D")
+            ),
+            HelpSlide(
+                id: 2,  // ← 고정 ID
+                title: slide3Title,
+                description: slide3Desc,
+                imageName: "help-generate",
+                iconColor: Color(hex: "A78BFA")
+            ),
+            HelpSlide(
+                id: 3,  // ← 고정 ID
+                title: slide4Title,
+                description: slide4Desc,
+                imageName: "help-review",
+                iconColor: Color(hex: "FF7AB2")
+            ),
+            HelpSlide(
+                id: 4,  // ← 고정 ID
+                title: slide5Title,
+                description: slide5Desc,
+                imageName: "help-view",
+                iconColor: Color(hex: "6BCF7F")
+            )
+        ]
+    }
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -115,9 +135,9 @@ struct HelpView: View {
             VStack(spacing: 0) {
                 // 슬라이드 컨텐츠
                 TabView(selection: $currentPage) {
-                    ForEach(Array(slides.enumerated()), id: \.element.id) { index, slide in
+                    ForEach(slides) { slide in
                         HelpSlideView(slide: slide)
-                            .tag(index)
+                            .tag(slide.id)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
@@ -147,7 +167,7 @@ struct HelpView: View {
                         Button(action: {
                             dismiss()
                         }) {
-                            Text("Done")
+                            Text(doneText)
                                 .font(.system(size: 17, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white)
                                 .frame(height: 44)
@@ -201,4 +221,5 @@ struct HelpView: View {
 
 #Preview {
     HelpView()
+        .environmentObject(LocalizationManager.shared)
 }

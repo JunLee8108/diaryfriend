@@ -16,13 +16,29 @@ struct CustomMonthPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     private let calendar = Calendar.current
-    private let months = [
-        "Jan", "Feb", "Mar", "Apr",
-        "May", "Jun", "Jul", "Aug",
-        "Sep", "Oct", "Nov", "Dec"
-    ]
+    
+    // ⭐ computed property로 변경 (다국어 지원)
+    private var months: [String] {
+        [
+            LocalizationManager.shared.localized(.month_jan),
+            LocalizationManager.shared.localized(.month_feb),
+            LocalizationManager.shared.localized(.month_mar),
+            LocalizationManager.shared.localized(.month_apr),
+            LocalizationManager.shared.localized(.month_may),
+            LocalizationManager.shared.localized(.month_jun),
+            LocalizationManager.shared.localized(.month_jul),
+            LocalizationManager.shared.localized(.month_aug),
+            LocalizationManager.shared.localized(.month_sep),
+            LocalizationManager.shared.localized(.month_oct),
+            LocalizationManager.shared.localized(.month_nov),
+            LocalizationManager.shared.localized(.month_dec)
+        ]
+    }
     
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 4)
+    
+    // ⭐ 다국어 적용
+    @Localized(.common_cancel) var cancelText
     
     init(
         selectedMonth: Binding<Date>,
@@ -37,7 +53,7 @@ struct CustomMonthPickerSheet: View {
         self._selectedMonthIndex = State(initialValue: month - 1)
     }
     
-    // ⭐ 오늘 날짜의 월인지 판단
+    // 오늘 날짜의 월인지 판단
     private func isCurrentMonth(year: Int, monthIndex: Int) -> Bool {
         let now = Date()
         let currentYear = calendar.component(.year, from: now)
@@ -45,7 +61,7 @@ struct CustomMonthPickerSheet: View {
         return year == currentYear && (monthIndex + 1) == currentMonth
     }
     
-    // ⭐ 선택된 월인지 판단 (year + month 모두 비교)
+    // 선택된 월인지 판단 (year + month 모두 비교)
     private func isSelectedMonth(year: Int, monthIndex: Int) -> Bool {
         let selectedYear = calendar.component(.year, from: selectedMonth)
         let selectedMonthNum = calendar.component(.month, from: selectedMonth)
@@ -64,8 +80,8 @@ struct CustomMonthPickerSheet: View {
                     ForEach(0..<12, id: \.self) { index in
                         MonthCell(
                             monthName: months[index],
-                            isSelected: isSelectedMonth(year: selectedYear, monthIndex: index),  // ⭐ 수정
-                            isCurrent: isCurrentMonth(year: selectedYear, monthIndex: index),    // ⭐ 추가
+                            isSelected: isSelectedMonth(year: selectedYear, monthIndex: index),
+                            isCurrent: isCurrentMonth(year: selectedYear, monthIndex: index),
                             onTap: {
                                 selectedMonthIndex = index
                                 
@@ -96,8 +112,7 @@ struct CustomMonthPickerSheet: View {
             .background(Color.modernBackground)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        print("❌ Month Picker - Cancel 클릭")
+                    Button(cancelText) {
                         dismiss()
                     }
                     .foregroundColor(.secondary)

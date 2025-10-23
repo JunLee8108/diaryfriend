@@ -8,6 +8,10 @@ import SwiftUI
 struct MoodDistributionCard: View {
     let posts: [Post]
     
+    // ⭐ 다국어 적용
+    @Localized(.stats_mood_stats) var headerText
+    @Localized(.stats_no_mood_data) var noDataText
+    
     private var moodCounts: [(mood: String, count: Int, icon: String, color: Color)] {
         let moodDict = Dictionary(grouping: posts.compactMap { $0.mood }) { $0 }
             .mapValues { $0.count }
@@ -16,14 +20,6 @@ struct MoodDistributionCard: View {
         let moodWeatherData: [String: (icon: String, color: Color)] = [
             "happy": ("sun.max.fill", .yellow),
             "sad": ("cloud.rain.fill", Color(hex:"1CA3DE")),
-            "calm": ("cloud.sun.fill", .cyan),
-            "excited": ("sun.and.horizon.fill", .orange),
-            "angry": ("cloud.bolt.fill", .red),
-            "anxious": ("wind", .purple),
-            "grateful": ("sunrise.fill", .pink),
-            "tired": ("moon.stars.fill", .indigo),
-            "lonely": ("cloud.fog.fill", .gray),
-            "proud": ("sparkles", .yellow),
             "neutral": ("cloud", .secondary)
         ]
         
@@ -47,11 +43,11 @@ struct MoodDistributionCard: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header - Outside Card
             HStack {
-                Text("MOOD STATS")
+                Text(headerText)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.primary)
                     .tracking(1.2)
-                    .modernHighlight()  // ← 여기에 추가!
+                    .modernHighlight()
                 
                 Spacer()
             }
@@ -59,7 +55,7 @@ struct MoodDistributionCard: View {
             // Card Content
             VStack(alignment: .leading, spacing: 16) {
                 if moodCounts.isEmpty {
-                    Text("No mood data available")
+                    Text(noDataText)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -70,7 +66,7 @@ struct MoodDistributionCard: View {
                             MoodRow(
                                 icon: item.icon,
                                 color: item.color,
-                                mood: item.mood.capitalized,
+                                mood: MoodLocalizer.displayName(for: item.mood),  // ⭐ 다국어 적용!
                                 count: item.count,
                                 maxCount: maxCount
                             )

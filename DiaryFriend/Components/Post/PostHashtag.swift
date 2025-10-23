@@ -17,10 +17,12 @@ struct HashtagSection: View {
     @Binding var tempInput: String
     var maxCount: Int = 3  // 파라미터 추가
     
+    @Localized(.hashtag_section_title) var sectionTitle
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Tag")
+                Text(sectionTitle)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                 
@@ -90,12 +92,14 @@ struct TagChip: View {
 struct AddTagButton: View {
     let action: () -> Void
     
+    @Localized(.hashtag_add_tag) var addTagText
+    
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 14))
-                Text("Add tag")
+                Text(addTagText)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
             }
             .foregroundColor(Color(hex: "FFB6A3"))
@@ -121,11 +125,16 @@ struct AddHashtagSheet: View {
     @Binding var isPresented: Bool
     @FocusState private var isInputFocused: Bool
     
+    @Localized(.hashtag_sheet_title) var sheetTitle
+    @Localized(.hashtag_placeholder) var placeholder
+    @Localized(.common_cancel) var cancelText
+    @Localized(.common_add) var addText
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Add a tag")
+                    Text(sheetTitle)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                     
@@ -134,7 +143,7 @@ struct AddHashtagSheet: View {
                             .font(.system(size: 16, weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
                         
-                        TextField("Enter tag", text: $tempInput)
+                        TextField(placeholder, text: $tempInput)
                             .font(.system(size: 16, design: .rounded))
                             .focused($isInputFocused)
                             .onSubmit {
@@ -155,14 +164,14 @@ struct AddHashtagSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button(cancelText) {
                         isPresented = false
                     }
                     .font(.system(size: 16, design: .rounded))
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add") {
+                    Button(addText) {
                         addTag()
                     }
                     .font(.system(size: 16, weight: .semibold, design: .rounded))

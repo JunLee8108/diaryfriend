@@ -22,6 +22,9 @@ struct ImageEditSection: View {
     @State private var errorMessage = ""
     @State private var selectedImageForViewing: IdentifiableImageWrapper?
     
+    @Localized(.image_section_title) var sectionTitle
+    @Localized(.image_processing) var processingText
+    
     private var visibleExistingImages: [PostImageInfo] {
         existingImages.filter { !imagesToDelete.contains($0.id) }
     }
@@ -37,7 +40,7 @@ struct ImageEditSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Photo")
+                Text(sectionTitle)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                 
@@ -115,7 +118,7 @@ struct ImageEditSection: View {
                             .progressViewStyle(CircularProgressViewStyle())
                             .scaleEffect(1.2)
                         
-                        Text("Processing images...")
+                        Text(processingText)
                             .font(.system(size: 13, design: .rounded))
                             .foregroundColor(.white)
                     }

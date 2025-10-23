@@ -148,30 +148,3 @@ struct PostCardView: View {
         )
     }
 }
-
-// MARK: - Preview
-#Preview("With Posts") {
-    struct PreviewWrapper: View {
-        @StateObject private var dataStore = DataStore.shared
-        
-        var body: some View {
-            DayPostsSheet(dateString: "2025-01-15")
-                .environmentObject(dataStore)
-        }
-    }
-    
-    return PreviewWrapper()
-}
-
-#Preview("Empty State") {
-    struct PreviewWrapper: View {
-        @StateObject private var dataStore = DataStore.shared
-        
-        var body: some View {
-            DayPostsSheet(dateString: "2025-12-31")
-                .environmentObject(dataStore)
-        }
-    }
-    
-    return PreviewWrapper()
-}

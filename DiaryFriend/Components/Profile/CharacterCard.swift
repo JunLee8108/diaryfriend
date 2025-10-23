@@ -2,7 +2,7 @@
 //  CharacterCard.swift
 //  DiaryFriend
 //
-//  캐릭터 카드 컴포넌트 (지연 로딩 적용)
+//  캐릭터 카드 컴포넌트 (다국어 지원)
 //
 
 import SwiftUI
@@ -10,9 +10,25 @@ import SwiftUI
 struct CharacterCard: View {
     let character: CharacterWithAffinity
     let onFollowToggle: () async -> Void
-    let index: Int  // 추가: 순차 로딩용
+    let index: Int
+    
+    // ✅ LocalizationManager 주입
+    @EnvironmentObject var localizationManager: LocalizationManager
     
     @State private var isTogglingFollow = false
+    
+    // ✅ 언어별 표시 텍스트 계산
+    private var isKorean: Bool {
+        localizationManager.currentLanguage == .korean
+    }
+    
+    private var displayName: String {
+        character.localizedName(isKorean: isKorean)
+    }
+    
+    private var displayDescription: String? {
+        character.localizedDescription(isKorean: isKorean)
+    }
     
     var body: some View {
         HStack(spacing: 12) {
@@ -21,17 +37,17 @@ struct CharacterCard: View {
                 CachedAvatarImage(
                     url: character.avatar_url,
                     size: 45,
-                    initial: String(character.name.prefix(1)).uppercased()
+                    initial: String(displayName.prefix(1)).uppercased()  // ✅ 다국어 이름 첫 글자
                 )
             }
             
             // Info
             VStack(alignment: .leading, spacing: 4) {
-                Text(character.name)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                Text(displayName)  // ✅ 다국어 이름
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
                 
-                if let description = character.description {
+                if let description = displayDescription {  // ✅ 다국어 설명
                     Text(description)
                         .font(.system(size: 12, design: .rounded))
                         .foregroundColor(.secondary)

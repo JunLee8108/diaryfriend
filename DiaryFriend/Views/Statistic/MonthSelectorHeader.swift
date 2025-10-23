@@ -12,18 +12,27 @@ struct MonthSelectorHeader: View {
     
     @State private var showMonthPicker = false
     
-    // ⭐ tempSelectedMonth 제거 (더 이상 필요 없음)
-    
+    // ⭐ 언어별 날짜 형식 적용
     private var monthYearString: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
+        
+        // 현재 언어 코드
+        let languageCode = LocalizationManager.shared.currentLanguage.code
+        formatter.locale = Locale(identifier: languageCode)
+        
+        // 언어별 형식 분기
+        if LocalizationManager.shared.currentLanguage == .korean {
+            formatter.dateFormat = "yyyy년 M월"  // 2025년 1월
+        } else {
+            formatter.dateFormat = "MMMM yyyy"   // January 2025
+        }
+        
         return formatter.string(from: selectedMonth)
     }
     
     var body: some View {
         Button(action: {
             showMonthPicker = true
-            print("📅 Month Picker 열기")
         }) {
             HStack {
                 Spacer()
@@ -42,32 +51,14 @@ struct MonthSelectorHeader: View {
                 Spacer()
             }
             .frame(height: 56)
-//            .background(
-//                RoundedRectangle(cornerRadius: 16)
-//                    .fill(Color.modernSurfacePrimary)
-//                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
-//            )
-//            .overlay(
-//                RoundedRectangle(cornerRadius: 16)
-//                    .strokeBorder(
-//                        isLoading ? Color(hex: "00C896").opacity(0.3) : Color.clear,
-//                        lineWidth: 2
-//                    )
-//                    .animation(.easeInOut(duration: 0.3), value: isLoading)
-//            )
         }
         .disabled(isLoading)
         .sheet(isPresented: $showMonthPicker) {
-            // ⭐ onDismiss에서 sheet가 닫힐 때 처리
-            print("📅 Month Picker 닫힘")
+            
         } content: {
             CustomMonthPickerSheet(
                 selectedMonth: $selectedMonth,
                 onMonthSelected: { newDate in
-                    print("✅ Month Picker - 월 선택됨")
-                    print("   선택된 월: \(DateUtility.shared.monthKey(from: newDate))")
-                    
-                    // ⭐ async 함수 호출
                     Task {
                         await onMonthChanged(newDate)
                     }
@@ -77,28 +68,4 @@ struct MonthSelectorHeader: View {
             .presentationDragIndicator(.visible)
         }
     }
-}
-
-#Preview {
-    VStack(spacing: 20) {
-        // Normal state
-        MonthSelectorHeader(
-            selectedMonth: .constant(Date()),
-            isLoading: .constant(false),
-            onMonthChanged: { newMonth in
-                print("Month changed to: \(newMonth)")
-            }
-        )
-        
-        // Loading state
-        MonthSelectorHeader(
-            selectedMonth: .constant(Date()),
-            isLoading: .constant(true),
-            onMonthChanged: { newMonth in
-                print("Month changed to: \(newMonth)")
-            }
-        )
-    }
-    .padding()
-    .background(Color.modernBackground)
 }

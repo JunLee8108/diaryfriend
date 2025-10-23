@@ -14,6 +14,9 @@ struct CharacterSelectionView: View {
     @State private var searchText = ""
     @State private var selectedCharacter: CharacterWithAffinity?
     
+    @Localized(.ai_insights_find_characters) var findCharactersText
+    @Localized(.common_done) var doneText
+    
     // 검색 필터링된 캐릭터
     private var filteredCharacters: [CharacterWithAffinity] {
         if searchText.isEmpty {
@@ -90,11 +93,11 @@ struct CharacterSelectionView: View {
                 }
             }
             .background(Color.modernBackground)
-            .navigationTitle("Find AI Friends")
+            .navigationTitle(findCharactersText)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(doneText) {
                         isPresented = false
                     }
                     .font(.system(size: 16, weight: .semibold, design: .rounded))

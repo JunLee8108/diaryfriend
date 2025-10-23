@@ -331,15 +331,17 @@ enum AuthError: LocalizedError {
     case networkRequired
     
     var errorDescription: String? {
+        let loc = LocalizationManager.shared
+        
         switch self {
         case .signInFailed(let message):
             return message
         case .profileFetchFailed(let message):
             return message
         case .notAuthenticated:
-            return "Not authenticated"
+            return loc.localized(.error_not_authenticated)
         case .networkRequired:
-            return "Internet connection is required to delete your account"
+            return loc.localized(.error_network_required)
         }
     }
 }

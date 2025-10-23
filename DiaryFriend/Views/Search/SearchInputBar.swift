@@ -15,6 +15,8 @@ struct SearchInputBar: View {
     
     @FocusState private var isFocused: Bool
     
+    @Localized(.search_placeholder) var placeholder
+    
     var body: some View {
         HStack(spacing: 12) {
             // Search Icon
@@ -24,7 +26,7 @@ struct SearchInputBar: View {
                 .animation(.easeInOut(duration: 0.2), value: text.isEmpty)
             
             // Text Field
-            TextField("Search posts, dates, moods...", text: $text)
+            TextField(placeholder, text: $text)
                 .font(.system(size: 16, design: .rounded))
                 .focused($isFocused)
                 .submitLabel(.search)
@@ -57,7 +59,6 @@ struct SearchInputBar: View {
                 .fill(Color.modernSurfacePrimary)
                 .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 2)
         )
-        // ⭐ 핵심 수정: 전체 컨테이너를 탭 가능하게
         .contentShape(Rectangle())  // HStack 전체 영역을 탭 가능하게 만듦
         .onTapGesture {
             isFocused = true  // 어디를 눌러도 포커스

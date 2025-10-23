@@ -11,6 +11,19 @@ struct SettingsView: View {
     @StateObject private var profileStore = UserProfileStore.shared
     @EnvironmentObject var authService: AuthService
     
+    // ⭐ 다국어 적용
+    @Localized(.settings_profile) var profileSection
+    @Localized(.settings_name) var nameLabel
+    @Localized(.settings_language) var languageLabel
+    @Localized(.settings_title) var settingsTitle
+    @Localized(.settings_help) var helpLabel
+    @Localized(.settings_about) var aboutSection
+    @Localized(.settings_version) var versionLabel
+    @Localized(.settings_developer) var developerLabel
+    @Localized(.settings_delete_account) var deleteAccountLabel
+    @Localized(.error_title) var errorTitle
+    @Localized(.common_ok) var okButton
+    
     // Sheet 표시 State
     @State private var showEditName = false
     @State private var showLanguageSelection = false
@@ -24,10 +37,10 @@ struct SettingsView: View {
     var body: some View {
         List {
             // Profile Settings Section
-            Section("Profile") {
+            Section(profileSection) {
                 // Display Name Row
                 HStack {
-                    Label("Name", systemImage: "person.text.rectangle")
+                    Label(nameLabel, systemImage: "person.text.rectangle")
                     Spacer()
                     Text(profileStore.currentDisplayName)
                         .foregroundColor(.secondary)
@@ -43,7 +56,7 @@ struct SettingsView: View {
                 
                 // Language Row
                 HStack {
-                    Label("Language", systemImage: "globe")
+                    Label(languageLabel, systemImage: "globe")
                     Spacer()
                     Text(profileStore.currentLanguage?.displayName ?? "English")
                         .foregroundColor(.secondary)
@@ -58,9 +71,9 @@ struct SettingsView: View {
             }
             
             // Settings Section
-            Section("Settings") {
+            Section(settingsTitle) {
                 HStack {
-                    Label("Help", systemImage: "questionmark.circle")
+                    Label(helpLabel, systemImage: "questionmark.circle")
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption)
@@ -73,16 +86,16 @@ struct SettingsView: View {
             }
             
             // About Section
-            Section("About") {
+            Section(aboutSection) {
                 HStack {
-                    Text("Version")
+                    Text(versionLabel)
                     Spacer()
-                    Text("1.0.0")
+                    Text("1.1.1")
                         .foregroundColor(.secondary)
                 }
                 
                 HStack {
-                    Text("Developer")
+                    Text(developerLabel)
                     Spacer()
                     Text("Jun Lee")
                         .foregroundColor(.secondary)
@@ -94,7 +107,7 @@ struct SettingsView: View {
                 Button(action: {
                     showDeleteAccount = true
                 }) {
-                    Text("Delete Account")
+                    Text(deleteAccountLabel)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(.red)
                         .frame(maxWidth: .infinity)
@@ -144,8 +157,8 @@ struct SettingsView: View {
             }
         )
         // Error Alert
-        .alert("Error", isPresented: $showErrorAlert) {
-            Button("OK", role: .cancel) { }
+        .alert(errorTitle, isPresented: $showErrorAlert) {
+            Button(okButton, role: .cancel) { }
         } message: {
             Text(errorAlertMessage)
         }
@@ -158,15 +171,16 @@ struct SettingsView: View {
             try await authService.deleteAccount()
             
         } catch AuthError.networkRequired {
-            // 오프라인 에러 처리
+            // ⭐ 다국어 에러 메시지
             await MainActor.run {
-                self.errorAlertMessage = "Internet connection is required to delete your account. Please check your connection and try again."
+                self.errorAlertMessage = LocalizationManager.shared.localized(.error_network_required)
                 self.showErrorAlert = true
             }
             
         } catch AuthError.notAuthenticated {
+            // ⭐ 다국어 에러 메시지
             await MainActor.run {
-                self.errorAlertMessage = "Authentication error. Please sign in again."
+                self.errorAlertMessage = LocalizationManager.shared.localized(.error_not_authenticated)
                 self.showErrorAlert = true
             }
             
@@ -177,12 +191,5 @@ struct SettingsView: View {
                 self.showErrorAlert = true
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        SettingsView()
-            .environmentObject(AuthService())
     }
 }

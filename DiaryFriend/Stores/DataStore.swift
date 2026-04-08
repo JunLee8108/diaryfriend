@@ -180,9 +180,18 @@ class DataStore: ObservableObject {
             print("📊 DataStore: 이미 초기화됨")
             return
         }
-        
-        await loadFiveMonthWindow(centerDate: Date())
+
+        // 현재 달만 우선 로드 (빠른 화면 표시)
+        isLoading = true
+        await loadMonth(for: Date())
+        isLoading = false
         isInitialized = true
+        print("✅ DataStore: 현재 달 우선 로드 완료 (총 \(posts.count)개 포스트)")
+
+        // 나머지 4개월은 백그라운드에서 병렬 로딩
+        Task {
+            await loadRemainingMonths(centerDate: Date())
+        }
     }
     
     /// 5개월 윈도우 로드 (현재 + 이전/다음 2개월)
@@ -199,16 +208,41 @@ class DataStore: ObservableObject {
             calendar.date(byAdding: .month, value: 2, to: centerDate)!
         ]
         
-        print("📊 DataStore: 5개월 윈도우 로딩 시작")
-        
-        for date in monthsToLoad {
-            await loadMonth(for: date)
+        print("📊 DataStore: 5개월 윈도우 병렬 로딩 시작")
+
+        await withTaskGroup(of: Void.self) { group in
+            for date in monthsToLoad {
+                group.addTask {
+                    await self.loadMonth(for: date)
+                }
+            }
         }
-        
+
         isLoading = false
         print("✅ DataStore: 로드 완료 (총 \(posts.count)개 포스트)")
     }
     
+    /// 나머지 4개월 백그라운드 병렬 로딩
+    private func loadRemainingMonths(centerDate: Date) async {
+        let calendar = Calendar.current
+        let remainingMonths = [
+            calendar.date(byAdding: .month, value: -2, to: centerDate)!,
+            calendar.date(byAdding: .month, value: -1, to: centerDate)!,
+            calendar.date(byAdding: .month, value: 1, to: centerDate)!,
+            calendar.date(byAdding: .month, value: 2, to: centerDate)!
+        ]
+
+        await withTaskGroup(of: Void.self) { group in
+            for date in remainingMonths {
+                group.addTask {
+                    await self.loadMonth(for: date)
+                }
+            }
+        }
+
+        print("✅ DataStore: 나머지 4개월 백그라운드 로딩 완료 (총 \(posts.count)개 포스트)")
+    }
+
     func ensureMonthLoaded(_ date: Date) async {
         // 즉시 정리
         cleanupPostsOutsideWindow(centerDate: date)

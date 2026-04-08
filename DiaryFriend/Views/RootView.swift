@@ -77,7 +77,7 @@ struct RootView: View {
             
             async let initTask: () = initializeApp()
             async let minDisplayTask: () = {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                try? await Task.sleep(nanoseconds: 300_000_000)
             }()
             
             _ = await (initTask, minDisplayTask)
@@ -110,19 +110,32 @@ struct RootView: View {
     
     private func initializeApp() async {
         Logger.debug("🚀 App initialization started")
-        
+
         await authService.initialize()
-        
+
         if let userId = authService.currentUserId {
-            await setupUserData(userId)
+            // 프로필 로딩과 데이터 설정을 병렬 실행
+            async let profileTask: () = loadUserProfile(userId: userId)
+            async let setupTask: () = setupUserData(userId)
+            _ = await (profileTask, setupTask)
+
             currentUserId = userId
-            
+
             // ⭐ 인증 후 UserProfile과 언어 동기화
             await localizationManager.syncWithUserProfile()
         }
-        
+
         isInitialized = true
         print("✅ RootView: App initialization complete")
+    }
+
+    private func loadUserProfile(userId: UUID) async {
+        do {
+            try await UserProfileStore.shared.fetchUserProfile(userId: userId)
+            Logger.debug("User profile loaded successfully")
+        } catch {
+            Logger.debug("Failed to load user profile: \(error)")
+        }
     }
     
     // MARK: - Session Validation

@@ -24,23 +24,9 @@ class AuthService: ObservableObject {
                 self.session = session
                 self.currentUser = session.user
                 self.isAuthenticated = true
-                
-                SupabaseManager.shared.updateCurrentUser(session.user)
-            }
-            
-            let userId = session.user.id
-            
-            Logger.debug("Loading user profile for existing session...")
-            
-            do {
-                try await UserProfileStore.shared.fetchUserProfile(userId: userId)
-                Logger.debug("User profile loaded successfully")
-            } catch {
-                Logger.debug("Failed to load user profile: \(error)")
-            }
-            
-            await MainActor.run {
                 self.isLoading = false
+
+                SupabaseManager.shared.updateCurrentUser(session.user)
             }
             
         } catch {

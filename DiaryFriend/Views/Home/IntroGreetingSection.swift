@@ -2,26 +2,18 @@
 //  IntroGreetingSection.swift
 //  DiaryFriend
 //
-//  Created by Jun Lee on 9/24/25.
-//
 
 import SwiftUI
 
-// MARK: - Intro Greeting Section
+// MARK: - Intro Greeting Section (Soft & Cozy Hero Card)
 struct IntroGreetingSection: View {
-    // Self-managed animation states
     @State private var introAnimated = false
-    @State private var streakAnimated = false
-    
-    // Scene phase detection for foreground/background transitions
     @Environment(\.scenePhase) var scenePhase
-    
-    // Current date for time-based greeting calculation
     @State private var currentDate = Date()
-    
     @ObservedObject private var profileStore = UserProfileStore.shared
-    
-    // ⭐ Time-based greeting (다국어 적용)
+    @ObservedObject private var characterStore = CharacterStore.shared
+
+    // ⭐ 다국어 인사
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: currentDate)
         switch hour {
@@ -35,73 +27,120 @@ struct IntroGreetingSection: View {
             return LocalizationManager.shared.localized(.greeting_night)
         }
     }
-    
-    // Time-based emoji
+
     private var greetingEmoji: String {
         let hour = Calendar.current.component(.hour, from: currentDate)
         switch hour {
-        case 5..<12:
-            return "☀️"
-        case 12..<17:
-            return "🌤"
-        case 17..<22:
-            return "🌙"
-        default:
-            return "🌙"
+        case 5..<12:  return "☀️"
+        case 12..<17: return "🌤"
+        case 17..<22: return "🌙"
+        default:       return "✨"
         }
     }
-    
+
+    private var subMessage: String {
+        let hour = Calendar.current.component(.hour, from: currentDate)
+        switch hour {
+        case 5..<12:
+            return LocalizationManager.shared.currentLanguage == .korean
+                ? "오늘 하루도 기록해볼까요?" : "Ready to write your story today?"
+        case 12..<17:
+            return LocalizationManager.shared.currentLanguage == .korean
+                ? "오늘은 어떤 하루를 보내고 있나요?" : "How's your day going so far?"
+        case 17..<22:
+            return LocalizationManager.shared.currentLanguage == .korean
+                ? "오늘 하루를 돌아볼 시간이에요" : "Time to reflect on your day"
+        default:
+            return LocalizationManager.shared.currentLanguage == .korean
+                ? "오늘 하루는 어땠나요?" : "How was your day?"
+        }
+    }
+
+    /// 팔로우 중인 첫 번째 캐릭터 아바타 URL
+    private var avatarURL: String? {
+        characterStore.followingCharacters.first?.avatar_url
+    }
+
     var body: some View {
-        VStack(spacing: 20) {
-            // Main greeting card
-            VStack(alignment: .leading, spacing: 16) {
-                // Greeting header
-                HStack {
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 8) {
-                            Text("\(greeting), \(profileStore.currentDisplayName)")
-                                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                .foregroundColor(.primary)
-                            
-                            Text(greetingEmoji)
-                                .font(.system(size: 20))
-                        }
-                        .opacity(introAnimated ? 1 : 0)
-                        .offset(y: introAnimated ? 0 : 10)
+        VStack(alignment: .leading, spacing: 12) {
+            // 상단: 아바타 + 인사말
+            HStack(spacing: 12) {
+                // AI 캐릭터 아바타
+                if let urlString = avatarURL {
+                    CachedAsyncImage(url: urlString) {
+                        Circle()
+                            .fill(Color.brandBlush)
+                            .overlay(
+                                Text("🧸")
+                                    .font(.system(size: 20))
+                            )
                     }
+                    .frame(width: 48, height: 48)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.brandLight, lineWidth: 2)
+                    )
+                } else {
+                    Circle()
+                        .fill(Color.brandBlush)
+                        .frame(width: 48, height: 48)
+                        .overlay(
+                            Text("🧸")
+                                .font(.system(size: 22))
+                        )
+                        .overlay(
+                            Circle()
+                                .stroke(Color.brandLight, lineWidth: 2)
+                        )
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text("\(greeting), \(profileStore.currentDisplayName)")
+                            .font(.system(size: 17, weight: .semibold, design: .rounded))
+                            .foregroundColor(.primary)
+
+                        Text(greetingEmoji)
+                            .font(.system(size: 18))
+                    }
+
+                    Text(subMessage)
+                        .font(.system(size: 13, weight: .regular, design: .rounded))
+                        .foregroundColor(.secondary)
                 }
             }
-            .padding(20)
-            .scaleEffect(introAnimated ? 1 : 0.95)
         }
-        .onAppear {
-            playAnimation()
-        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.brandBlush.opacity(0.5), Color.modernSurfacePrimary],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: Color.brand.opacity(0.08), radius: 8, x: 0, y: 2)
+        )
+        .opacity(introAnimated ? 1 : 0)
+        .offset(y: introAnimated ? 0 : 8)
+        .scaleEffect(introAnimated ? 1 : 0.97)
+        .onAppear { playAnimation() }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
-                // Update current time when app becomes active
                 currentDate = Date()
-                
-                // Replay animation only when returning from background
-                if oldPhase == .background {
-                    playAnimation()
-                }
+                if oldPhase == .background { playAnimation() }
             }
         }
     }
-    
-    // MARK: - Animation Helper
+
     private func playAnimation() {
-        // Reset animation states
         introAnimated = false
-        streakAnimated = false
-        
-        // Sequential animations
-        withAnimation(.easeOut(duration: 0.6)) {
+        withAnimation(.easeOut(duration: 0.5)) {
             introAnimated = true
-        }
-        withAnimation(.easeOut(duration: 0.8).delay(0.3)) {
-            streakAnimated = true
         }
     }
 }

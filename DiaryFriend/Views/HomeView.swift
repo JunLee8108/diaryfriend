@@ -14,44 +14,45 @@ struct HomeView: View {
     @State private var selectedDate = Date()
     @StateObject private var navigationCoordinator = NavigationCoordinator()
     @State private var currentMonth = Date()
-    
+
     // Info modal state
     @State private var showFutureDateInfo = false
-    
+
     // 동기화 에러 상태
     @State private var showSyncError = false
     @State private var syncErrorMessage = ""
-    
+
     // 다국어 적용
     @Localized(.home_future_date_title) var futureDateTitle
     @Localized(.home_future_date_message) var futureDateMessage
     @Localized(.home_no_internet_title) var noInternetTitle
     @Localized(.home_no_internet_message) var noInternetMessage
-    
+
     // item 기반 sheet를 위한 구조체
     struct DayPostsData: Identifiable {
         let id = UUID()
         let dateString: String
     }
-    
+
     // sheet에 전달할 데이터
     @State private var dayPostsData: DayPostsData?
-    
+
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // 🎯 NEW: Intro Section
+                    // 🎯 Intro Hero Card
                     IntroGreetingSection()
-                        .padding(.horizontal, 20)
-                        .padding(.top, 20)
-                        .padding(.bottom, 20)
-                    
+                        .padding(.horizontal, 14)
+                        .padding(.top, 14)
+                        .padding(.bottom, 14)
+
                     // 슬라이드 캘린더
                     SlideCalendarView(
                         currentMonth: $currentMonth,
                         selectedDate: $selectedDate,
                         postDatesSet: dataStore.postDates,
+                        posts: dataStore.posts,
                         onMonthChanged: { newMonth in
                             Task {
                                 await dataStore.ensureMonthLoaded(newMonth)
@@ -61,28 +62,23 @@ struct HomeView: View {
                             handleDateTap(date)
                         }
                     )
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
-                    
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 24)
+
                     // Recent Posts 섹션
                     RecentPostsSection(
                         posts: dataStore.recentPosts(for: currentMonth, limit: 3),
-                        currentMonth: currentMonth  // 월 레이블 표시용
+                        currentMonth: currentMonth
                     )
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 14)
                 }
             }
             .refreshable {
-                // 오프라인 체크
                 guard networkMonitor.isConnected else {
                     showOfflineAlert = true
                     return
                 }
-                
-                // ⭐ Diff 기반 새로고침
                 await dataStore.refresh(centerDate: currentMonth)
-                
-                // ⭐ 에러 체크
                 if let error = dataStore.errorMessage {
                     showSyncError = true
                     syncErrorMessage = error
@@ -90,11 +86,8 @@ struct HomeView: View {
             }
             .smoothLoading(dataStore.isLoading)
             .sheet(item: $dayPostsData) { data in
-                DayPostsSheet(
-                    dateString: data.dateString
-                )
-                // EnvironmentObject는 자동 전파되지만 명시적으로 추가 (안전성)
-                .environmentObject(dataStore)
+                DayPostsSheet(dateString: data.dateString)
+                    .environmentObject(dataStore)
             }
             .navigationDestination(for: PostDestination.self) { destination in
                 switch destination {
@@ -129,54 +122,51 @@ struct HomeView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 20)
+                Color.clear.frame(height: 14)
             }
             .infoModal(
                 isPresented: $showFutureDateInfo,
                 title: futureDateTitle,
                 message: futureDateMessage,
                 icon: "calendar.badge.exclamationmark",
-                iconColor: Color(hex: "FF6961")
+                iconColor: Color.brand
             )
             .infoModal(
                 isPresented: $showOfflineAlert,
                 title: noInternetTitle,
                 message: noInternetMessage,
                 icon: "wifi.slash",
-                iconColor: Color(hex: "FF6961")
+                iconColor: Color.brand
             )
             .infoModal(
                 isPresented: $showSyncError,
                 title: "Sync Warning",
                 message: syncErrorMessage,
                 icon: "exclamationmark.triangle",
-                iconColor: Color(hex: "FF6961")
+                iconColor: Color.brand
             )
             .background(Color.modernBackground)
-            
         }
     }
-    
+
     private func handleDateTap(_ date: Date) {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: Date())
         let startOfSelectedDate = calendar.startOfDay(for: date)
-        
+
         if startOfSelectedDate > startOfToday {
             showFutureDateInfo = true
             return
         }
-        
+
         selectedDate = date
         let dateString = DateUtility.shared.dateString(from: date)
         let posts = dataStore.posts(for: dateString)
-        
+
         if posts.isEmpty {
-            // ✅ NavigationCoordinator 사용
             PostCreationManager.shared.setSelectedDate(date)
             navigationCoordinator.push(.methodChoice(date))
         } else if posts.count == 1 {
-            // ✅ NavigationCoordinator 사용
             navigationCoordinator.push(.detail(posts.first!.id))
         } else {
             dayPostsData = DayPostsData(dateString: dateString)
@@ -190,35 +180,41 @@ struct SlideCalendarView: View {
     @Binding var currentMonth: Date
     @Binding var selectedDate: Date
     let postDatesSet: Set<String>
+    let posts: [Post]
     let onMonthChanged: (Date) -> Void
     let onDateTapped: (Date) -> Void
-    
+
     @State private var tabSelection = 50
     private let calendar = Calendar.current
-    
+
+    /// 날짜별 무드 맵핑
+    private var moodForDate: [String: String] {
+        var map: [String: String] = [:]
+        for post in posts {
+            if map[post.entry_date] == nil {
+                map[post.entry_date] = post.mood
+            }
+        }
+        return map
+    }
+
     var body: some View {
-        VStack(spacing: 20) {
-            // 헤더
+        VStack(spacing: 16) {
             CalendarHeader(
                 currentMonth: currentMonth,
-                onPreviousMonth: {
-                    tabSelection -= 1
-                },
-                onNextMonth: {
-                    tabSelection += 1
-                }
+                onPreviousMonth: { tabSelection -= 1 },
+                onNextMonth: { tabSelection += 1 }
             )
-            
-            // 요일 헤더
+
             WeekdayHeader()
-            
-            // TabView로 슬라이드 구현
+
             TabView(selection: $tabSelection) {
                 ForEach(0..<100, id: \.self) { index in
                     CalendarGridView(
                         month: monthForIndex(index),
                         selectedDate: $selectedDate,
                         postDatesSet: postDatesSet,
+                        moodForDate: moodForDate,
                         onDateTapped: onDateTapped
                     )
                     .tag(index)
@@ -233,14 +229,14 @@ struct SlideCalendarView: View {
                 onMonthChanged(newMonth)
             }
         }
-        .padding(16)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 18)
                 .fill(Color.modernSurfacePrimary)
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+                .shadow(color: Color.brand.opacity(0.08), radius: 8, x: 0, y: 2)
         )
     }
-    
+
     private func monthForIndex(_ index: Int) -> Date {
         let diff = index - 50
         return calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
@@ -252,24 +248,21 @@ struct CalendarHeader: View {
     let currentMonth: Date
     let onPreviousMonth: () -> Void
     let onNextMonth: () -> Void
-    
-    // ⭐ 월 이름
+
     private var monthName: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "MMMM"
         return formatter.string(from: currentMonth)
     }
-    
-    // ⭐ 연도
+
     private var yearString: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "yyyy"
         return formatter.string(from: currentMonth)
     }
-    
-    // ⭐ 한국어에서 "년" 추가
+
     private var yearWithSuffix: String {
         if LocalizationManager.shared.currentLanguage == .korean {
             return "\(yearString)년"
@@ -277,8 +270,7 @@ struct CalendarHeader: View {
             return yearString
         }
     }
-    
-    // ⭐ 한국어에서 "월" 추가
+
     private var monthWithSuffix: String {
         if LocalizationManager.shared.currentLanguage == .korean {
             let monthNumber = Calendar.current.component(.month, from: currentMonth)
@@ -287,52 +279,45 @@ struct CalendarHeader: View {
             return monthName
         }
     }
-    
+
     var body: some View {
         HStack {
             Button(action: onPreviousMonth) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
-                    .frame(width: 40, height: 40)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundColor(.brand)
+                    .frame(width: 36, height: 36)
             }
-            
+
             Spacer()
-            
-            // ⭐ 언어별 순서 분기
+
             if LocalizationManager.shared.currentLanguage == .korean {
-                // 한국어: 2025년 1월
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(yearWithSuffix)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary.opacity(0.85))
-                    
                     Text(monthWithSuffix)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
-                    
-                    
                 }
             } else {
-                // 영어: January 2025
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(monthName)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
-                    
                     Text(yearString)
-                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .font(.system(size: 14, weight: .regular, design: .rounded))
                         .foregroundColor(.primary.opacity(0.65))
                 }
             }
-            
+
             Spacer()
-            
+
             Button(action: onNextMonth) {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 40, height: 40)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.brand)
+                    .frame(width: 36, height: 36)
             }
         }
     }
@@ -345,18 +330,15 @@ struct WeekdayHeader: View {
         formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         return formatter.shortWeekdaySymbols
     }
-    
-    private let sundayColor = Color(hex:"00A077")
-    private let saturdayColor = Color(hex:"FF7AB2")
-    
+
     private func colorForWeekday(at index: Int) -> Color {
         switch index {
-        case 0: return sundayColor
-        case 6: return saturdayColor
+        case 0: return .sundayColor
+        case 6: return .saturdayColor
         default: return .secondary
         }
     }
-    
+
     var body: some View {
         HStack(spacing: 0) {
             ForEach(Array(weekdays.enumerated()), id: \.offset) { index, day in
@@ -374,32 +356,30 @@ struct CalendarGridView: View {
     let month: Date
     @Binding var selectedDate: Date
     let postDatesSet: Set<String>
+    let moodForDate: [String: String]
     let onDateTapped: (Date) -> Void
-    
+
     private let calendar = Calendar.current
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-    
-    private let sundayColor = Color(hex:"00A077")
-    private let saturdayColor = Color(hex:"FF7AB2")
-    
+
     private var monthData: MonthData {
         MonthData(date: month)
     }
-    
+
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
+        LazyVGrid(columns: columns, spacing: 8) {
             ForEach(0..<42, id: \.self) { index in
                 if let day = dayNumber(for: index),
                    let date = monthData.date(for: day) {
+                    let dateString = DateUtility.shared.dateString(from: date)
                     OptimizedDayView(
                         date: date,
                         day: day,
                         selectedDate: selectedDate,
-                        hasPost: postDatesSet.contains(DateUtility.shared.dateString(from: date)),
+                        hasPost: postDatesSet.contains(dateString),
+                        mood: moodForDate[dateString],
                         weekdayColor: getWeekdayColor(for: index),
-                        onTap: {
-                            onDateTapped(date)
-                        }
+                        onTap: { onDateTapped(date) }
                     )
                 } else {
                     Color.clear
@@ -408,110 +388,91 @@ struct CalendarGridView: View {
             }
         }
     }
-    
+
     private func dayNumber(for index: Int) -> Int? {
         let day = index - monthData.firstWeekday + 1
         return (day > 0 && day <= monthData.daysInMonth) ? day : nil
     }
-    
+
     private func getWeekdayColor(for index: Int) -> Color? {
         let weekday = index % 7
         switch weekday {
-        case 0: return sundayColor
-        case 6: return saturdayColor
+        case 0: return .sundayColor
+        case 6: return .saturdayColor
         default: return nil
         }
     }
 }
 
-// MARK: - 형광펜 밑줄 Shape
-struct HighlighterUnderline: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        
-        let startY = rect.maxY - 6
-        let endY = rect.maxY - 5
-        
-        path.move(to: CGPoint(x: rect.minX + 2, y: startY))
-        
-        path.addCurve(
-            to: CGPoint(x: rect.maxX - 2, y: endY),
-            control1: CGPoint(x: rect.midX - 3, y: startY + 0.5),
-            control2: CGPoint(x: rect.midX + 3, y: endY - 0.5)
-        )
-        
-        path.addLine(to: CGPoint(x: rect.maxX - 2, y: endY + 5))
-        path.addCurve(
-            to: CGPoint(x: rect.minX + 2, y: startY + 7),
-            control1: CGPoint(x: rect.midX + 3, y: endY + 7.5),
-            control2: CGPoint(x: rect.midX - 3, y: startY + 6.5)
-        )
-        
-        path.closeSubpath()
-        return path
-    }
-}
-
-// MARK: - 최적화된 Day View
+// MARK: - 최적화된 Day View (무드 이모지 지원)
 struct OptimizedDayView: View {
     let date: Date
     let day: Int
     let selectedDate: Date
     let hasPost: Bool
+    let mood: String?
     let weekdayColor: Color?
     let onTap: () -> Void
-    
+
     private let calendar = Calendar.current
-    
+
     private var isToday: Bool {
         calendar.isDateInToday(date)
     }
-    
+
     private var isSelected: Bool {
         calendar.isDate(date, inSameDayAs: selectedDate)
     }
-    
-    private var highlighterColor: Color {
-        Color(hex:"00C896").opacity(0.3)
+
+    private var moodEmoji: String? {
+        guard hasPost, let mood = mood?.lowercased() else { return nil }
+        switch mood {
+        case "happy":   return "😊"
+        case "sad":     return "😢"
+        case "neutral": return "😐"
+        default:        return "📝"
+        }
     }
-    
+
     private var textColor: Color {
         if hasPost {
-            return Color(hex: "00C896")
+            return .brand
         } else if let weekdayColor = weekdayColor {
             return weekdayColor.opacity(0.9)
         } else {
             return .primary
         }
     }
-    
+
     var body: some View {
-        ZStack {
-            if isSelected {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(hex:"89dfbc").opacity(0.1))
-            }
-            
-            if isToday {
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color(hex:"89dfbc"), lineWidth: 2)
-                    .padding(0.5)
-            }
-            
+        VStack(spacing: 1) {
             ZStack {
-                if hasPost {
-                    HighlighterUnderline()
-                        .fill(highlighterColor)
-                        .frame(width: 22, height: 20)
-                        .offset(y: 3)
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.brandBlush.opacity(0.5))
                 }
-                
+
+                if isToday {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.brandLight.opacity(0.3))
+                }
+
                 Text("\(day)")
-                    .font(.system(size: 16, weight: hasPost ? .semibold : .regular))
+                    .font(.system(size: 15, weight: hasPost ? .semibold : .regular))
                     .foregroundColor(textColor)
             }
+            .frame(width: 36, height: 30)
+
+            // 무드 이모지 표시
+            if let emoji = moodEmoji {
+                Text(emoji)
+                    .font(.system(size: 10))
+            } else {
+                Color.clear
+                    .frame(height: 12)
+            }
         }
-        .frame(width: 40, height: 40)
+        .frame(width: 40, height: 44)
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
     }
@@ -521,23 +482,12 @@ struct OptimizedDayView: View {
 struct MonthData {
     let date: Date
     private let calendar = Calendar.current
-    
-    var year: Int {
-        calendar.component(.year, from: date)
-    }
-    
-    var month: Int {
-        calendar.component(.month, from: date)
-    }
-    
-    var daysInMonth: Int {
-        DateUtility.shared.daysInMonth(year: year, month: month)
-    }
-    
-    var firstWeekday: Int {
-        DateUtility.shared.firstWeekday(year: year, month: month)
-    }
-    
+
+    var year: Int { calendar.component(.year, from: date) }
+    var month: Int { calendar.component(.month, from: date) }
+    var daysInMonth: Int { DateUtility.shared.daysInMonth(year: year, month: month) }
+    var firstWeekday: Int { DateUtility.shared.firstWeekday(year: year, month: month) }
+
     func date(for day: Int) -> Date? {
         DateUtility.shared.date(year: year, month: month, day: day)
     }

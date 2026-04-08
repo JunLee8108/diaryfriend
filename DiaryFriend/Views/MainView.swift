@@ -46,7 +46,7 @@ struct MainView: View {
                 }
                 .tag(3)
         }
-        .tint(Color(hex:"00C896"))
+        .tint(Color.brand)
         // ❌ onChange 제거 (더 이상 필요 없음)
     }
 }

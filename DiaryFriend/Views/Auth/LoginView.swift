@@ -46,8 +46,7 @@ struct LoginView: View {
                         .scaledToFit()
                         .frame(width: 80, height: 80)
                         .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 10)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 60)
 
                     // 헤더 (왼쪽 정렬)
@@ -83,25 +82,38 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - Title Section (왼쪽 정렬)
+    // MARK: - Title Section (가운데 정렬)
     private var titleSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .center, spacing: 6) {
             Text("DiaryFriend")
                 .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundColor(.primary)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(hex: "5DCED5"), Color(hex: "2FB8A0")],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
 
             Text(loginSubtitle)
                 .font(.system(size: 14, weight: .regular, design: .rounded))
                 .foregroundColor(.secondary)
                 .tracking(0.3)
+                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 30)
     }
 
     // MARK: - Feature Carousel
     private var featureCarousel: some View {
         VStack(spacing: 0) {
+            // 상단 border
+            Rectangle()
+                .fill(Color.secondary.opacity(0.15))
+                .frame(height: 0.5)
+                .padding(.horizontal, 30)
+
             TabView(selection: $currentPage) {
                 ForEach(Array(featurePages.enumerated()), id: \.offset) { index, page in
                     featurePageView(
@@ -126,32 +138,37 @@ struct LoginView: View {
                 }
             }
             .padding(.top, 4)
+            .padding(.bottom, 12)
+
+            // 하단 border
+            Rectangle()
+                .fill(Color.secondary.opacity(0.15))
+                .frame(height: 0.5)
+                .padding(.horizontal, 30)
         }
     }
 
     // MARK: - Feature Page
     private func featurePageView(title: String, description: String, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .center, spacing: 0) {
+            Image(systemName: icon)
+                .font(.system(size: 44, weight: .light))
+                .foregroundColor(color.opacity(0.6))
+                .padding(.bottom, 16)
+
             Text(title)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
                 .lineSpacing(4)
+                .multilineTextAlignment(.center)
                 .padding(.bottom, 10)
 
             Text(description)
                 .font(.system(size: 14, weight: .regular, design: .rounded))
                 .foregroundColor(.secondary)
-                .padding(.bottom, 20)
-
-            HStack {
-                Spacer()
-                Image(systemName: icon)
-                    .font(.system(size: 44, weight: .light))
-                    .foregroundColor(color.opacity(0.6))
-                Spacer()
-            }
+                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 30)
     }
 

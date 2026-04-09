@@ -193,11 +193,12 @@ struct SlideCalendarView: View {
     let onMonthChanged: (Date) -> Void
     let onDateTapped: (Date) -> Void
     
-    @State private var tabSelection = 50
+    @State private var tabSelection = 12
     private let calendar = Calendar.current
+    private let centerIndex = 12
 
     private var isCurrentMonth: Bool {
-        tabSelection == 50
+        tabSelection == centerIndex
     }
 
     @State private var swipeHintOffset: CGFloat = 0
@@ -210,7 +211,7 @@ struct SlideCalendarView: View {
                 isCurrentMonth: isCurrentMonth,
                 onGoToToday: {
                     withAnimation(.easeInOut(duration: 0.3)) {
-                        tabSelection = 50
+                        tabSelection = centerIndex
                     }
                 }
             )
@@ -232,7 +233,7 @@ struct SlideCalendarView: View {
 
             // TabView로 슬라이드 구현
             TabView(selection: $tabSelection) {
-                ForEach(0..<100, id: \.self) { index in
+                ForEach(0..<24, id: \.self) { index in
                     CalendarGridView(
                         month: monthForIndex(index),
                         selectedDate: $selectedDate,
@@ -248,7 +249,7 @@ struct SlideCalendarView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 18)
             .onChange(of: tabSelection) { oldValue, newValue in
-                let diff = newValue - 50
+                let diff = newValue - centerIndex
                 let newMonth = calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
                 currentMonth = newMonth
                 onMonthChanged(newMonth)
@@ -275,7 +276,7 @@ struct SlideCalendarView: View {
     }
     
     private func monthForIndex(_ index: Int) -> Date {
-        let diff = index - 50
+        let diff = index - centerIndex
         return calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
     }
 }
@@ -404,39 +405,104 @@ struct WeekdayHeader: View {
     }
 }
 
+// MARK: - 셀 사전 계산 데이터
+struct CalendarCellData {
+    let date: Date
+    let day: Int
+    let isCurrentMonth: Bool
+    let dateString: String
+    let isToday: Bool
+}
+
 // MARK: - 캘린더 그리드
 struct CalendarGridView: View, Equatable {
     let month: Date
     @Binding var selectedDate: Date
     let postDatesSet: Set<String>
     let onDateTapped: (Date) -> Void
-    
-    private let calendar = Calendar.current
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-    
+
     private let sundayColor = Color(hex:"00A077")
     private let saturdayColor = Color(hex:"FF7AB2")
-    
-    private var monthData: MonthData {
-        MonthData(date: month)
-    }
-    
+
     // ⭐ Equatable 구현
     static func == (lhs: CalendarGridView, rhs: CalendarGridView) -> Bool {
         lhs.month == rhs.month &&
         lhs.selectedDate == rhs.selectedDate &&
         lhs.postDatesSet == rhs.postDatesSet
     }
-    
+
+    /// 42개 셀 데이터를 한 번에 사전 계산
+    private var cells: [CalendarCellData] {
+        let calendar = Calendar.current
+        let current = MonthData(date: month)
+
+        let prevMonthDate = calendar.date(byAdding: .month, value: -1, to: month) ?? month
+        let prev = MonthData(date: prevMonthDate)
+
+        let nextMonthDate = calendar.date(byAdding: .month, value: 1, to: month) ?? month
+        let next = MonthData(date: nextMonthDate)
+
+        let today = calendar.startOfDay(for: Date())
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+
+        var result: [CalendarCellData] = []
+        result.reserveCapacity(42)
+
+        for index in 0..<42 {
+            let dayOffset = index - current.firstWeekday + 1
+
+            let date: Date
+            let day: Int
+            let isCurrentMonth: Bool
+
+            if dayOffset > 0 && dayOffset <= current.daysInMonth {
+                date = current.date(for: dayOffset) ?? Date()
+                day = dayOffset
+                isCurrentMonth = true
+            } else if dayOffset <= 0 {
+                let prevDay = prev.daysInMonth + dayOffset
+                date = prev.date(for: prevDay) ?? Date()
+                day = prevDay
+                isCurrentMonth = false
+            } else {
+                let nextDay = dayOffset - current.daysInMonth
+                date = next.date(for: nextDay) ?? Date()
+                day = nextDay
+                isCurrentMonth = false
+            }
+
+            let dateString = DateUtility.shared.dateString(from: date)
+            let isToday = calendar.startOfDay(for: date) == today
+
+            result.append(CalendarCellData(
+                date: date,
+                day: day,
+                isCurrentMonth: isCurrentMonth,
+                dateString: dateString,
+                isToday: isToday
+            ))
+        }
+
+        return result
+    }
+
     var body: some View {
+        let cellData = cells
+        let calendar = Calendar.current
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+
         LazyVGrid(columns: columns, spacing: 10) {
             ForEach(0..<42, id: \.self) { index in
-                let cell = cellInfo(for: index)
+                let cell = cellData[index]
+                let isSelected = calendar.startOfDay(for: cell.date) == selectedDay
+
                 OptimizedDayView(
-                    date: cell.date,
                     day: cell.day,
-                    selectedDate: selectedDate,
-                    hasPost: postDatesSet.contains(DateUtility.shared.dateString(from: cell.date)),
+                    isToday: cell.isToday,
+                    isSelected: isSelected,
+                    hasPost: postDatesSet.contains(cell.dateString),
                     weekdayColor: getWeekdayColor(for: index),
                     onTap: {
                         onDateTapped(cell.date)
@@ -447,36 +513,6 @@ struct CalendarGridView: View, Equatable {
         }
     }
 
-    /// 각 셀의 (날짜, 일자, 현재 월 소속 여부) 계산
-    private func cellInfo(for index: Int) -> (date: Date, day: Int, isCurrentMonth: Bool) {
-        let dayOffset = index - monthData.firstWeekday + 1
-
-        if dayOffset > 0 && dayOffset <= monthData.daysInMonth {
-            // 현재 월
-            let date = monthData.date(for: dayOffset) ?? Date()
-            return (date, dayOffset, true)
-        } else if dayOffset <= 0 {
-            // 이전 월
-            let prevMonthDate = calendar.date(byAdding: .month, value: -1, to: month) ?? month
-            let prevMonthData = MonthData(date: prevMonthDate)
-            let prevDay = prevMonthData.daysInMonth + dayOffset
-            let date = prevMonthData.date(for: prevDay) ?? Date()
-            return (date, prevDay, false)
-        } else {
-            // 다음 월
-            let nextDay = dayOffset - monthData.daysInMonth
-            let nextMonthDate = calendar.date(byAdding: .month, value: 1, to: month) ?? month
-            let nextMonthData = MonthData(date: nextMonthDate)
-            let date = nextMonthData.date(for: nextDay) ?? Date()
-            return (date, nextDay, false)
-        }
-    }
-
-    private func dayNumber(for index: Int) -> Int? {
-        let day = index - monthData.firstWeekday + 1
-        return (day > 0 && day <= monthData.daysInMonth) ? day : nil
-    }
-    
     private func getWeekdayColor(for index: Int) -> Color? {
         let weekday = index % 7
         switch weekday {
@@ -517,36 +553,22 @@ struct HighlighterUnderline: Shape {
 
 // MARK: - 최적화된 Day View
 struct OptimizedDayView: View, Equatable {
-    let date: Date
     let day: Int
-    let selectedDate: Date
+    let isToday: Bool
+    let isSelected: Bool
     let hasPost: Bool
     let weekdayColor: Color?
     let onTap: () -> Void
-    
-    private let calendar = Calendar.current
-    
+
     // ⭐ Equatable 구현
     static func == (lhs: OptimizedDayView, rhs: OptimizedDayView) -> Bool {
-        lhs.date == rhs.date &&
         lhs.day == rhs.day &&
-        lhs.selectedDate == rhs.selectedDate &&
+        lhs.isToday == rhs.isToday &&
+        lhs.isSelected == rhs.isSelected &&
         lhs.hasPost == rhs.hasPost &&
         lhs.weekdayColor == rhs.weekdayColor
     }
-    
-    private var isToday: Bool {
-        calendar.isDateInToday(date)
-    }
-    
-    private var isSelected: Bool {
-        calendar.isDate(date, inSameDayAs: selectedDate)
-    }
-    
-    private var highlighterColor: Color {
-        Color(hex:"00C896").opacity(0.3)
-    }
-    
+
     private var textColor: Color {
         if hasPost {
             return Color(hex: "00C896")
@@ -556,28 +578,28 @@ struct OptimizedDayView: View, Equatable {
             return .primary
         }
     }
-    
+
     var body: some View {
         ZStack {
             if isSelected {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(hex:"89dfbc").opacity(0.1))
             }
-            
+
             if isToday {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color(hex:"89dfbc"), lineWidth: 2)
                     .padding(0.5)
             }
-            
+
             ZStack {
                 if hasPost {
                     HighlighterUnderline()
-                        .fill(highlighterColor)
+                        .fill(Color(hex:"00C896").opacity(0.3))
                         .frame(width: 22, height: 20)
                         .offset(y: 3)
                 }
-                
+
                 Text("\(day)")
                     .font(.system(size: 16, weight: hasPost ? .semibold : .regular))
                     .foregroundColor(textColor)
@@ -589,27 +611,21 @@ struct OptimizedDayView: View, Equatable {
     }
 }
 
-// MARK: - Month Data Helper
+// MARK: - Month Data Helper (사전 계산, stored properties)
 struct MonthData {
-    let date: Date
-    private let calendar = Calendar.current
-    
-    var year: Int {
-        calendar.component(.year, from: date)
+    let year: Int
+    let month: Int
+    let daysInMonth: Int
+    let firstWeekday: Int
+
+    init(date: Date) {
+        let calendar = Calendar.current
+        self.year = calendar.component(.year, from: date)
+        self.month = calendar.component(.month, from: date)
+        self.daysInMonth = DateUtility.shared.daysInMonth(year: year, month: month)
+        self.firstWeekday = DateUtility.shared.firstWeekday(year: year, month: month)
     }
-    
-    var month: Int {
-        calendar.component(.month, from: date)
-    }
-    
-    var daysInMonth: Int {
-        DateUtility.shared.daysInMonth(year: year, month: month)
-    }
-    
-    var firstWeekday: Int {
-        DateUtility.shared.firstWeekday(year: year, month: month)
-    }
-    
+
     func date(for day: Int) -> Date? {
         DateUtility.shared.date(year: year, month: month, day: day)
     }

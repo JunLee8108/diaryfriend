@@ -198,6 +198,12 @@
 "login.apple" = "애플 로그인";
 "login.google" = "구글 로그인";
 "login.why_signin" = "왜 로그인을 해야하나요?";
+"login.feature1_title" = "AI가 당신의 일기를\n분석하고\n감정을 이해해요";
+"login.feature1_desc" = "매일의 기록이 의미 있는 인사이트로";
+"login.feature2_title" = "나만의 AI 친구와\n대화하며\n마음을 나눠요";
+"login.feature2_desc" = "언제든 편하게 이야기할 수 있어요";
+"login.feature3_title" = "감정의 변화를\n한눈에\n확인해요";
+"login.feature3_desc" = "시간이 지날수록 나를 더 잘 알게 돼요";
 
 /* PostAISelectView */
 "ai_select.header" = "AI 선택";

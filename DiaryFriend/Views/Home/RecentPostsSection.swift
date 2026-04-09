@@ -182,9 +182,32 @@ struct RecentPostItemView: View {
             .padding(16)
             .contentShape(Rectangle())
             .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.modernSurfacePrimary)
-                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 16,
+                    topTrailingRadius: 16
+                )
+                .fill(Color.modernSurfacePrimary)
+                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+            )
+            .overlay(alignment: .leading) {
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 2,
+                    bottomLeadingRadius: 2,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 0
+                )
+                .fill(Color(hex: "00C896"))
+                .frame(width: 3)
+            }
+            .clipShape(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 16,
+                    topTrailingRadius: 16
+                )
             )
         }
         .buttonStyle(PlainButtonStyle())

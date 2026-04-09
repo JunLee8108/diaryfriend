@@ -149,7 +149,7 @@ struct IntroGreetingSection: View {
                 }
             }
         }
-        .onChange(of: characterStore.allCharacters) { _, _ in
+        .onChange(of: characterStore.allCharacters.count) { _, _ in
             if greetingCharacter == nil {
                 pickRandomCharacter()
             }

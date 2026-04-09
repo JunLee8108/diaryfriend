@@ -83,6 +83,7 @@ struct IntroGreetingSection: View {
                         .opacity(avatarAnimated ? 1 : 0)
                 }
                 .frame(width: 60)
+                .id(character.id)
             }
 
             // 우측: 인사말 + stats

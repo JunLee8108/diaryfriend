@@ -195,7 +195,11 @@ struct SlideCalendarView: View {
     
     @State private var tabSelection = 50
     private let calendar = Calendar.current
-    
+
+    private var isCurrentMonth: Bool {
+        tabSelection == 50
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             // 헤더
@@ -208,7 +212,34 @@ struct SlideCalendarView: View {
                     tabSelection += 1
                 }
             )
-            
+
+            // "Today" 버튼 (현재 월이 아닐 때만)
+            if !isCurrentMonth {
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            tabSelection = 50
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.uturn.left")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundColor(Color(hex: "00C896"))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(Color(hex: "00C896").opacity(0.12))
+                        )
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
             // 요일 헤더
             WeekdayHeader()
             
@@ -233,6 +264,7 @@ struct SlideCalendarView: View {
                 onMonthChanged(newMonth)
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)

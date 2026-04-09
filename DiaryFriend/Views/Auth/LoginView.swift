@@ -44,7 +44,7 @@ struct LoginView: View {
                     Image("Logo")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 80, height: 80)
+                        .frame(width: 120, height: 120)
                         .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 60)
@@ -54,7 +54,9 @@ struct LoginView: View {
 
                     // 피처 캐러셀
                     featureCarousel
-                        .padding(.bottom, 40)
+                        .padding(.top, 26)
+                        .padding(.bottom, 30)
+                    
 
 
                     // 로그인 버튼
@@ -85,21 +87,22 @@ struct LoginView: View {
     // MARK: - Title Section (가운데 정렬)
     private var titleSection: some View {
         VStack(alignment: .center, spacing: 6) {
-            Text("DiaryFriend")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color(hex: "5DCED5"), Color(hex: "2FB8A0")],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+            Text("DIARYFRIEND")
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .tracking(4)
+//                .foregroundStyle(
+//                    LinearGradient(
+//                        colors: [Color(hex: "5DCED5"), Color(hex: "2FB8A0")],
+//                        startPoint: .leading,
+//                        endPoint: .trailing
+//                    )
+//                )
 
-            Text(loginSubtitle)
-                .font(.system(size: 14, weight: .regular, design: .rounded))
-                .foregroundColor(.secondary)
-                .tracking(0.3)
-                .multilineTextAlignment(.center)
+//            Text(loginSubtitle)
+//                .font(.system(size: 14, weight: .regular, design: .rounded))
+//                .foregroundColor(.secondary)
+//                .tracking(0.3)
+//                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 30)
@@ -126,7 +129,7 @@ struct LoginView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 220)
+            .frame(height: 180)
 
             // 커스텀 인디케이터
             HStack(spacing: 8) {
@@ -138,7 +141,7 @@ struct LoginView: View {
                 }
             }
             .padding(.top, 4)
-            .padding(.bottom, 12)
+            .padding(.bottom, 30)
 
             // 하단 border
             Rectangle()
@@ -152,7 +155,7 @@ struct LoginView: View {
     private func featurePageView(title: String, description: String, icon: String, color: Color) -> some View {
         VStack(alignment: .center, spacing: 0) {
             Image(systemName: icon)
-                .font(.system(size: 44, weight: .light))
+                .font(.system(size: 38, weight: .light))
                 .foregroundColor(color.opacity(0.6))
                 .padding(.bottom, 16)
 

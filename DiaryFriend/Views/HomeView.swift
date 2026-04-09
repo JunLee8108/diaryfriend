@@ -600,7 +600,7 @@ struct OptimizedDayView: View, Equatable {
                 }
 
                 Text("\(day)")
-                    .font(.system(size: 16, weight: hasPost ? .semibold : .regular))
+                    .font(.system(size: 14, weight: hasPost ? .semibold : .regular))
                     .foregroundColor(textColor)
             }
         }

@@ -29,7 +29,6 @@ enum LocalizationKey: String {
     case language_select_title = "language.select_title"
     case language_english_desc = "language.english_description"
     case language_korean_desc = "language.korean_description"
-    case language_updating = "language.updating"
     
     // MARK: - Edit Name ✅
     case edit_name_title = "edit_name.title"
@@ -133,6 +132,8 @@ enum LocalizationKey: String {
     case stats_entry_tracker = "stats.entry_tracker"
     case stats_no_entry = "stats.no_entry"
     case stats_entry = "stats.entry"
+    case stats_empty_no_entries = "stats.empty_no_entries"
+    case stats_empty_start_writing = "stats.empty_start_writing"
     
     // MARK: - Mood Names
     case mood_happy = "mood.happy"
@@ -144,6 +145,10 @@ enum LocalizationKey: String {
     case greeting_afternoon = "greeting.afternoon"
     case greeting_evening = "greeting.evening"
     case greeting_night = "greeting.night"
+    case intro_stats_streak = "intro_stats.streak"
+    case intro_stats_this_month = "intro_stats.this_month"
+    case intro_stats_days = "intro_stats.days"
+    case intro_stats_entries = "intro_stats.entries"
     
     // MARK: - Recent Posts
     case recent_posts_title = "recent_posts.title"
@@ -316,8 +321,6 @@ enum LocalizationKey: String {
             return "Use English for all app content"
         case .language_korean_desc:
             return "Use Korean for all app content"
-        case .language_updating:
-            return "Updating..."
             
             // Edit Name
         case .edit_name_title:
@@ -482,6 +485,10 @@ enum LocalizationKey: String {
             return "No entry"
         case .stats_entry:
             return "Entry"
+        case .stats_empty_no_entries:
+            return "No entries in %@"
+        case .stats_empty_start_writing:
+            return "Start writing to see your statistics!"
             
             // Mood Names
         case .mood_happy:
@@ -500,6 +507,14 @@ enum LocalizationKey: String {
             return "Good evening"
         case .greeting_night:
             return "Good night"
+        case .intro_stats_streak:
+            return "day streak"
+        case .intro_stats_this_month:
+            return "this month"
+        case .intro_stats_days:
+            return "days"
+        case .intro_stats_entries:
+            return "entries"
             
             // Recent Posts
         case .recent_posts_title:

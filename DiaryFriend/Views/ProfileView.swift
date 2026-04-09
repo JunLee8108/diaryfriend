@@ -77,7 +77,7 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal)
             }
-            .padding(.top, 40)
+            .padding(.top, 16)
             .safeAreaInset(edge: .bottom) {
                 // TabBar 높이를 고려한 안전 영역 확보
                 Color.clear.frame(height: 20)
@@ -183,7 +183,7 @@ struct ProfileView: View {
     
     // MARK: - Characters Section
     private var charactersSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
             // Header
             HStack {
                 Text(aiCharactersTitle)

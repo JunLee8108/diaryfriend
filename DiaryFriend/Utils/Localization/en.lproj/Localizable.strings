@@ -132,6 +132,8 @@
 "stats.entry_tracker" = "ENTRY TRACKER";
 "stats.no_entry" = "No entry";
 "stats.entry" = "Entry";
+"stats.empty_no_entries" = "No entries in %@";
+"stats.empty_start_writing" = "Start writing to see your statistics!";
 
 /* Mood Names */
 "mood.happy" = "Happy";
@@ -143,6 +145,10 @@
 "greeting.afternoon" = "Good afternoon";
 "greeting.evening" = "Good evening";
 "greeting.night" = "Good night";
+"intro_stats.streak" = "day streak";
+"intro_stats.this_month" = "this month";
+"intro_stats.days" = "days";
+"intro_stats.entries" = "entries";
 
 /* Recent Posts */
 "recent_posts.title" = "RECENT";

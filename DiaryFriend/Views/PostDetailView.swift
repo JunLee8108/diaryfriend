@@ -237,7 +237,7 @@ struct PostContentView: View {
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 30) {
+            VStack(alignment: .leading, spacing: 20) {
                 // 날짜 헤더
                 HStack(alignment: .center, spacing: 20) {
                     Text(dayNumber)
@@ -283,19 +283,23 @@ struct PostContentView: View {
                 
                 // 해시태그
                 if !detail.hashtags.isEmpty {
-                    HStack(spacing: 8) {
-                        ForEach(detail.hashtags, id: \.self) { tag in
-                            Text("#\(tag)")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.gray)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Color.gray.opacity(0.1)
-                                )
-                                .clipShape(Capsule())
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(detail.hashtags, id: \.self) { tag in
+                                Text("#\(tag)")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Color.gray.opacity(0.1)
+                                    )
+                                    .clipShape(Capsule())
+                            }
                         }
+                        .padding(.horizontal, 20)
                     }
+                    .padding(.horizontal, -20)
                 }
                 
                 Divider()

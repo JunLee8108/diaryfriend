@@ -28,7 +28,7 @@ struct PostMethodChoiceView: View {
                 Spacer(minLength: 50)
                 
                 // Main Content
-                VStack(spacing: 40) {
+                VStack(spacing: 30) {
                     // Title section with bubble style
                     VStack(spacing: 8) {
                         Text(dateTitle)
@@ -70,7 +70,7 @@ struct PostMethodChoiceView: View {
                     }
                     .padding(.horizontal, 24)
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 120)
                 
                 Spacer(minLength: 50)
             }

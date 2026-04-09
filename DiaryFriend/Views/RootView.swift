@@ -12,7 +12,6 @@ struct RootView: View {
     @StateObject private var statsDataStore = StatsDataStore.shared
     @StateObject private var characterStore = CharacterStore.shared
     
-    // ⭐ LocalizationManager EnvironmentObject로 받기
     @EnvironmentObject var localizationManager: LocalizationManager
     
     @State private var isInitialized = false
@@ -22,7 +21,6 @@ struct RootView: View {
     @State private var showSessionExpiredModal = false
     @State private var expiredUserId: UUID?
     
-    // ⭐ 다국어 적용
     @Localized(.session_expired_title) var sessionExpiredTitle
     @Localized(.session_expired_message) var sessionExpiredMessage
     @Localized(.common_ok) var okButton
@@ -30,18 +28,27 @@ struct RootView: View {
     var body: some View {
         ZStack {
             Group {
-                if authService.isLoading {
-                    LoadingView()
-                } else if authService.isAuthenticated {
-                    MainView()
-                        .environmentObject(authService)
-                        .environmentObject(userProfileStore)
-                        .environmentObject(dataStore)
-                        .environmentObject(statsDataStore)
-                        .environmentObject(characterStore)
+                if authService.isAuthenticated {
+                    // ✅ 신규 유저 체크 추가
+                    if authService.isNewUser {
+                        OnboardingView()
+                            .environmentObject(authService)
+                            .environmentObject(userProfileStore)
+                            .environmentObject(localizationManager)
+                            .transition(.opacity)
+                    } else {
+                        MainView()
+                            .environmentObject(authService)
+                            .environmentObject(userProfileStore)
+                            .environmentObject(dataStore)
+                            .environmentObject(statsDataStore)
+                            .environmentObject(characterStore)
+                            .transition(.opacity)
+                    }
                 } else {
                     LoginView()
                         .environmentObject(authService)
+                        .transition(.opacity)
                 }
             }
             
@@ -72,17 +79,13 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut, value: authService.isAuthenticated)
+        .animation(.easeInOut, value: authService.isNewUser)  // ✅ isNewUser 변화도 애니메이션
         .task {
             guard !isInitialized else { return }
             
-            async let initTask: () = initializeApp()
-            async let minDisplayTask: () = {
-                try? await Task.sleep(nanoseconds: 300_000_000)
-            }()
+            await initializeApp()
             
-            _ = await (initTask, minDisplayTask)
-            
-            withAnimation(.easeOut(duration: 0.5)) {
+            withAnimation(.easeOut(duration: 0.4)) {
                 showLaunchScreen = false
             }
         }
@@ -93,11 +96,11 @@ struct RootView: View {
         }
         .infoModal(
             isPresented: $showSessionExpiredModal,
-            title: sessionExpiredTitle,        // ⭐ 다국어 적용
-            message: sessionExpiredMessage,     // ⭐ 다국어 적용
+            title: sessionExpiredTitle,
+            message: sessionExpiredMessage,
             icon: "exclamationmark.triangle",
             iconColor: Color(hex: "FF9800"),
-            buttonText: okButton,               // ⭐ 다국어 적용
+            buttonText: okButton,
             onDismiss: {
                 Task {
                     await handleSessionExpiration()
@@ -110,32 +113,18 @@ struct RootView: View {
     
     private func initializeApp() async {
         Logger.debug("🚀 App initialization started")
-
+        
         await authService.initialize()
-
+        
         if let userId = authService.currentUserId {
-            // 프로필 로딩과 데이터 설정을 병렬 실행
-            async let profileTask: () = loadUserProfile(userId: userId)
-            async let setupTask: () = setupUserData(userId)
-            _ = await (profileTask, setupTask)
-
+            await setupUserData(userId)
             currentUserId = userId
-
-            // ⭐ 인증 후 UserProfile과 언어 동기화
+            
             await localizationManager.syncWithUserProfile()
         }
-
+        
         isInitialized = true
         print("✅ RootView: App initialization complete")
-    }
-
-    private func loadUserProfile(userId: UUID) async {
-        do {
-            try await UserProfileStore.shared.fetchUserProfile(userId: userId)
-            Logger.debug("User profile loaded successfully")
-        } catch {
-            Logger.debug("Failed to load user profile: \(error)")
-        }
     }
     
     // MARK: - Session Validation
@@ -165,7 +154,6 @@ struct RootView: View {
         
         print("🗑️ Handling session expiration for user: \(userId.uuidString.prefix(8))")
         
-        // Realm 삭제
         do {
             try RealmConfiguration.shared.deleteUserRealmFile(userId.uuidString)
             print("✅ Realm file deleted due to session expiration")
@@ -173,10 +161,8 @@ struct RootView: View {
             print("⚠️ Failed to delete Realm file: \(error)")
         }
         
-        // 로그아웃
         try? await authService.signOut()
         
-        // 정리
         await MainActor.run {
             expiredUserId = nil
         }
@@ -197,8 +183,6 @@ struct RootView: View {
         
         if let userId = newUserId {
             await setupUserData(userId)
-            
-            // ⭐ 사용자 변경 시에도 언어 동기화
             await localizationManager.syncWithUserProfile()
         }
         
@@ -208,19 +192,27 @@ struct RootView: View {
     // MARK: - User Data Management
     
     private func setupUserData(_ userId: UUID) async {
-        Logger.debug("🚀 Setting up Realm, data, and character for user \(userId.uuidString.prefix(8))...")
-        
         await RealmManager.shared.setupRealm(for: userId.uuidString)
         
-        async let dataLoad: () = dataStore.initialLoad()
-        async let characterLoad: () = characterStore.loadAllCharacters()
-        _ = await (dataLoad, characterLoad)
-        
-        prefetchAvatars()
-        
-        print("✅ RootView: User data setup complete")
-        print("  - Posts: \(dataStore.posts.count)")
-        print("  - Characters: \(characterStore.allCharacters.count)")
+        // ✅ 신규 유저도 Character는 로드
+        if !authService.isNewUser {
+            // 기존 유저: 모든 데이터 로드
+            async let dataLoad: () = dataStore.initialLoad()
+            async let characterLoad: () = characterStore.loadAllCharacters()
+            _ = await (dataLoad, characterLoad)
+            
+            prefetchAvatars()
+            
+            print("✅ RootView: User data setup complete")
+            print("  - Posts: \(dataStore.posts.count)")
+            print("  - Characters: \(characterStore.allCharacters.count)")
+        } else {
+            // ✅ 신규 유저: Character만 로드 (Post는 아직 없음)
+            await characterStore.loadAllCharacters()
+            
+            print("ℹ️ RootView: New user - loaded characters only")
+            print("  - Characters: \(characterStore.allCharacters.count)")
+        }
     }
     
     private func clearUserData() async {
@@ -231,6 +223,7 @@ struct RootView: View {
         await UserProfileStore.shared.clearProfile()
         
         await MainActor.run {
+            statsDataStore.clearAllCache()
             ChatService.shared.clearCache()
         }
         
@@ -252,32 +245,4 @@ struct RootView: View {
             print("📦 Prefetched \(avatarURLs.count) character avatars")
         }
     }
-}
-
-// MARK: - Loading View
-struct LoadingView: View {
-    // ⭐ 다국어 적용
-    @Localized(.app_diary_friend) var appName
-    @Localized(.app_loading) var loadingText
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.5)
-            
-            Text(appName)
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text(loadingText)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-    }
-}
-
-// MARK: - Preview
-#Preview {
-    RootView()
-        .environmentObject(LocalizationManager.shared)
 }

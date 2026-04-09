@@ -90,24 +90,25 @@ struct PostAIReviewView: View {
         .safeAreaInset(edge: .bottom) {
             // Main Content
             ScrollView {
-                VStack(spacing: 34) {
-                    // AI Generated Label
-                    HStack {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 12))
-                        Text("AI Generated")
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                    }
-                    .foregroundColor(Color(hex: "00A077"))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill(Color(hex: "00A077").opacity(0.1))
-                    )
-                    
+                VStack(spacing: 28) {
                     // Header Section
                     HeaderSection(dateTitle: formattedDate)
+                    
+                    // AI Generated Label
+//                    HStack {
+//                        Image(systemName: "sparkles")
+//                            .font(.system(size: 12))
+//                        Text("AI Generated")
+//                            .font(.system(size: 11, weight: .medium, design: .rounded))
+//                    }
+//                    .foregroundColor(Color(hex: "00A077"))
+//                    .padding(.horizontal, 12)
+//                    .padding(.vertical, 6)
+//                    .background(
+//                        Capsule()
+//                            .fill(Color(hex: "00A077").opacity(0.1))
+//                    )
+                    
                         
                     // Diary Text
                     DiaryTextSection(
@@ -142,10 +143,10 @@ struct PostAIReviewView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Review Diary")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-            }
+//            ToolbarItem(placement: .principal) {
+//                Text("Review Diary")
+//                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+//            }
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 

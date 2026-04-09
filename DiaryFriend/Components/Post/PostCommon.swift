@@ -85,16 +85,16 @@ struct HeaderSection: View {
     let dateTitle: String
     
     var body: some View {
-        VStack(spacing: 8) {
+        
             HStack(spacing: 8) {
                 Image(systemName: "calendar")
-                    .font(.system(size: 20))
+                    .font(.system(size: 16))
                     .foregroundColor(.secondary)
                 
                 Text(dateTitle)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
             }
-        }
+        
     }
 }

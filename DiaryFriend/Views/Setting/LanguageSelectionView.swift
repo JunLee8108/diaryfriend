@@ -5,22 +5,24 @@ struct LanguageSelectionView: View {
     
     let currentLanguage: Language
     let onSelect: (Language) async throws -> Void
+    @Binding var isLoadingBinding: Bool  // ⭐ 부모에게 로딩 상태 전달
     
     @State private var selectedLanguage: Language
-    @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showError = false
     
     // ⭐ 다국어
     @Localized(.language_select_title) var title
-    @Localized(.language_updating) var updatingMessage
     @Localized(.language_english_desc) var englishDesc
     @Localized(.language_korean_desc) var koreanDesc
     @Localized(.error_title) var errorTitle
     @Localized(.common_ok) var okButton
     
-    init(currentLanguage: Language, onSelect: @escaping (Language) async throws -> Void) {
+    init(currentLanguage: Language,
+         isLoadingBinding: Binding<Bool>,  // ⭐ 추가
+         onSelect: @escaping (Language) async throws -> Void) {
         self.currentLanguage = currentLanguage
+        self._isLoadingBinding = isLoadingBinding
         self.onSelect = onSelect
         self._selectedLanguage = State(initialValue: currentLanguage)
     }
@@ -52,23 +54,12 @@ struct LanguageSelectionView: View {
                     .onTapGesture {
                         selectLanguage(language)
                     }
-                    .disabled(isLoading)
+                    .disabled(isLoadingBinding)  // ⭐ binding 사용
                 }
             }
             .listStyle(.insetGrouped)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            .overlay {
-                if isLoading {
-                    Color.black.opacity(0.3)
-                        .ignoresSafeArea()
-                    ProgressView(updatingMessage)
-                        .padding()
-                        .background(Color(.systemBackground))
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
-                }
-            }
             .alert(errorTitle, isPresented: $showError) {
                 Button(okButton) { }
             } message: {
@@ -93,7 +84,7 @@ struct LanguageSelectionView: View {
         }
         
         selectedLanguage = language
-        isLoading = true
+        isLoadingBinding = true  // ⭐ 부모에게 로딩 시작 알림
         
         Task {
             do {
@@ -105,12 +96,19 @@ struct LanguageSelectionView: View {
                     LocalizationManager.shared.setLanguage(appLanguage)
                     dismiss()
                 }
+                
+                // ⭐ 0.5초 대기 후 dismiss
+                try await Task.sleep(nanoseconds: 500_000_000)
+                
+                await MainActor.run {
+                    isLoadingBinding = false  // ⭐ 로딩 종료
+                }
             } catch {
                 await MainActor.run {
                     selectedLanguage = currentLanguage
                     errorMessage = error.localizedDescription
                     showError = true
-                    isLoading = false
+                    isLoadingBinding = false  // ⭐ 로딩 종료
                 }
             }
         }

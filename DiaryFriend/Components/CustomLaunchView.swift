@@ -16,12 +16,12 @@ struct CustomLaunchView: View {
                 Image("Logo")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 120, height: 120)
+                    .frame(width: 160, height: 120)
                 
                 Text("DiaryFriend")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
             }
-            .padding(.bottom, 40)
+            .padding(.bottom, 60)
         }
     }
 }

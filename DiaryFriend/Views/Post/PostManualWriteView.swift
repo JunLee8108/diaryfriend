@@ -53,11 +53,9 @@ struct PostManualWriteView: View {
         .safeAreaInset(edge: .bottom) {
             // Main Content
             ScrollView {
-                VStack(spacing: 34) {
+                VStack(spacing: 28) {
                     // Header Section
                     HeaderSection(dateTitle: dateTitle)
-                        .padding(.top, 30)
-                        .padding(.bottom, 20)
                     
                     // Text Editor
                     DiaryTextSection(

@@ -24,9 +24,32 @@ class AuthService: ObservableObject {
                 self.session = session
                 self.currentUser = session.user
                 self.isAuthenticated = true
-                self.isLoading = false
-
+                
                 SupabaseManager.shared.updateCurrentUser(session.user)
+            }
+            
+            let userId = session.user.id
+            
+            Logger.debug("Loading user profile for existing session...")
+            
+            do {
+                try await UserProfileStore.shared.fetchUserProfile(userId: userId)
+                Logger.debug("User profile loaded successfully")
+                
+                // ✅ is_new 체크 추가
+                if let profile = UserProfileStore.shared.userProfile {
+                    await MainActor.run {
+                        self.isNewUser = profile.is_new
+                        print("📊 Session restored - isNewUser: \(profile.is_new)")
+                    }
+                }
+                
+            } catch {
+                Logger.debug("Failed to load user profile: \(error)")
+            }
+            
+            await MainActor.run {
+                self.isLoading = false
             }
             
         } catch {
@@ -52,8 +75,6 @@ class AuthService: ObservableObject {
         }
         
         do {
-            // ASWebAuthenticationSession 사용
-            // Apple은 자체 계정 선택 UI 제공하므로 ephemeral = false
             try await supabase.auth.signInWithOAuth(
                 provider: .apple,
                 redirectTo: URL(string: "diaryfriend://auth-callback")
@@ -61,7 +82,6 @@ class AuthService: ObservableObject {
                 session.prefersEphemeralWebBrowserSession = false
             }
             
-            // 세션 확인 및 프로필 로드
             try await handleOAuthSuccess()
             
         } catch {
@@ -81,8 +101,6 @@ class AuthService: ObservableObject {
         }
         
         do {
-            // ASWebAuthenticationSession 사용
-            // ✅ queryParams에 prompt=select_account 추가하여 매번 계정 선택 화면 표시
             try await supabase.auth.signInWithOAuth(
                 provider: .google,
                 redirectTo: URL(string: "diaryfriend://auth-callback"),
@@ -91,7 +109,6 @@ class AuthService: ObservableObject {
                 session.prefersEphemeralWebBrowserSession = false
             }
             
-            // 세션 확인 및 프로필 로드
             try await handleOAuthSuccess()
             
         } catch {
@@ -148,7 +165,7 @@ class AuthService: ObservableObject {
         }
     }
     
-    // MARK: - Deep Link Handling (기존 코드 - 백업용)
+    // MARK: - Deep Link Handling
     func handleDeepLink(_ url: URL) async throws {
         print("Handling deep link: \(url)")
         
@@ -292,6 +309,13 @@ class AuthService: ObservableObject {
             let userId = session.user.id
             try await UserProfileStore.shared.fetchUserProfile(userId: userId)
             
+            // ✅ is_new 체크 추가
+            if let profile = UserProfileStore.shared.userProfile {
+                await MainActor.run {
+                    self.isNewUser = profile.is_new
+                }
+            }
+            
         } catch {
             try? await signOut()
             throw error
@@ -300,12 +324,29 @@ class AuthService: ObservableObject {
     
     // MARK: - Helper Methods
     private func checkIfNewUser(_ user: User) async -> Bool {
-        do {
-            try await UserProfileStore.shared.fetchUserProfile(userId: user.id)
-            return false
-        } catch {
-            return true
+        for attempt in 1...3 {
+            do {
+                try await UserProfileStore.shared.fetchUserProfile(userId: user.id)
+                
+                let isNew = UserProfileStore.shared.userProfile?.is_new ?? false
+                
+                print("📊 User profile loaded (attempt \(attempt))")
+                print("   - is_new: \(isNew)")
+                print("   - created_at: \(UserProfileStore.shared.userProfile?.created_at ?? Date())")
+                
+                return isNew
+                
+            } catch {
+                if attempt < 3 {
+                    print("⏳ Waiting for profile creation... (attempt \(attempt)/3)")
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                } else {
+                    print("❌ Profile not found after 3 attempts")
+                    return false
+                }
+            }
         }
+        return false
     }
 }
 

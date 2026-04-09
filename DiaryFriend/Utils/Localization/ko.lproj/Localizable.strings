@@ -125,6 +125,8 @@
 "stats.entry_tracker" = "작성 현황";
 "stats.no_entry" = "작성 안 함";
 "stats.entry" = "작성함";
+"stats.empty_no_entries" = "%@에 작성한 일기가 없습니다.";
+"stats.empty_start_writing" = "일기를 작성하고 통계를 확인해보세요!";
 
 /* Mood Names */
 "mood.happy" = "행복";
@@ -136,6 +138,10 @@
 "greeting.afternoon" = "좋은 오후에요";
 "greeting.evening" = "좋은 저녁이에요";
 "greeting.night" = "좋은 밤이에요";
+"intro_stats.streak" = "일 연속";
+"intro_stats.this_month" = "이번 달";
+"intro_stats.days" = "일";
+"intro_stats.entries" = "개";
 
 /* Recent Posts */
 "recent_posts.title" = "최근 게시물";

@@ -33,45 +33,39 @@ struct SearchView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 12)
                 
-                // Result Source Indicator
-                if viewModel.resultSource.showIndicator {
-                    HStack {
-                        if viewModel.isSearching {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                                .padding(.leading, 4)
-                        }
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 8)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-                
-                // Results Area - ⭐ activeQuery 기준으로 판단
-                ScrollView {
+                // ⭐ ZStack으로 변경 - 부드러운 크로스페이드
+                ZStack {
+                    // 검색 전 상태
                     if viewModel.activeQuery.isEmpty {
-                        // 검색 실행 전 (타이핑 중이어도 이 화면 유지)
                         EmptySearchView()
-                    } else if viewModel.searchResults.isEmpty && !viewModel.isSearching {
-                        // 검색 실행했지만 결과 없음
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    }
+                    
+                    // 검색 결과 없음
+                    if !viewModel.activeQuery.isEmpty &&
+                       viewModel.searchResults.isEmpty &&
+                       !viewModel.isSearching {
                         NoResultsView(query: viewModel.activeQuery)
-                    } else {
-                        // 검색 결과 있음
-                        SearchResultsSection(
-                            posts: viewModel.searchResults,
-                            searchQuery: viewModel.activeQuery
-                        )
-                        .padding(.top, 8)
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    }
+                    
+                    // 검색 결과 있음
+                    if !viewModel.searchResults.isEmpty {
+                        ScrollView {
+                            SearchResultsSection(
+                                posts: viewModel.searchResults,
+                                searchQuery: viewModel.activeQuery
+                            )
+                            .padding(.top, 8)
+                            
+                            Color.clear.frame(height: 20)
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
                 }
-                .onTapGesture {
-                    isSearchFocused = false
-                }
-                .safeAreaInset(edge: .bottom) {
-                    Color.clear.frame(height: 20)
-                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .animation(.spring(response: 0.35, dampingFraction: 0.8), value: viewModel.activeQuery)
+                .animation(.spring(response: 0.35, dampingFraction: 0.8), value: viewModel.searchResults.isEmpty)
             }
             .background(Color.modernBackground)
             .onTapGesture {
@@ -84,7 +78,6 @@ struct SearchView: View {
                 }
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: viewModel.resultSource.showIndicator)
     }
 }
 

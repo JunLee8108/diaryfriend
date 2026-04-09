@@ -201,7 +201,6 @@ struct SlideCalendarView: View {
         tabSelection == centerIndex
     }
 
-    @State private var swipeHintOffset: CGFloat = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -245,7 +244,7 @@ struct SlideCalendarView: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .frame(height: 270)
-            .offset(x: swipeHintOffset)
+
             .padding(.horizontal, 16)
             .padding(.bottom, 18)
             .onChange(of: tabSelection) { oldValue, newValue in
@@ -260,19 +259,6 @@ struct SlideCalendarView: View {
                 .fill(Color.modernSurfacePrimary)
                 .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
         )
-        .onAppear {
-            // 스와이프 가능 힌트: 살짝 좌로 흔들림 1회
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    swipeHintOffset = -12
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
-                        swipeHintOffset = 0
-                    }
-                }
-            }
-        }
     }
     
     private func monthForIndex(_ index: Int) -> Date {

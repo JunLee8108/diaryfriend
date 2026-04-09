@@ -214,15 +214,15 @@ struct SlideCalendarView: View {
                     }
                 }
             )
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
             .padding(.bottom, 12)
 
             // 미니멀 구분선
             Rectangle()
                 .fill(Color.secondary.opacity(0.15))
                 .frame(height: 0.5)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
 
             // 요일 헤더
             WeekdayHeader()
@@ -245,7 +245,7 @@ struct SlideCalendarView: View {
             .frame(height: 300)
             .offset(x: swipeHintOffset)
             .padding(.horizontal, 16)
-            .padding(.bottom, 12)
+            .padding(.bottom, 18)
             .onChange(of: tabSelection) { oldValue, newValue in
                 let diff = newValue - 50
                 let newMonth = calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()

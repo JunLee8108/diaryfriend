@@ -445,7 +445,6 @@ struct CalendarGridView: View, Equatable {
         let next = MonthData(date: nextMonthDate)
 
         let today = calendar.startOfDay(for: Date())
-        let selectedDay = calendar.startOfDay(for: selectedDate)
 
         var result: [CalendarCellData] = []
         result.reserveCapacity(42)

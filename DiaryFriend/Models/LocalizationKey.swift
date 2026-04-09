@@ -205,6 +205,12 @@ enum LocalizationKey: String {
     case login_apple = "login.apple"
     case login_google = "login.google"
     case login_why_signin = "login.why_signin"
+    case login_feature1_title = "login.feature1_title"
+    case login_feature1_desc = "login.feature1_desc"
+    case login_feature2_title = "login.feature2_title"
+    case login_feature2_desc = "login.feature2_desc"
+    case login_feature3_title = "login.feature3_title"
+    case login_feature3_desc = "login.feature3_desc"
     
     // MARK: - PostAISelectView
     case ai_select_header = "ai_select.header"
@@ -607,7 +613,19 @@ enum LocalizationKey: String {
             return "Continue with Google"
         case .login_why_signin:
             return "Why sign in?"
-            
+        case .login_feature1_title:
+            return "AI analyzes your diary\nand understands\nyour emotions"
+        case .login_feature1_desc:
+            return "Daily records become meaningful insights"
+        case .login_feature2_title:
+            return "Chat with your\npersonal AI friend\nanytime"
+        case .login_feature2_desc:
+            return "A comfortable space to share your thoughts"
+        case .login_feature3_title:
+            return "Track your emotional\nchanges at a glance"
+        case .login_feature3_desc:
+            return "Know yourself better as time goes by"
+
             // PostAISelectView
         case .ai_select_header:
             return "AI Chat"

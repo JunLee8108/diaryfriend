@@ -62,77 +62,83 @@ struct IntroGreetingSection: View {
     @Localized(.intro_stats_this_month) var monthLabel
 
     var body: some View {
-        VStack(spacing: 30) {
-            // Greeting header with avatar
-            HStack(spacing: 14) {
-                // 캐릭터 아바타 + 이름
-                if let character = greetingCharacter {
-                    VStack(spacing: 4) {
-                        CachedAvatarImage(
-                            url: character.avatar_url,
-                            size: 50,
-                            initial: String(character.localizedName(
-                                isKorean: profileStore.isKoreanUser
-                            ).prefix(1)).uppercased()
-                        )
-                        .scaleEffect(avatarAnimated ? 1 : 0.8)
+        HStack(alignment: .center, spacing: 14) {
+            // 좌측: 아바타 + 이름
+            if let character = greetingCharacter {
+                VStack(spacing: 4) {
+                    CachedAvatarImage(
+                        url: character.avatar_url,
+                        size: 50,
+                        initial: String(character.localizedName(
+                            isKorean: profileStore.isKoreanUser
+                        ).prefix(1)).uppercased()
+                    )
+                    .scaleEffect(avatarAnimated ? 1 : 0.8)
+                    .opacity(avatarAnimated ? 1 : 0)
+
+                    Text(character.localizedName(isKorean: profileStore.isKoreanUser))
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                         .opacity(avatarAnimated ? 1 : 0)
-
-                        Text(character.localizedName(isKorean: profileStore.isKoreanUser))
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundColor(.secondary)
-                            .opacity(avatarAnimated ? 1 : 0)
-                    }
                 }
+                .frame(width: 60)
+            }
 
+            // 우측: 인사말 + stats
+            VStack(alignment: .leading, spacing: 10) {
                 // 인사말
-                VStack(alignment: greetingCharacter != nil ? .leading : .center, spacing: 2) {
-                    HStack(spacing: 8) {
-                        Text("\(greeting), \(profileStore.currentDisplayName)")
-                            .font(.system(size: 17, weight: .semibold, design: .rounded))
-                            .foregroundColor(.primary)
+                HStack(spacing: 6) {
+                    Text("\(greeting), \(profileStore.currentDisplayName)")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
 
-                        Text(greetingEmoji)
-                            .font(.system(size: 17))
+                    Text(greetingEmoji)
+                        .font(.system(size: 15))
+                }
+                .opacity(introAnimated ? 1 : 0)
+                .offset(y: introAnimated ? 0 : 8)
+
+                // Stats row
+                if !dataStore.isLoading {
+                    HStack(spacing: 14) {
+                        CompactStatView(
+                            icon: "flame.fill",
+                            value: dataStore.currentStreak,
+                            label: streakLabel,
+                            color: Color(hex: "FF6961"),
+                            animated: statsAnimated
+                        )
+
+                        Circle()
+                            .fill(Color.secondary.opacity(0.3))
+                            .frame(width: 3, height: 3)
+                            .opacity(statsAnimated ? 1 : 0)
+
+                        CompactStatView(
+                            icon: "square.and.pencil",
+                            value: dataStore.currentMonthPostCount,
+                            label: monthLabel,
+                            color: Color(hex: "00C896"),
+                            animated: statsAnimated
+                        )
                     }
+                    .opacity(statsAnimated ? 1 : 0)
+                    .offset(y: statsAnimated ? 0 : 8)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: greetingCharacter != nil ? .leading : .center)
-            .opacity(introAnimated ? 1 : 0)
-            .offset(y: introAnimated ? 0 : 10)
 
-            // ⭐ Compact Stats Row
-            if !dataStore.isLoading {
-                HStack(spacing: 16) {
-                    // Streak
-                    CompactStatView(
-                        icon: "flame.fill",
-                        value: dataStore.currentStreak,
-                        label: streakLabel,
-                        color: Color(hex: "FF6961"),
-                        animated: statsAnimated
-                    )
-
-                    // Divider
-                    Circle()
-                        .fill(Color.secondary.opacity(0.3))
-                        .frame(width: 4, height: 4)
-                        .opacity(statsAnimated ? 1 : 0)
-
-                    // This month
-                    CompactStatView(
-                        icon: "square.and.pencil",
-                        value: dataStore.currentMonthPostCount,
-                        label: monthLabel,
-                        color: Color(hex: "00C896"),
-                        animated: statsAnimated
-                    )
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
-                .opacity(statsAnimated ? 1 : 0)
-                .offset(y: statsAnimated ? 0 : 10)
-            }
+            Spacer(minLength: 0)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 18)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.modernSurfacePrimary)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
         .onAppear {
             pickRandomCharacter()
             playAnimation()

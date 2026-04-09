@@ -139,8 +139,14 @@ struct RootView: View {
             _ = await (dataLoad, characterLoad)
 
             // 아바타 프리페치는 백그라운드 (스플래시 차단하지 않음)
-            Task.detached { [weak self] in
-                await self?.prefetchAvatars()
+            let avatarURLs = characterStore.allCharacters
+                .compactMap { $0.avatar_url }
+                .filter { !$0.isEmpty }
+                .prefix(5)
+            if !avatarURLs.isEmpty {
+                Task {
+                    ImageCache.shared.prefetch(urls: Array(avatarURLs))
+                }
             }
 
             print("✅ RootView: User data setup complete")
@@ -254,8 +260,14 @@ struct RootView: View {
             async let characterLoad: () = characterStore.loadAllCharacters()
             _ = await (dataLoad, characterLoad)
 
-            Task.detached { [weak self] in
-                await self?.prefetchAvatars()
+            let urls = characterStore.allCharacters
+                .compactMap { $0.avatar_url }
+                .filter { !$0.isEmpty }
+                .prefix(5)
+            if !urls.isEmpty {
+                Task {
+                    ImageCache.shared.prefetch(urls: Array(urls))
+                }
             }
         } else {
             await characterStore.loadAllCharacters()
@@ -279,17 +291,4 @@ struct RootView: View {
         print("✅ RootView: User data cleared")
     }
     
-    // MARK: - Helper Methods
-    
-    private func prefetchAvatars() {
-        let avatarURLs = characterStore.allCharacters
-            .compactMap { $0.avatar_url }
-            .filter { !$0.isEmpty }
-            .prefix(5)
-        
-        if !avatarURLs.isEmpty {
-            ImageCache.shared.prefetch(urls: Array(avatarURLs))
-            print("📦 Prefetched \(avatarURLs.count) character avatars")
-        }
-    }
 }

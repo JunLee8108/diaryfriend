@@ -182,35 +182,31 @@ struct RecentPostItemView: View {
             .padding(16)
             .contentShape(Rectangle())
             .background(
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 0,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 16,
-                    topTrailingRadius: 16
-                )
-                .fill(Color.modernSurfacePrimary)
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.modernSurfacePrimary)
+                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
             )
-            .overlay(alignment: .leading) {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 2,
-                    bottomLeadingRadius: 2,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 0
-                )
-                .fill(Color(hex: "00C896"))
-                .frame(width: 3)
+            .overlay(alignment: .topTrailing) {
+                DogEarShape()
+                    .fill(item.moodColor.opacity(0.25))
+                    .frame(width: 18, height: 18)
+                    .shadow(color: item.moodColor.opacity(0.1), radius: 2, x: -1, y: 1)
             }
-            .clipShape(
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 0,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 16,
-                    topTrailingRadius: 16
-                )
-            )
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Dog-ear Shape (접힌 페이지 모서리)
+struct DogEarShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.closeSubpath()
+        return path
     }
 }
 

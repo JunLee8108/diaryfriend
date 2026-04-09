@@ -158,7 +158,7 @@
 "post_method.ai_title" = "AI와 대화하기";
 "post_method.ai_description" = "AI가 당신의 생각을 표현하도록 도와드려요";
 "post_method.manual_title" = "자유롭게 작성";
-"post_method.manual_description" = "당신만의 언어로 표현해보세요";
+"post_method.manual_description" = "당신만의 언어로 자유롭게 표현해보세요";
 
 /* Diary Text Section */
 "diary.section_title" = "오늘의 이야기";
@@ -195,14 +195,14 @@
 
 /* loginView */
 "login.subtitle" = "로그인하고 AI 친구들과 대화를 통해 일기를 작성해보세요!";
-"login.apple" = "애플 로그인";
-"login.google" = "구글 로그인";
+"login.apple" = "애플 로그인 하기";
+"login.google" = "구글 로그인 하기";
 "login.why_signin" = "왜 로그인을 해야하나요?";
-"login.feature1_title" = "AI가 당신의 일기를\n분석하고\n감정을 이해해요";
+"login.feature1_title" = "AI가 당신의 감정을 이해해요";
 "login.feature1_desc" = "매일의 기록이 의미 있는 인사이트로";
-"login.feature2_title" = "나만의 AI 친구와\n대화하며\n마음을 나눠요";
+"login.feature2_title" = "나만의 AI 친구와 대화해요";
 "login.feature2_desc" = "언제든 편하게 이야기할 수 있어요";
-"login.feature3_title" = "감정의 변화를\n한눈에\n확인해요";
+"login.feature3_title" = "감정의 변화를 확인해요";
 "login.feature3_desc" = "시간이 지날수록 나를 더 잘 알게 돼요";
 
 /* PostAISelectView */

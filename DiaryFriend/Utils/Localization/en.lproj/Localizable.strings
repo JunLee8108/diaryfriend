@@ -205,11 +205,11 @@
 "login.apple" = "Continue with Apple";
 "login.google" = "Continue with Google";
 "login.why_signin" = "Why sign in?";
-"login.feature1_title" = "AI analyzes your diary\nand understands\nyour emotions";
+"login.feature1_title" = "AI understands your emotions";
 "login.feature1_desc" = "Daily records become meaningful insights";
-"login.feature2_title" = "Chat with your\npersonal AI friend\nanytime";
+"login.feature2_title" = "Chat with your AI friend";
 "login.feature2_desc" = "A comfortable space to share your thoughts";
-"login.feature3_title" = "Track your emotional\nchanges at a glance";
+"login.feature3_title" = "Track your emotional changes";
 "login.feature3_desc" = "Know yourself better as time goes by";
 
 /* PostAISelectView */

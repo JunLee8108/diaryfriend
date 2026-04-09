@@ -614,15 +614,15 @@ enum LocalizationKey: String {
         case .login_why_signin:
             return "Why sign in?"
         case .login_feature1_title:
-            return "AI analyzes your diary\nand understands\nyour emotions"
+            return "AI analyzes understands your emotions"
         case .login_feature1_desc:
             return "Daily records become meaningful insights"
         case .login_feature2_title:
-            return "Chat with your\npersonal AI friend\nanytime"
+            return "Chat with your AI friend"
         case .login_feature2_desc:
             return "A comfortable space to share your thoughts"
         case .login_feature3_title:
-            return "Track your emotional\nchanges at a glance"
+            return "Track your emotional changes"
         case .login_feature3_desc:
             return "Know yourself better as time goes by"
 

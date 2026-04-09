@@ -44,21 +44,19 @@ struct LoginView: View {
                     Image("Logo")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 64, height: 64)
+                        .frame(width: 80, height: 80)
                         .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 30)
+                        .padding(.horizontal, 10)
                         .padding(.top, 60)
 
                     // 헤더 (왼쪽 정렬)
                     titleSection
-                        .padding(.top, 16)
 
                     // 피처 캐러셀
                     featureCarousel
-                        .padding(.top, 24)
+                        .padding(.bottom, 40)
 
-                    Spacer()
 
                     // 로그인 버튼
                     SocialLoginSection(
@@ -135,7 +133,7 @@ struct LoginView: View {
     private func featurePageView(title: String, description: String, icon: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
                 .lineSpacing(4)
                 .padding(.bottom, 10)

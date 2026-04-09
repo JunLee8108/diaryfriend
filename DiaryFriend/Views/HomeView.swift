@@ -69,7 +69,7 @@ struct HomeView: View {
                         posts: dataStore.recentPosts(for: currentMonth, limit: 3),
                         currentMonth: currentMonth  // 월 레이블 표시용
                     )
-                    .padding(.bottom, 20)
+//                    .padding(.bottom, 20)
                 }
             }
             .refreshable {

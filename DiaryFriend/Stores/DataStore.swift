@@ -226,7 +226,8 @@ class DataStore: ObservableObject {
             return
         }
 
-        isLoading = true
+        // 초기 로드 시 isLoading을 설정하지 않음
+        // → 스플래시가 로딩 역할을 하므로 SmoothLoadingOverlay 중복 표시 방지
         errorMessage = nil
 
         // 현재 월 + 이전 1개월만 즉시 로드 (홈 화면에 필요한 최소 데이터)
@@ -240,7 +241,6 @@ class DataStore: ObservableObject {
         async let lastMonthLoad: () = loadMonth(for: lastMonth)
         _ = await (currentLoad, lastMonthLoad)
 
-        isLoading = false
         isInitialized = true
         print("✅ DataStore: 우선 로드 완료 (총 \(posts.count)개 포스트)")
 

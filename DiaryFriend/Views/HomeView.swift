@@ -430,26 +430,47 @@ struct CalendarGridView: View, Equatable {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(0..<42, id: \.self) { index in
-                if let day = dayNumber(for: index),
-                   let date = monthData.date(for: day) {
-                    OptimizedDayView(
-                        date: date,
-                        day: day,
-                        selectedDate: selectedDate,
-                        hasPost: postDatesSet.contains(DateUtility.shared.dateString(from: date)),
-                        weekdayColor: getWeekdayColor(for: index),
-                        onTap: {
-                            onDateTapped(date)
-                        }
-                    )
-                } else {
-                    Color.clear
-                        .frame(height: 40)
-                }
+                let cell = cellInfo(for: index)
+                OptimizedDayView(
+                    date: cell.date,
+                    day: cell.day,
+                    selectedDate: selectedDate,
+                    hasPost: postDatesSet.contains(DateUtility.shared.dateString(from: cell.date)),
+                    weekdayColor: getWeekdayColor(for: index),
+                    onTap: {
+                        onDateTapped(cell.date)
+                    }
+                )
+                .opacity(cell.isCurrentMonth ? 1 : 0.35)
             }
         }
     }
-    
+
+    /// 각 셀의 (날짜, 일자, 현재 월 소속 여부) 계산
+    private func cellInfo(for index: Int) -> (date: Date, day: Int, isCurrentMonth: Bool) {
+        let dayOffset = index - monthData.firstWeekday + 1
+
+        if dayOffset > 0 && dayOffset <= monthData.daysInMonth {
+            // 현재 월
+            let date = monthData.date(for: dayOffset) ?? Date()
+            return (date, dayOffset, true)
+        } else if dayOffset <= 0 {
+            // 이전 월
+            let prevMonthDate = calendar.date(byAdding: .month, value: -1, to: month) ?? month
+            let prevMonthData = MonthData(date: prevMonthDate)
+            let prevDay = prevMonthData.daysInMonth + dayOffset
+            let date = prevMonthData.date(for: prevDay) ?? Date()
+            return (date, prevDay, false)
+        } else {
+            // 다음 월
+            let nextDay = dayOffset - monthData.daysInMonth
+            let nextMonthDate = calendar.date(byAdding: .month, value: 1, to: month) ?? month
+            let nextMonthData = MonthData(date: nextMonthDate)
+            let date = nextMonthData.date(for: nextDay) ?? Date()
+            return (date, nextDay, false)
+        }
+    }
+
     private func dayNumber(for index: Int) -> Int? {
         let day = index - monthData.firstWeekday + 1
         return (day > 0 && day <= monthData.daysInMonth) ? day : nil

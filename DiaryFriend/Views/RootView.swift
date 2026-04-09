@@ -27,9 +27,12 @@ struct RootView: View {
     
     var body: some View {
         ZStack {
+            // 최하단 배경: 스플래시 fade out 시 검은 화면 방지
+            Color.modernBackground
+                .ignoresSafeArea()
+
             Group {
                 if authService.isAuthenticated {
-                    // ✅ 신규 유저 체크 추가
                     if authService.isNewUser {
                         OnboardingView()
                             .environmentObject(authService)
@@ -51,7 +54,7 @@ struct RootView: View {
                         .transition(.opacity)
                 }
             }
-            
+
             if showLaunchScreen {
                 CustomLaunchView()
                     .transition(.opacity)
@@ -78,8 +81,8 @@ struct RootView: View {
                 await validateSession()
             }
         }
-        .animation(.easeInOut, value: authService.isAuthenticated)
-        .animation(.easeInOut, value: authService.isNewUser)  // ✅ isNewUser 변화도 애니메이션
+        .animation(isInitialized ? .easeInOut : .none, value: authService.isAuthenticated)
+        .animation(isInitialized ? .easeInOut : .none, value: authService.isNewUser)
         .task {
             guard !isInitialized else { return }
             

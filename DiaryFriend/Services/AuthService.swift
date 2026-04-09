@@ -14,28 +14,57 @@ class AuthService: ObservableObject {
     func initialize() async {
         await checkSession()
     }
-    
-    // MARK: - Session Check
-    func checkSession() async {
+
+    // MARK: - Lightweight Session Check (세션만 확인, 프로필 로드 안 함)
+    func checkSessionOnly() async {
         do {
             let session = try await supabase.auth.session
-            
+
             await MainActor.run {
                 self.session = session
                 self.currentUser = session.user
                 self.isAuthenticated = true
-                
+
                 SupabaseManager.shared.updateCurrentUser(session.user)
             }
-            
+
+            Logger.debug("⚡ Session restored (lightweight)")
+
+        } catch {
+            await MainActor.run {
+                self.session = nil
+                self.currentUser = nil
+                self.isAuthenticated = false
+                self.isLoading = false
+
+                SupabaseManager.shared.updateCurrentUser(nil)
+            }
+
+            await UserProfileStore.shared.clearProfile()
+        }
+    }
+
+    // MARK: - Session Check (Full - 프로필 포함)
+    func checkSession() async {
+        do {
+            let session = try await supabase.auth.session
+
+            await MainActor.run {
+                self.session = session
+                self.currentUser = session.user
+                self.isAuthenticated = true
+
+                SupabaseManager.shared.updateCurrentUser(session.user)
+            }
+
             let userId = session.user.id
-            
+
             Logger.debug("Loading user profile for existing session...")
-            
+
             do {
                 try await UserProfileStore.shared.fetchUserProfile(userId: userId)
                 Logger.debug("User profile loaded successfully")
-                
+
                 // ✅ is_new 체크 추가
                 if let profile = UserProfileStore.shared.userProfile {
                     await MainActor.run {
@@ -43,25 +72,25 @@ class AuthService: ObservableObject {
                         print("📊 Session restored - isNewUser: \(profile.is_new)")
                     }
                 }
-                
+
             } catch {
                 Logger.debug("Failed to load user profile: \(error)")
             }
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
         } catch {
             await MainActor.run {
                 self.session = nil
                 self.currentUser = nil
                 self.isAuthenticated = false
                 self.isLoading = false
-                
+
                 SupabaseManager.shared.updateCurrentUser(nil)
             }
-            
+
             await UserProfileStore.shared.clearProfile()
         }
     }

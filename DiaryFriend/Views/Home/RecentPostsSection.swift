@@ -112,6 +112,7 @@ struct RecentPostsSection: View {
         ZStack(alignment: .topLeading) {
             // Empty State
             EmptyRecentView(currentMonth: currentMonth)
+                .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .opacity(displayItems.isEmpty ? 1 : 0)
                 .scaleEffect(displayItems.isEmpty ? 1 : 0.9)
@@ -232,12 +233,18 @@ struct EmptyRecentView: View {
             Image(systemName: "calendar")
                 .font(.system(size: 25, weight: .light))
                 .foregroundColor(Color(hex:"00C896"))
-            
+
             Text(noPostsMessage)
                 .font(.system(size: 14, weight: .regular, design: .rounded))
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
+        .padding(.vertical, 50)
+        .padding(.horizontal, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.modernSurfacePrimary)
+                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+        )
     }
 }

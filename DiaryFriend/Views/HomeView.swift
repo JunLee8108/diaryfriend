@@ -228,6 +228,7 @@ struct SlideCalendarView: View {
             WeekdayHeader()
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
+                .padding(.bottom, 8)
 
             // TabView로 슬라이드 구현
             TabView(selection: $tabSelection) {
@@ -347,25 +348,24 @@ struct CalendarHeader: View {
 
             Spacer()
 
-            // 우측: Today 버튼 (현재 월이 아닐 때만)
-            if !isCurrentMonth {
-                Button(action: onGoToToday) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.uturn.left")
-                            .font(.system(size: 11, weight: .semibold))
-                        Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(Color(hex: "00C896"))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        Capsule()
-                            .fill(Color(hex: "00C896").opacity(0.12))
-                    )
+            // 우측: Today 버튼 (항상 표시, 현재 월이면 비활성화)
+            Button(action: onGoToToday) {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.uturn.left")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
                 }
-                .transition(.opacity)
+                .foregroundColor(Color(hex: "00C896"))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(Color(hex: "00C896").opacity(0.12))
+                )
             }
+            .disabled(isCurrentMonth)
+            .opacity(isCurrentMonth ? 0.35 : 1)
         }
         .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
     }

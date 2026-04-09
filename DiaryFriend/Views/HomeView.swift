@@ -200,45 +200,20 @@ struct SlideCalendarView: View {
         tabSelection == 50
     }
 
+    @State private var swipeHintOffset: CGFloat = 0
+
     var body: some View {
         VStack(spacing: 20) {
-            // 헤더
+            // 헤더 (월 타이틀 좌측 + Today 버튼 우측)
             CalendarHeader(
                 currentMonth: currentMonth,
-                onPreviousMonth: {
-                    tabSelection -= 1
-                },
-                onNextMonth: {
-                    tabSelection += 1
-                }
-            )
-
-            // "Today" 버튼 (현재 월이 아닐 때만)
-            if !isCurrentMonth {
-                HStack {
-                    Spacer()
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            tabSelection = 50
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.uturn.left")
-                                .font(.system(size: 11, weight: .semibold))
-                            Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        }
-                        .foregroundColor(Color(hex: "00C896"))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(
-                            Capsule()
-                                .fill(Color(hex: "00C896").opacity(0.12))
-                        )
+                isCurrentMonth: isCurrentMonth,
+                onGoToToday: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        tabSelection = 50
                     }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
+            )
 
             // 요일 헤더
             WeekdayHeader()
@@ -257,6 +232,7 @@ struct SlideCalendarView: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .frame(height: 300)
+            .offset(x: swipeHintOffset)
             .onChange(of: tabSelection) { oldValue, newValue in
                 let diff = newValue - 50
                 let newMonth = calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
@@ -264,13 +240,25 @@ struct SlideCalendarView: View {
                 onMonthChanged(newMonth)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.modernSurfacePrimary)
                 .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
         )
+        .onAppear {
+            // 스와이프 가능 힌트: 살짝 좌로 흔들림 1회
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    swipeHintOffset = -12
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
+                        swipeHintOffset = 0
+                    }
+                }
+            }
+        }
     }
     
     private func monthForIndex(_ index: Int) -> Date {
@@ -282,9 +270,9 @@ struct SlideCalendarView: View {
 // MARK: - 캘린더 헤더 컴포넌트
 struct CalendarHeader: View {
     let currentMonth: Date
-    let onPreviousMonth: () -> Void
-    let onNextMonth: () -> Void
-    
+    let isCurrentMonth: Bool
+    let onGoToToday: () -> Void
+
     // ⭐ 월 이름
     private var monthName: String {
         let formatter = DateFormatter()
@@ -292,7 +280,7 @@ struct CalendarHeader: View {
         formatter.dateFormat = "MMMM"
         return formatter.string(from: currentMonth)
     }
-    
+
     // ⭐ 연도
     private var yearString: String {
         let formatter = DateFormatter()
@@ -300,7 +288,7 @@ struct CalendarHeader: View {
         formatter.dateFormat = "yyyy"
         return formatter.string(from: currentMonth)
     }
-    
+
     // ⭐ 한국어에서 "년" 추가
     private var yearWithSuffix: String {
         if LocalizationManager.shared.currentLanguage == .korean {
@@ -309,7 +297,7 @@ struct CalendarHeader: View {
             return yearString
         }
     }
-    
+
     // ⭐ 한국어에서 "월" 추가
     private var monthWithSuffix: String {
         if LocalizationManager.shared.currentLanguage == .korean {
@@ -319,54 +307,55 @@ struct CalendarHeader: View {
             return monthName
         }
     }
-    
+
     var body: some View {
         HStack {
-            Button(action: onPreviousMonth) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
-                    .frame(width: 40, height: 40)
-            }
-            
-            Spacer()
-            
-            // ⭐ 언어별 순서 분기
+            // 좌측: 월 타이틀
             if LocalizationManager.shared.currentLanguage == .korean {
-                // 한국어: 2025년 1월
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(yearWithSuffix)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary.opacity(0.85))
-                    
+
                     Text(monthWithSuffix)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
-                    
-                    
                 }
             } else {
-                // 영어: January 2025
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(monthName)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
-                    
+
                     Text(yearString)
                         .font(.system(size: 15, weight: .regular, design: .rounded))
                         .foregroundColor(.primary.opacity(0.65))
                 }
             }
-            
+
             Spacer()
-            
-            Button(action: onNextMonth) {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 40, height: 40)
+
+            // 우측: Today 버튼 (현재 월이 아닐 때만)
+            if !isCurrentMonth {
+                Button(action: onGoToToday) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.uturn.left")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Color(hex: "00C896"))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(Color(hex: "00C896").opacity(0.12))
+                    )
+                }
+                .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
     }
 }
 

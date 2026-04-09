@@ -9,83 +9,80 @@ struct SocialLoginSection: View {
     @EnvironmentObject var authService: AuthService
     @Binding var errorMessage: String
     @Binding var showError: Bool
-    
+
     @Localized(.login_apple) var appleText
     @Localized(.login_google) var googleText
-    
+
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             // Apple Sign In 버튼 (상단 배치 - Apple 가이드라인 권장)
             appleSignInButton
-            
+
             // Google Sign In 버튼
             googleSignInButton
         }
     }
-    
+
     // MARK: - Apple Sign In Button
     private var appleSignInButton: some View {
         Button(action: handleAppleSignIn) {
             HStack(spacing: 12) {
-                // 고정 너비 컨테이너로 아이콘 정렬
                 Image(systemName: "apple.logo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
-                    .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
-                    .frame(width: 20) // 고정 너비 추가
-                
+                    .frame(width: 20)
+
                 Text(appleText)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
             }
+            .foregroundColor(.primary)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: 54)
         }
-        .background(Color.white)
-        .cornerRadius(12)
+        .background(Color.modernSurfacePrimary)
+        .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.secondary.opacity(0.15), lineWidth: 0.5)
         )
         .padding(.horizontal, 30)
-        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
         .disabled(authService.isLoading)
         .opacity(authService.isLoading ? 0.6 : 1.0)
     }
-    
+
     // MARK: - Google Sign In Button
     private var googleSignInButton: some View {
         Button(action: handleGoogleSignIn) {
             HStack(spacing: 12) {
-                // 고정 너비 컨테이너로 아이콘 정렬
                 Image("google-logo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
-                    .frame(width: 20) // 고정 너비 추가
-                
+                    .frame(width: 20)
+
                 Text(googleText)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.25, green: 0.25, blue: 0.25))
+                    .foregroundColor(.primary)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: 54)
         }
-        .background(Color.white)
-        .cornerRadius(12)
+        .background(Color.modernSurfacePrimary)
+        .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.secondary.opacity(0.15), lineWidth: 0.5)
         )
         .padding(.horizontal, 30)
-        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
         .disabled(authService.isLoading)
         .opacity(authService.isLoading ? 0.6 : 1.0)
     }
-    
+
     // MARK: - Actions
-    
+
     private func handleAppleSignIn() {
         Task {
             do {
@@ -98,7 +95,7 @@ struct SocialLoginSection: View {
             }
         }
     }
-    
+
     private func handleGoogleSignIn() {
         Task {
             do {

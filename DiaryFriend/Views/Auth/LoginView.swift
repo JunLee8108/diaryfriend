@@ -40,9 +40,19 @@ struct LoginView: View {
 
                 // 콘텐츠
                 VStack(spacing: 0) {
+                    // 로고
+                    Image("Logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 64, height: 64)
+                        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 30)
+                        .padding(.top, 60)
+
                     // 헤더 (왼쪽 정렬)
                     titleSection
-                        .padding(.top, 70)
+                        .padding(.top, 16)
 
                     // 피처 캐러셀
                     featureCarousel
@@ -147,22 +157,13 @@ struct LoginView: View {
         .padding(.horizontal, 30)
     }
 
-    // MARK: - Wave Decoration + Logo
+    // MARK: - Wave Decoration
     private var waveDecorationLayer: some View {
         VStack {
             Spacer()
-            ZStack(alignment: .top) {
-                LoginWaveShape()
-                    .fill(Color(hex: "00C896").opacity(0.10))
-                    .frame(height: 200)
-
-                Image("Logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 80, height: 80)
-                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
-                    .offset(y: -40)
-            }
+            LoginWaveShape()
+                .fill(Color(hex: "00C896").opacity(0.10))
+                .frame(height: 180)
         }
         .ignoresSafeArea(edges: .bottom)
     }

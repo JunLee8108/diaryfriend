@@ -219,22 +219,64 @@ class DataStore: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// 초기 데이터 로드 (앱 시작시 1회)
+    /// 초기 데이터 로드 (앱 시작시 1회) - 현재 월만 우선 로드
     func initialLoad() async {
         guard !isInitialized else {
             print("📊 DataStore: 이미 초기화됨")
             return
         }
-        
-        await loadFiveMonthWindow(centerDate: Date())
+
+        isLoading = true
+        errorMessage = nil
+
+        // 현재 월 + 이전 1개월만 즉시 로드 (홈 화면에 필요한 최소 데이터)
+        let now = Date()
+        let calendar = Calendar.current
+        let lastMonth = calendar.date(byAdding: .month, value: -1, to: now)!
+
+        print("📊 DataStore: 우선 로드 시작 (현재 월 + 이전 월)")
+
+        async let currentLoad: () = loadMonth(for: now)
+        async let lastMonthLoad: () = loadMonth(for: lastMonth)
+        _ = await (currentLoad, lastMonthLoad)
+
+        isLoading = false
         isInitialized = true
+        print("✅ DataStore: 우선 로드 완료 (총 \(posts.count)개 포스트)")
+
+        // 나머지 3개월은 백그라운드에서 로드
+        Task.detached { [weak self] in
+            await self?.loadRemainingMonths(centerDate: now)
+        }
     }
-    
-    /// 5개월 윈도우 로드 (현재 + 이전/다음 2개월)
+
+    /// 나머지 월 백그라운드 로드
+    private func loadRemainingMonths(centerDate: Date) async {
+        let calendar = Calendar.current
+        let remainingMonths = [
+            calendar.date(byAdding: .month, value: -2, to: centerDate)!,
+            calendar.date(byAdding: .month, value: 1, to: centerDate)!,
+            calendar.date(byAdding: .month, value: 2, to: centerDate)!
+        ]
+
+        print("📊 DataStore: 나머지 3개월 백그라운드 로드 시작")
+
+        await withTaskGroup(of: Void.self) { group in
+            for date in remainingMonths {
+                group.addTask {
+                    await self.loadMonth(for: date)
+                }
+            }
+        }
+
+        print("✅ DataStore: 백그라운드 로드 완료 (총 \(await MainActor.run { posts.count })개 포스트)")
+    }
+
+    /// 5개월 윈도우 로드 (refresh 등에서 사용)
     private func loadFiveMonthWindow(centerDate: Date) async {
         isLoading = true
         errorMessage = nil
-        
+
         let calendar = Calendar.current
         let monthsToLoad = [
             calendar.date(byAdding: .month, value: -2, to: centerDate)!,
@@ -243,9 +285,9 @@ class DataStore: ObservableObject {
             calendar.date(byAdding: .month, value: 1, to: centerDate)!,
             calendar.date(byAdding: .month, value: 2, to: centerDate)!
         ]
-        
+
         print("📊 DataStore: 5개월 윈도우 로딩 시작")
-        
+
         await withTaskGroup(of: Void.self) { group in
             for date in monthsToLoad {
                 group.addTask {
@@ -253,7 +295,7 @@ class DataStore: ObservableObject {
                 }
             }
         }
-        
+
         isLoading = false
         print("✅ DataStore: 로드 완료 (총 \(posts.count)개 포스트)")
     }

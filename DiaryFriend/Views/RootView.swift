@@ -85,7 +85,7 @@ struct RootView: View {
             
             await initializeApp()
             
-            withAnimation(.easeOut(duration: 0.4)) {
+            withAnimation(.easeOut(duration: 0.2)) {
                 showLaunchScreen = false
             }
         }
@@ -110,21 +110,75 @@ struct RootView: View {
     }
     
     // MARK: - Initialization
-    
+
     private func initializeApp() async {
         Logger.debug("🚀 App initialization started")
-        
-        await authService.initialize()
-        
-        if let userId = authService.currentUserId {
-            await setupUserData(userId)
-            currentUserId = userId
-            
+
+        // Step 1: 세션만 빠르게 확인 (프로필 로드 없음)
+        await authService.checkSessionOnly()
+
+        guard let userId = authService.currentUserId else {
+            await MainActor.run {
+                authService.isLoading = false
+            }
+            isInitialized = true
+            print("✅ RootView: App initialization complete (no session)")
+            return
+        }
+
+        // Step 2: Realm 셋업 + 프로필 로드를 병렬로
+        async let realmSetup: () = RealmManager.shared.setupRealm(for: userId.uuidString)
+        async let profileLoad: () = loadUserProfile(userId: userId)
+        _ = await (realmSetup, profileLoad)
+
+        // Step 3: isNewUser 결정 후 데이터 로드
+        if !authService.isNewUser {
+            // 기존 유저: 데이터 + 캐릭터 병렬 로드
+            async let dataLoad: () = dataStore.initialLoad()
+            async let characterLoad: () = characterStore.loadAllCharacters()
+            _ = await (dataLoad, characterLoad)
+
+            // 아바타 프리페치는 백그라운드 (스플래시 차단하지 않음)
+            Task.detached { [weak self] in
+                await self?.prefetchAvatars()
+            }
+
+            print("✅ RootView: User data setup complete")
+            print("  - Posts: \(dataStore.posts.count)")
+            print("  - Characters: \(characterStore.allCharacters.count)")
+        } else {
+            // 신규 유저: 캐릭터만 로드
+            await characterStore.loadAllCharacters()
+            print("ℹ️ RootView: New user - loaded characters only")
+            print("  - Characters: \(characterStore.allCharacters.count)")
+        }
+
+        // Step 4: 언어 동기화는 백그라운드
+        Task {
             await localizationManager.syncWithUserProfile()
         }
-        
+
+        currentUserId = userId
         isInitialized = true
         print("✅ RootView: App initialization complete")
+    }
+
+    /// 프로필 로드 + isNewUser 판정
+    private func loadUserProfile(userId: UUID) async {
+        do {
+            try await UserProfileStore.shared.fetchUserProfile(userId: userId)
+            if let profile = UserProfileStore.shared.userProfile {
+                await MainActor.run {
+                    authService.isNewUser = profile.is_new
+                    authService.isLoading = false
+                }
+            }
+        } catch {
+            Logger.debug("Failed to load user profile: \(error)")
+            await MainActor.run {
+                authService.isLoading = false
+            }
+        }
     }
     
     // MARK: - Session Validation
@@ -190,28 +244,21 @@ struct RootView: View {
     }
     
     // MARK: - User Data Management
-    
+
+    /// 유저 전환 시 사용 (초기화와 별도)
     private func setupUserData(_ userId: UUID) async {
         await RealmManager.shared.setupRealm(for: userId.uuidString)
-        
-        // ✅ 신규 유저도 Character는 로드
+
         if !authService.isNewUser {
-            // 기존 유저: 모든 데이터 로드
             async let dataLoad: () = dataStore.initialLoad()
             async let characterLoad: () = characterStore.loadAllCharacters()
             _ = await (dataLoad, characterLoad)
-            
-            prefetchAvatars()
-            
-            print("✅ RootView: User data setup complete")
-            print("  - Posts: \(dataStore.posts.count)")
-            print("  - Characters: \(characterStore.allCharacters.count)")
+
+            Task.detached { [weak self] in
+                await self?.prefetchAvatars()
+            }
         } else {
-            // ✅ 신규 유저: Character만 로드 (Post는 아직 없음)
             await characterStore.loadAllCharacters()
-            
-            print("ℹ️ RootView: New user - loaded characters only")
-            print("  - Characters: \(characterStore.allCharacters.count)")
         }
     }
     

@@ -229,7 +229,7 @@ struct SlideCalendarView: View {
             WeekdayHeader()
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
-                .padding(.bottom, 18)
+                .padding(.bottom, 14)
 
             // TabView로 슬라이드 구현
             TabView(selection: $tabSelection) {
@@ -244,7 +244,7 @@ struct SlideCalendarView: View {
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .frame(height: 300)
+            .frame(height: 270)
             .offset(x: swipeHintOffset)
             .padding(.horizontal, 16)
             .padding(.bottom, 18)
@@ -492,7 +492,7 @@ struct CalendarGridView: View, Equatable {
         let calendar = Calendar.current
         let selectedDay = calendar.startOfDay(for: selectedDate)
 
-        LazyVGrid(columns: columns, spacing: 10) {
+        LazyVGrid(columns: columns, spacing: 6) {
             ForEach(0..<42, id: \.self) { index in
                 let cell = cellData[index]
                 let isSelected = calendar.startOfDay(for: cell.date) == selectedDay

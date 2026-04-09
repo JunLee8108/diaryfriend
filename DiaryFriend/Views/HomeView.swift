@@ -203,7 +203,7 @@ struct SlideCalendarView: View {
     @State private var swipeHintOffset: CGFloat = 0
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             // 헤더 (월 타이틀 좌측 + Today 버튼 우측)
             CalendarHeader(
                 currentMonth: currentMonth,
@@ -214,10 +214,21 @@ struct SlideCalendarView: View {
                     }
                 }
             )
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+
+            // 미니멀 구분선
+            Rectangle()
+                .fill(Color.secondary.opacity(0.15))
+                .frame(height: 0.5)
+                .padding(.horizontal, 16)
 
             // 요일 헤더
             WeekdayHeader()
-            
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+
             // TabView로 슬라이드 구현
             TabView(selection: $tabSelection) {
                 ForEach(0..<100, id: \.self) { index in
@@ -233,6 +244,8 @@ struct SlideCalendarView: View {
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .frame(height: 300)
             .offset(x: swipeHintOffset)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
             .onChange(of: tabSelection) { oldValue, newValue in
                 let diff = newValue - 50
                 let newMonth = calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
@@ -240,7 +253,6 @@ struct SlideCalendarView: View {
                 onMonthChanged(newMonth)
             }
         }
-        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.modernSurfacePrimary)

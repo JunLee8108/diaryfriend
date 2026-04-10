@@ -25,7 +25,6 @@ struct CustomLaunchView: View {
                     .foregroundColor(Color(hex: "00C896"))
             }
         }
-        .drawingGroup()
     }
 }
 

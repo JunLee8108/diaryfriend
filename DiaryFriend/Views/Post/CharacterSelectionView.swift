@@ -162,7 +162,6 @@ struct CharacterSelectionView: View {
                                         .padding(.vertical, 8)
                                         .background(Color.modernSurfacePrimary)
                                         .cornerRadius(12)
-                                        .transition(.opacity.combined(with: .move(edge: .top)))
                                     }
                                 }
                                 .padding(.horizontal, 20)

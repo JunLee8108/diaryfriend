@@ -154,9 +154,6 @@ enum LocalizationKey: String {
     case recent_posts_title = "recent_posts.title"
     case recent_no_posts = "recent_posts.no_posts"
     
-    // MARK: - Home View
-    case home_today_date = "home.today_date"
-
     // MARK: - Home View Modals
     case home_future_date_title = "home.future_date_title"
     case home_future_date_message = "home.future_date_message"
@@ -531,10 +528,6 @@ enum LocalizationKey: String {
         case .recent_no_posts:
             return "No posts in %@"
             
-            // Home View
-        case .home_today_date:
-            return "Today is %@"
-
             // Home View Modals
         case .home_future_date_title:
             return "Future Date"

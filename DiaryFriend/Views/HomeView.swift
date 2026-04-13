@@ -46,7 +46,12 @@ struct HomeView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 30)
                         .padding(.bottom, 16)
-                    
+
+                    // 오늘 날짜 표시
+                    TodayDateLabel()
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 14)
+
                     // 슬라이드 캘린더
                     SlideCalendarView(
                         currentMonth: $currentMonth,

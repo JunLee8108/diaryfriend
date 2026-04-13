@@ -10,20 +10,42 @@ import SwiftUI
 struct CharacterSelectionView: View {
     @StateObject private var characterStore = CharacterStore.shared
     @Binding var isPresented: Bool
-    
+
     @State private var searchText = ""
     @State private var selectedCharacter: CharacterWithAffinity?
-    
+    @State private var isClassicExpanded = false
+
     @Localized(.ai_insights_find_characters) var findCharactersText
     @Localized(.common_done) var doneText
-    
+    @Localized(.profile_classic_characters) var classicCharactersTitle
+
     // 검색 필터링된 캐릭터
-    private var filteredCharacters: [CharacterWithAffinity] {
+    private var filteredModernCharacters: [CharacterWithAffinity] {
+        let modern = characterStore.modernCharacters
         if searchText.isEmpty {
-            return characterStore.allCharacters
+            return modern
         } else {
-            return characterStore.searchCharacters(query: searchText)
+            return modern.filter {
+                $0.name.localizedCaseInsensitiveContains(searchText) ||
+                ($0.korean_name?.localizedCaseInsensitiveContains(searchText) ?? false)
+            }
         }
+    }
+
+    private var filteredClassicCharacters: [CharacterWithAffinity] {
+        let classic = characterStore.classicCharacters
+        if searchText.isEmpty {
+            return classic
+        } else {
+            return classic.filter {
+                $0.name.localizedCaseInsensitiveContains(searchText) ||
+                ($0.korean_name?.localizedCaseInsensitiveContains(searchText) ?? false)
+            }
+        }
+    }
+
+    private var hasAnyResults: Bool {
+        !filteredModernCharacters.isEmpty || !filteredClassicCharacters.isEmpty
     }
     
     var body: some View {
@@ -49,13 +71,13 @@ struct CharacterSelectionView: View {
                     Spacer()
                     ProgressView("Loading characters...")
                     Spacer()
-                } else if filteredCharacters.isEmpty {
+                } else if !hasAnyResults {
                     Spacer()
                     VStack(spacing: 12) {
                         Image(systemName: searchText.isEmpty ? "sparkles" : "magnifyingglass")
                             .font(.system(size: 40))
                             .foregroundColor(.secondary.opacity(0.5))
-                        
+
                         Text(searchText.isEmpty ? "No characters available" : "No results found")
                             .font(.system(size: 14, design: .rounded))
                             .foregroundColor(.secondary)
@@ -63,32 +85,89 @@ struct CharacterSelectionView: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(Array(filteredCharacters.enumerated()), id: \.element.id) { index, character in
-                                VStack(spacing: 0) {
-                                    // 기존 CharacterCard 재사용
-                                    CharacterCard(
-                                        character: character,
-                                        onFollowToggle: {
-                                            await characterStore.toggleFollowing(characterId: character.id)
-                                        },
-                                        index: index
-                                    )
-                                    .onTapGesture {
-                                        selectedCharacter = character
-                                    }
-                                    
-                                    if character.id != filteredCharacters.last?.id {
-                                        Divider()
-                                            .padding(.leading, 62)
+                        VStack(spacing: 20) {
+                            // Modern Characters
+                            if !filteredModernCharacters.isEmpty {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(Array(filteredModernCharacters.enumerated()), id: \.element.id) { index, character in
+                                        VStack(spacing: 0) {
+                                            CharacterCard(
+                                                character: character,
+                                                onFollowToggle: {
+                                                    await characterStore.toggleFollowing(characterId: character.id)
+                                                },
+                                                index: index
+                                            )
+                                            .onTapGesture {
+                                                selectedCharacter = character
+                                            }
+
+                                            if character.id != filteredModernCharacters.last?.id {
+                                                Divider()
+                                                    .padding(.leading, 62)
+                                            }
+                                        }
                                     }
                                 }
+                                .padding(.vertical, 8)
+                                .background(Color.modernSurfacePrimary)
+                                .cornerRadius(12)
+                                .padding(.horizontal, 20)
+                            }
+
+                            // Classic Characters (Accordion)
+                            if !filteredClassicCharacters.isEmpty {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Button(action: {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            isClassicExpanded.toggle()
+                                        }
+                                    }) {
+                                        HStack {
+                                            Text(classicCharactersTitle)
+                                                .font(.system(size: 15, weight: .medium, design: .rounded))
+                                                .foregroundColor(.primary)
+
+                                            Spacer()
+
+                                            Image(systemName: isClassicExpanded ? "chevron.up" : "chevron.down")
+                                                .font(.system(size: 13, weight: .medium))
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    .padding(.horizontal, 4)
+
+                                    if isClassicExpanded {
+                                        LazyVStack(spacing: 0) {
+                                            ForEach(Array(filteredClassicCharacters.enumerated()), id: \.element.id) { index, character in
+                                                VStack(spacing: 0) {
+                                                    CharacterCard(
+                                                        character: character,
+                                                        onFollowToggle: {
+                                                            await characterStore.toggleFollowing(characterId: character.id)
+                                                        },
+                                                        index: index
+                                                    )
+                                                    .onTapGesture {
+                                                        selectedCharacter = character
+                                                    }
+
+                                                    if character.id != filteredClassicCharacters.last?.id {
+                                                        Divider()
+                                                            .padding(.leading, 62)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .padding(.vertical, 8)
+                                        .background(Color.modernSurfacePrimary)
+                                        .cornerRadius(12)
+                                        .transition(.opacity.combined(with: .move(edge: .top)))
+                                    }
+                                }
+                                .padding(.horizontal, 20)
                             }
                         }
-                        .padding(.vertical, 8)
-                        .background(Color.modernSurfacePrimary)
-                        .cornerRadius(12)
-                        .padding(.horizontal, 20)
                     }
                 }
             }

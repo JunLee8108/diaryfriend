@@ -93,6 +93,7 @@
 "profile.no_characters" = "No characters available";
 "profile.show_more" = "Show %d More";
 "profile.show_less" = "Show Less";
+"profile.classic_characters" = "Classic Characters";
 
 /* Search View */
 "search.placeholder" = "Search posts, dates, moods...";

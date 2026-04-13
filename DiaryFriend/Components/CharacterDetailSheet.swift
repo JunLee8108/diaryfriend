@@ -252,6 +252,7 @@ struct CharacterDetailSheet: View {
                                         HStack(spacing: 8) {
                                             Image(systemName: "sparkles")
                                                 .font(.system(size: 14))
+                                                .foregroundColor(Color(hex: "9B59B6"))
                                             Text(personalityLabel)
                                                 .font(.system(size: 16, weight: .semibold))
                                         }
@@ -287,7 +288,7 @@ struct CharacterDetailSheet: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: "heart.fill")
                                             .font(.system(size: 14))
-                                            .foregroundColor(getAffinityColor(for: character.affinity))
+                                            .foregroundColor(Color(hex: "FF6B6B"))
                                         Text(affinityLabel)
                                             .font(.system(size: 16, weight: .semibold))
                                     }

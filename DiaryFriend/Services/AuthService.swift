@@ -160,24 +160,21 @@ class AuthService: ObservableObject {
     private func handleOAuthSuccess() async throws {
         do {
             let session = try await supabase.auth.session
-            
+
             print("Session created for: \(session.user.email ?? "unknown")")
-            
+
+            let userId = session.user.id
+            let isNew = await checkIfNewUser(session.user)
+
             await MainActor.run {
                 self.session = session
                 self.currentUser = session.user
+                self.isNewUser = isNew
                 self.isAuthenticated = true
-                
+
                 SupabaseManager.shared.updateCurrentUser(session.user)
             }
-            
-            let userId = session.user.id
-            let isNew = await checkIfNewUser(session.user)
-            
-            await MainActor.run {
-                self.isNewUser = isNew
-            }
-            
+
             if !isNew {
                 do {
                     try await UserProfileStore.shared.fetchUserProfile(userId: userId)
@@ -186,18 +183,18 @@ class AuthService: ObservableObject {
                     print("Failed to load user profile: \(error)")
                 }
             }
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
         } catch {
             print("OAuth handling failed: \(error)")
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
             throw AuthError.signInFailed("Authentication failed. Please try signing in.")
         }
     }
@@ -205,31 +202,28 @@ class AuthService: ObservableObject {
     // MARK: - Deep Link Handling
     func handleDeepLink(_ url: URL) async throws {
         print("Handling deep link: \(url)")
-        
+
         await MainActor.run {
             self.isLoading = true
         }
-        
+
         do {
             let session = try await supabase.auth.session(from: url)
-            
+
             print("Session created for: \(session.user.email ?? "unknown")")
-            
+
+            let userId = session.user.id
+            let isNew = await checkIfNewUser(session.user)
+
             await MainActor.run {
                 self.session = session
                 self.currentUser = session.user
+                self.isNewUser = isNew
                 self.isAuthenticated = true
-                
+
                 SupabaseManager.shared.updateCurrentUser(session.user)
             }
-            
-            let userId = session.user.id
-            let isNew = await checkIfNewUser(session.user)
-            
-            await MainActor.run {
-                self.isNewUser = isNew
-            }
-            
+
             if !isNew {
                 do {
                     try await UserProfileStore.shared.fetchUserProfile(userId: userId)
@@ -238,18 +232,18 @@ class AuthService: ObservableObject {
                     print("Failed to load user profile: \(error)")
                 }
             }
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
         } catch {
             print("Deep link handling failed: \(error)")
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
             throw AuthError.signInFailed("Authentication failed. Please try signing in.")
         }
     }

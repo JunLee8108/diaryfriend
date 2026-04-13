@@ -161,13 +161,27 @@ class DateUtility {
     func fullDate(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = currentLocale
-        
+
         if LocalizationManager.shared.currentLanguage == .korean {
             formatter.dateFormat = "yyyy년 M월 d일"  // 2025년 10월 21일
         } else {
             formatter.dateFormat = "MMMM d, yyyy"    // October 21, 2025
         }
-        
+
+        return formatter.string(from: date)
+    }
+
+    /// 요일 포함 전체 날짜 형식 (예: "Sunday, April 13, 2026" / "2026년 4월 13일 일요일")
+    func fullDateWithWeekday(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = currentLocale
+
+        if LocalizationManager.shared.currentLanguage == .korean {
+            formatter.dateFormat = "yyyy년 M월 d일 EEEE"  // 2026년 4월 13일 일요일
+        } else {
+            formatter.dateFormat = "EEEE, MMMM d, yyyy"   // Sunday, April 13, 2026
+        }
+
         return formatter.string(from: date)
     }
     

@@ -147,6 +147,9 @@
 "recent_posts.title" = "최근 게시물";
 "recent_posts.no_posts" = "%@에 게시물이 없습니다";
 
+/* Home View */
+"home.today_date" = "오늘은 %@";
+
 /* Home View Modals */
 "home.future_date_title" = "미래 날짜";
 "home.future_date_message" = "미래 날짜에는 일기를 작성할 수 없습니다.";

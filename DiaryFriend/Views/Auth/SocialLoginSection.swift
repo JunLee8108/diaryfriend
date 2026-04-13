@@ -87,6 +87,8 @@ struct SocialLoginSection: View {
         Task {
             do {
                 try await authService.signInWithApple()
+            } catch AuthError.userCancelled {
+                // User cancelled sign-in, no error to show
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
@@ -100,6 +102,8 @@ struct SocialLoginSection: View {
         Task {
             do {
                 try await authService.signInWithGoogle()
+            } catch AuthError.userCancelled {
+                // User cancelled sign-in, no error to show
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription

@@ -228,7 +228,8 @@ enum LocalizationKey: String {
     case post_detail_empty = "post_detail.empty"
     case post_detail_delete_title = "post_detail.delete_title"
     case post_detail_delete_message = "post_detail.delete_message"
-    
+    case post_detail_view_chat = "post_detail.view_chat"
+
     // MARK: - PostAIConversationView
     case ai_conversation_header = "ai_conversation.header"
     case ai_conversation_generate = "ai_conversation.generate"
@@ -656,6 +657,8 @@ enum LocalizationKey: String {
             return "Delete Post"
         case .post_detail_delete_message:
             return "Are you sure you want to delete this post? This action cannot be undone."
+        case .post_detail_view_chat:
+            return "View Chat"
             
             // PostAIConversationView
         case .ai_conversation_header:

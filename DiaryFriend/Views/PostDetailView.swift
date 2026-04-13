@@ -210,8 +210,11 @@ struct PostContentView: View {
     let detail: PostDetail
     let enrichedComments: [EnrichedComment]
     let isWaitingForAI: Bool
-    
+
     @State private var selectedCharacter: CharacterWithAffinity?
+    @State private var showChatHistory = false
+
+    @Localized(.post_detail_view_chat) var viewChatText
     
     private var dayNumber: String {
         DateUtility.shared.dayNumber(from: detail.entry_date)
@@ -261,8 +264,27 @@ struct PostContentView: View {
                     }
                     
                     Spacer()
+
+                    // AI 대화 보기 버튼
+                    if detail.ai_generated == true {
+                        Button(action: { showChatHistory = true }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "bubble.left.and.text.bubble.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text(viewChatText)
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundColor(Color(hex: "00C896"))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule()
+                                    .fill(Color(hex: "00C896").opacity(0.12))
+                            )
+                        }
+                    }
                 }
-                
+
                 // 본문
                 Text(detail.plainContent)
                     .font(.system(size: 16))
@@ -341,6 +363,9 @@ struct PostContentView: View {
                     }
                 }
             )
+        }
+        .sheet(isPresented: $showChatHistory) {
+            ChatHistoryView(postId: detail.id)
         }
     }
 }

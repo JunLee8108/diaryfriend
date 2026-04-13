@@ -578,6 +578,30 @@ class ChatService: ObservableObject {
         return max(0, 10 - userMessageCount)
     }
     
+    // MARK: - Chat History for Post
+
+    /// AI 생성 포스트의 대화 내역 조회
+    func fetchChatHistory(postId: Int) async -> (messages: [ChatMessage], characterId: Int?) {
+        do {
+            // 1. post_id로 chat_session 조회
+            let sessionData: ChatSessionData = try await supabase
+                .from("chat_sessions")
+                .select("id, character_id, session_date, message_count, is_active, post_id")
+                .eq("post_id", value: postId)
+                .single()
+                .execute()
+                .value
+
+            // 2. 해당 세션의 메시지 로드
+            let messages = try await loadMessages(sessionId: sessionData.id)
+            return (messages: messages, characterId: sessionData.characterId)
+
+        } catch {
+            print("❌ Failed to fetch chat history for post \(postId): \(error)")
+            return (messages: [], characterId: nil)
+        }
+    }
+
     // MARK: - Debug Helpers
     func printCacheStatus() {
         print("\n📊 Chat Cache Status")

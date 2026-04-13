@@ -221,6 +221,7 @@
 "post_detail.empty" = "아직 AI 인사이트가 없습니다.";
 "post_detail.delete_title" = "게시글 삭제";
 "post_detail.delete_message" = "이 게시물을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.";
+"post_detail.view_chat" = "대화보기";
 
 /* PostAIConversation */
 "ai_conversation.header" = "AI 대화";

@@ -117,6 +117,10 @@ class AuthService: ObservableObject {
             await MainActor.run {
                 self.isLoading = false
             }
+            let nsError = error as NSError
+            if nsError.domain.contains("AuthenticationServices") && nsError.code == 1 {
+                throw AuthError.userCancelled
+            }
             throw AuthError.signInFailed("Failed to sign in with Apple")
         }
     }
@@ -143,6 +147,10 @@ class AuthService: ObservableObject {
         } catch {
             await MainActor.run {
                 self.isLoading = false
+            }
+            let nsError = error as NSError
+            if nsError.domain.contains("AuthenticationServices") && nsError.code == 1 {
+                throw AuthError.userCancelled
             }
             throw AuthError.signInFailed("Failed to sign in with Google")
         }
@@ -385,6 +393,7 @@ enum AuthError: LocalizedError {
     case profileFetchFailed(String)
     case notAuthenticated
     case networkRequired
+    case userCancelled
 
     var errorDescription: String? {
         let loc = LocalizationManager.shared
@@ -398,6 +407,8 @@ enum AuthError: LocalizedError {
             return loc.localized(.error_not_authenticated)
         case .networkRequired:
             return loc.localized(.error_network_required)
+        case .userCancelled:
+            return nil
         }
     }
 }

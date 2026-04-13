@@ -6,10 +6,12 @@
 import SwiftUI
 
 struct TodayDateLabel: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
     private var todayText: String {
-        let dateString = DateUtility.shared.fullDateWithWeekday(from: Date())
-        let template = LocalizationManager.shared.localized(.home_today_date)
-        return String(format: template, dateString)
+        // localizationManager를 참조하여 언어 변경 시 View 갱신 트리거
+        let _ = localizationManager.currentLanguage
+        return DateUtility.shared.fullDateWithWeekday(from: Date())
     }
 
     var body: some View {

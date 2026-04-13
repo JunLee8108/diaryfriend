@@ -154,9 +154,6 @@
 "recent_posts.title" = "RECENT";
 "recent_posts.no_posts" = "No posts in %@";
 
-/* Home View */
-"home.today_date" = "Today is %@";
-
 /* Home View Modals */
 "home.future_date_title" = "Future Date";
 "home.future_date_message" = "You cannot create entries for future dates.";

@@ -29,6 +29,9 @@ class CharacterObject: Object {
     @Persisted var koreanGreetings = List<String>()
     @Persisted var englishGreetings = List<String>()
     
+    // Category
+    @Persisted var category: String = "modern"
+
     // User_Character Relationship
     @Persisted var userCharacterId: Int?
     @Persisted var isFollowing: Bool = false
@@ -86,8 +89,9 @@ extension CharacterObject {
             korean_description: koreanDescription,
             prompt_description: promptDescription,
             avatar_url: avatarUrl,
-            greeting_messages: greetingMessages,  // 초기화 시점에 설정
-            User_Character: userCharacterRelations  // 초기화 시점에 설정
+            greeting_messages: greetingMessages,
+            category: category,
+            User_Character: userCharacterRelations
         )
         
         return character
@@ -108,7 +112,8 @@ extension CharacterWithAffinity {
         realmObject.koreanDescription = korean_description
         realmObject.promptDescription = prompt_description
         realmObject.avatarUrl = avatar_url
-        
+        realmObject.category = category ?? "modern"
+
         // Personality array → List
         if let personality = personality {
             realmObject.personalityList.removeAll()

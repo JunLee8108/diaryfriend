@@ -26,6 +26,7 @@ struct CharacterWithAffinity: Codable {
     let prompt_description: String?
     let avatar_url: String?
     let greeting_messages: GreetingMessages?
+    let category: String?
     var User_Character: [UserCharacterRelation]?
     
     // Computed properties
@@ -142,13 +143,14 @@ class CharacterService {
         prompt_description,
         avatar_url,
         greeting_messages,
+        category,
         User_Character (
             id,
             is_following,
             affinity
         )
         """
-        
+
         let characters: [CharacterWithAffinity] = try await supabase
             .from("Character")
             .select(query)
@@ -177,13 +179,14 @@ class CharacterService {
         prompt_description,
         avatar_url,
         greeting_messages,
+        category,
         User_Character (
             id,
             is_following,
             affinity
         )
         """
-        
+
         let character: CharacterWithAffinity = try await supabase
             .from("Character")
             .select(query)

@@ -14,6 +14,7 @@ struct ChatHistoryView: View {
 
     @State private var messages: [ChatMessage] = []
     @State private var characterName: String = ""
+    @State private var characterAvatarUrl: String?
     @State private var isLoading = true
 
     @Localized(.post_detail_view_chat) var viewChatTitle
@@ -40,7 +41,8 @@ struct ChatHistoryView: View {
                             ForEach(messages.filter { $0.sender != .system }) { message in
                                 ChatHistoryBubble(
                                     message: message,
-                                    characterName: characterName
+                                    characterName: characterName,
+                                    characterAvatarUrl: characterAvatarUrl
                                 )
                             }
                         }
@@ -74,6 +76,7 @@ struct ChatHistoryView: View {
         if let charId = result.characterId,
            let character = await characterStore.getCharacter(id: charId) {
             characterName = character.localizedName(isKorean: profileStore.isKoreanUser)
+            characterAvatarUrl = character.avatar_url
         }
 
         isLoading = false
@@ -84,14 +87,27 @@ struct ChatHistoryView: View {
 struct ChatHistoryBubble: View {
     let message: ChatMessage
     let characterName: String
+    let characterAvatarUrl: String?
 
     private var isUser: Bool {
         message.sender == .user
     }
 
+    private var avatarInitial: String {
+        String(characterName.first ?? "?").uppercased()
+    }
+
     var body: some View {
-        HStack {
-            if isUser { Spacer(minLength: 60) }
+        HStack(alignment: .top, spacing: 8) {
+            if isUser {
+                Spacer(minLength: 60)
+            } else {
+                CachedAvatarImage(
+                    url: characterAvatarUrl,
+                    size: 32,
+                    initial: avatarInitial
+                )
+            }
 
             VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
                 if !isUser {

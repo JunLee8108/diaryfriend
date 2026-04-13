@@ -26,6 +26,7 @@ struct IntroGreetingSection: View {
 
     // 랜덤 캐릭터
     @State private var greetingCharacter: CharacterWithAffinity?
+    @State private var selectedCharacter: CharacterWithAffinity?
 
     // ⭐ 시간대별 인사말 (다국어 적용)
     private var greeting: String {
@@ -84,6 +85,9 @@ struct IntroGreetingSection: View {
                 }
                 .frame(width: 60)
                 .id(character.id)
+                .onTapGesture {
+                    selectedCharacter = character
+                }
             }
 
             // 우측: 인사말 + stats
@@ -140,6 +144,18 @@ struct IntroGreetingSection: View {
                 .fill(Color.modernSurfacePrimary)
                 .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         )
+        .sheet(item: $selectedCharacter) { character in
+            CharacterDetailSheet(
+                character: character,
+                onFollowToggle: {
+                    await characterStore.toggleFollowing(characterId: character.id)
+                    if let updated = characterStore.allCharacters.first(where: { $0.id == character.id }) {
+                        selectedCharacter = updated
+                        greetingCharacter = updated
+                    }
+                }
+            )
+        }
         .onAppear {
             pickRandomCharacter()
             playAnimation()

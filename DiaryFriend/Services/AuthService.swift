@@ -110,9 +110,14 @@ class AuthService: ObservableObject {
             ) { session in
                 session.prefersEphemeralWebBrowserSession = false
             }
-            
-            try await handleOAuthSuccess()
-            
+
+            // Try to handle session here; if not ready yet, deep link callback will handle it
+            do {
+                try await handleOAuthSuccess()
+            } catch {
+                print("Apple OAuth success deferred to deep link: \(error)")
+            }
+
         } catch {
             await MainActor.run {
                 self.isLoading = false
@@ -128,11 +133,11 @@ class AuthService: ObservableObject {
     // MARK: - Google Sign In
     func signInWithGoogle() async throws {
         print("Google sign in attempt...")
-        
+
         await MainActor.run {
             self.isLoading = true
         }
-        
+
         do {
             try await supabase.auth.signInWithOAuth(
                 provider: .google,
@@ -141,9 +146,14 @@ class AuthService: ObservableObject {
             ) { session in
                 session.prefersEphemeralWebBrowserSession = false
             }
-            
-            try await handleOAuthSuccess()
-            
+
+            // Try to handle session here; if not ready yet, deep link callback will handle it
+            do {
+                try await handleOAuthSuccess()
+            } catch {
+                print("Google OAuth success deferred to deep link: \(error)")
+            }
+
         } catch {
             await MainActor.run {
                 self.isLoading = false

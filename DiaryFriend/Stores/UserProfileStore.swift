@@ -11,6 +11,10 @@ struct UserProfile: Codable {
     let is_new: Bool
     let created_at: Date
     let updated_at: Date?
+    /// Premium(광고 제거) 구독 상태. 기본값 false.
+    /// 서버(Supabase User_Profile 테이블)의 is_premium 컬럼과 매핑됩니다.
+    /// 신규 컬럼이므로 구 버전 레코드에서 누락될 수 있어 옵셔널로 선언.
+    let is_premium: Bool?
 }
 
 enum Language: String, CaseIterable, Hashable {
@@ -351,5 +355,10 @@ extension UserProfileStore {
     
     var isProfileLoaded: Bool {
         userProfile != nil
+    }
+
+    /// 프리미엄(광고 제거) 구독자 여부. 미로드 / 미구독 / 컬럼 누락은 모두 false로 취급.
+    var isPremium: Bool {
+        userProfile?.is_premium ?? false
     }
 }

@@ -7,3 +7,7 @@
 
 SUPABASE_URL = https:/$()/umtxqeftqjgiyungbvrs.supabase.co
 SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtdHhxZWZ0cWpnaXl1bmdidnJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzkzOTIsImV4cCI6MjA2ODgxNTM5Mn0.dQPYJ3sSjyGp87BIjdJjISW3R9L7nUz8ve06RNQelRE
+
+// AdMob: Google-provided sample App ID for DEBUG builds.
+// Never use the production App ID in debug/dev because clicking real ads can get the account banned.
+ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511

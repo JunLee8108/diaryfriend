@@ -282,3 +282,6 @@
 "common.add" = "추가";
 "common.edit" = "수정";
 "common.delete" = "삭제";
+
+/* Ads / Tracking */
+"ads.att_usage" = "더 관련성 높은 광고를 보여드려 DiaryFriend를 무료로 유지하기 위해 사용됩니다.";

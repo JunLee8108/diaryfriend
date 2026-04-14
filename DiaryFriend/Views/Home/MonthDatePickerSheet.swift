@@ -71,9 +71,8 @@ struct MonthDatePickerSheet: View {
                 .environment(\.locale, Locale(identifier: localeIdentifier))
                 .tint(Color(hex: "00C896"))
                 .padding(.horizontal, 16)
-
-                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .padding(.top, 12)
             .background(Color.modernBackground)
             .navigationTitle(titleText)
@@ -97,6 +96,6 @@ struct MonthDatePickerSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.large])
     }
 }

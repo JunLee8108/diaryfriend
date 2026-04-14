@@ -12,13 +12,18 @@ struct DiaryFriendApp: App {
     
     init() {
         LocalizationManager.shared.loadSavedLanguage()
-        
+
         // Configuration 출력
         #if DEBUG
         Config.printConfiguration()
         // ⚠️ 테스트용: 기존 Realm 데이터 모두 삭제
 //        cleanupOldRealmData()
         #endif
+
+        // AdMob SDK 초기화 (Consent → ATT → MobileAds.start)
+        Task { @MainActor in
+            await AdManager.shared.bootstrap()
+        }
     }
 
     var body: some Scene {

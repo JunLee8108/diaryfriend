@@ -40,6 +40,16 @@ class CharacterStore: ObservableObject {
     var notFollowingCharacters: [CharacterWithAffinity] {
         allCharacters.filter { !$0.isFollowing }
     }
+
+    /// Modern 캐릭터들
+    var modernCharacters: [CharacterWithAffinity] {
+        allCharacters.filter { ($0.category ?? "modern") != "classic" }
+    }
+
+    /// Classic 캐릭터들
+    var classicCharacters: [CharacterWithAffinity] {
+        allCharacters.filter { $0.category == "classic" }
+    }
     
     // MARK: - Load Operations
     

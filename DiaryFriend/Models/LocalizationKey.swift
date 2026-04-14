@@ -29,7 +29,6 @@ enum LocalizationKey: String {
     case language_select_title = "language.select_title"
     case language_english_desc = "language.english_description"
     case language_korean_desc = "language.korean_description"
-    case language_updating = "language.updating"
     
     // MARK: - Edit Name ✅
     case edit_name_title = "edit_name.title"
@@ -94,6 +93,7 @@ enum LocalizationKey: String {
     case profile_no_characters = "profile.no_characters"
     case profile_show_more = "profile.show_more"
     case profile_show_less = "profile.show_less"
+    case profile_classic_characters = "profile.classic_characters"
     
     // MARK: - Search View ✅
     case search_placeholder = "search.placeholder"
@@ -133,6 +133,8 @@ enum LocalizationKey: String {
     case stats_entry_tracker = "stats.entry_tracker"
     case stats_no_entry = "stats.no_entry"
     case stats_entry = "stats.entry"
+    case stats_empty_no_entries = "stats.empty_no_entries"
+    case stats_empty_start_writing = "stats.empty_start_writing"
     
     // MARK: - Mood Names
     case mood_happy = "mood.happy"
@@ -144,10 +146,17 @@ enum LocalizationKey: String {
     case greeting_afternoon = "greeting.afternoon"
     case greeting_evening = "greeting.evening"
     case greeting_night = "greeting.night"
+    case intro_stats_streak = "intro_stats.streak"
+    case intro_stats_this_month = "intro_stats.this_month"
+    case intro_stats_days = "intro_stats.days"
+    case intro_stats_entries = "intro_stats.entries"
     
     // MARK: - Recent Posts
     case recent_posts_title = "recent_posts.title"
     case recent_no_posts = "recent_posts.no_posts"
+    case recent_write_diary = "recent_posts.write_diary"
+    case recent_select_date_title = "recent_posts.select_date_title"
+    case recent_select_date_confirm = "recent_posts.select_date_confirm"
     
     // MARK: - Home View Modals
     case home_future_date_title = "home.future_date_title"
@@ -200,6 +209,12 @@ enum LocalizationKey: String {
     case login_apple = "login.apple"
     case login_google = "login.google"
     case login_why_signin = "login.why_signin"
+    case login_feature1_title = "login.feature1_title"
+    case login_feature1_desc = "login.feature1_desc"
+    case login_feature2_title = "login.feature2_title"
+    case login_feature2_desc = "login.feature2_desc"
+    case login_feature3_title = "login.feature3_title"
+    case login_feature3_desc = "login.feature3_desc"
     
     // MARK: - PostAISelectView
     case ai_select_header = "ai_select.header"
@@ -216,7 +231,8 @@ enum LocalizationKey: String {
     case post_detail_empty = "post_detail.empty"
     case post_detail_delete_title = "post_detail.delete_title"
     case post_detail_delete_message = "post_detail.delete_message"
-    
+    case post_detail_view_chat = "post_detail.view_chat"
+
     // MARK: - PostAIConversationView
     case ai_conversation_header = "ai_conversation.header"
     case ai_conversation_generate = "ai_conversation.generate"
@@ -319,8 +335,6 @@ enum LocalizationKey: String {
             return "Use English for all app content"
         case .language_korean_desc:
             return "Use Korean for all app content"
-        case .language_updating:
-            return "Updating..."
             
             // Edit Name
         case .edit_name_title:
@@ -429,6 +443,8 @@ enum LocalizationKey: String {
             return "Show %d More"
         case .profile_show_less:
             return "Show Less"
+        case .profile_classic_characters:
+            return "Classic Characters"
             
             // Search View
         case .search_placeholder:
@@ -485,6 +501,10 @@ enum LocalizationKey: String {
             return "No entry"
         case .stats_entry:
             return "Entry"
+        case .stats_empty_no_entries:
+            return "No entries in %@"
+        case .stats_empty_start_writing:
+            return "Start writing to see your statistics!"
             
             // Mood Names
         case .mood_happy:
@@ -503,12 +523,26 @@ enum LocalizationKey: String {
             return "Good evening"
         case .greeting_night:
             return "Good night"
+        case .intro_stats_streak:
+            return "day streak"
+        case .intro_stats_this_month:
+            return "this month"
+        case .intro_stats_days:
+            return "days"
+        case .intro_stats_entries:
+            return "entries"
             
             // Recent Posts
         case .recent_posts_title:
             return "RECENT"
         case .recent_no_posts:
             return "No posts in %@"
+        case .recent_write_diary:
+            return "Write Diary"
+        case .recent_select_date_title:
+            return "Select Date"
+        case .recent_select_date_confirm:
+            return "Continue"
             
             // Home View Modals
         case .home_future_date_title:
@@ -584,7 +618,7 @@ enum LocalizationKey: String {
         case .post_accessibility_save_hint:
             return "Tap to save your diary entry"
         case .post_accessibility_complete_hint:
-            return "Fill in at least 10 characters to enable saving"
+            return "Fill in at least 5 characters to enable saving"
             
             // loginView
         case .login_subtitle:
@@ -595,7 +629,19 @@ enum LocalizationKey: String {
             return "Continue with Google"
         case .login_why_signin:
             return "Why sign in?"
-            
+        case .login_feature1_title:
+            return "AI analyzes understands your emotions"
+        case .login_feature1_desc:
+            return "Daily records become meaningful insights"
+        case .login_feature2_title:
+            return "Chat with your AI friend"
+        case .login_feature2_desc:
+            return "A comfortable space to share your thoughts"
+        case .login_feature3_title:
+            return "Track your emotional changes"
+        case .login_feature3_desc:
+            return "Know yourself better as time goes by"
+
             // PostAISelectView
         case .ai_select_header:
             return "AI Chat"
@@ -623,6 +669,8 @@ enum LocalizationKey: String {
             return "Delete Post"
         case .post_detail_delete_message:
             return "Are you sure you want to delete this post? This action cannot be undone."
+        case .post_detail_view_chat:
+            return "View Chat"
             
             // PostAIConversationView
         case .ai_conversation_header:

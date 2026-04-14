@@ -30,6 +30,9 @@ struct SettingsView: View {
     @State private var showHelp = false
     @State private var showDeleteAccount = false
     
+    // ⭐ 언어 변경 로딩 상태
+    @State private var isLanguageLoading = false
+    
     // Error State
     @State private var showErrorAlert = false
     @State private var errorAlertMessage = ""
@@ -90,7 +93,7 @@ struct SettingsView: View {
                 HStack {
                     Text(versionLabel)
                     Spacer()
-                    Text("1.1.1")
+                    Text("1.1.5")
                         .foregroundColor(.secondary)
                 }
                 
@@ -114,6 +117,22 @@ struct SettingsView: View {
                 }
             }
         }
+        // ⭐ 언어 변경 로딩 overlay (전체 화면)
+        .overlay {
+            if isLanguageLoading {
+                ZStack {
+                    Color.clear
+                        .background(.ultraThinMaterial)  // 반투명 블러
+                        .ignoresSafeArea()
+                    
+                    ProgressView()
+                        .padding()
+                        .background(Color(.systemBackground))
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
+                }
+            }
+        }
         // Edit Name Sheet
         .sheet(isPresented: $showEditName) {
             EditNameView(
@@ -132,6 +151,7 @@ struct SettingsView: View {
         .sheet(isPresented: $showLanguageSelection) {
             LanguageSelectionView(
                 currentLanguage: profileStore.currentLanguage ?? .english,
+                isLoadingBinding: $isLanguageLoading,  // ⭐ binding 전달
                 onSelect: { language in
                     Task {
                         try await profileStore.updateLanguage(language.rawValue)

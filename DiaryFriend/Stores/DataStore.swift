@@ -166,6 +166,51 @@ class DataStore: ObservableObject {
         posts.count
     }
     
+    /// 현재 연속 작성일 수 계산
+    var currentStreak: Int {
+        guard !posts.isEmpty else { return 0 }
+        
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        // postDates를 Date 배열로 변환 후 정렬
+        let sortedDates = postDates
+            .compactMap { DateUtility.shared.date(from: $0) }
+            .map { calendar.startOfDay(for: $0) }
+            .sorted(by: >)  // 최신순
+        
+        guard !sortedDates.isEmpty else { return 0 }
+        
+        var streak = 0
+        var checkDate = today
+        
+        // 오늘 작성했는지 확인
+        if sortedDates.first == today {
+            streak = 1
+            checkDate = calendar.date(byAdding: .day, value: -1, to: today)!
+        } else if sortedDates.first == calendar.date(byAdding: .day, value: -1, to: today) {
+            // 오늘은 안 썼지만 어제 썼으면 어제부터 시작
+            streak = 1
+            checkDate = calendar.date(byAdding: .day, value: -2, to: today)!
+        } else {
+            // 어제도 안 쓴 경우 = 연속 끊김
+            return 0
+        }
+        
+        // 과거로 거슬러 올라가며 연속성 체크
+        for date in sortedDates.dropFirst() {
+            if date == checkDate {
+                streak += 1
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+            } else if date < checkDate {
+                // 날짜가 건너뛰어짐 = 연속 끊김
+                break
+            }
+        }
+        
+        return streak
+    }
+    
     /// 캐시 통계 정보 (디버깅용)
     var cacheStatistics: String {
         let hitRate = cacheMisses > 0 ? Double(cacheHits) / Double(cacheHits + cacheMisses) * 100 : 0
@@ -174,22 +219,64 @@ class DataStore: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// 초기 데이터 로드 (앱 시작시 1회)
+    /// 초기 데이터 로드 (앱 시작시 1회) - 현재 월만 우선 로드
     func initialLoad() async {
         guard !isInitialized else {
             print("📊 DataStore: 이미 초기화됨")
             return
         }
-        
-        await loadFiveMonthWindow(centerDate: Date())
+
+        // 초기 로드 시 isLoading을 설정하지 않음
+        // → 스플래시가 로딩 역할을 하므로 SmoothLoadingOverlay 중복 표시 방지
+        errorMessage = nil
+
+        // 현재 월 + 이전 1개월만 즉시 로드 (홈 화면에 필요한 최소 데이터)
+        let now = Date()
+        let calendar = Calendar.current
+        let lastMonth = calendar.date(byAdding: .month, value: -1, to: now)!
+
+        print("📊 DataStore: 우선 로드 시작 (현재 월 + 이전 월)")
+
+        async let currentLoad: () = loadMonth(for: now)
+        async let lastMonthLoad: () = loadMonth(for: lastMonth)
+        _ = await (currentLoad, lastMonthLoad)
+
         isInitialized = true
+        print("✅ DataStore: 우선 로드 완료 (총 \(posts.count)개 포스트)")
+
+        // 나머지 3개월은 백그라운드에서 로드
+        Task.detached { [weak self] in
+            await self?.loadRemainingMonths(centerDate: now)
+        }
     }
-    
-    /// 5개월 윈도우 로드 (현재 + 이전/다음 2개월)
+
+    /// 나머지 월 백그라운드 로드
+    private func loadRemainingMonths(centerDate: Date) async {
+        let calendar = Calendar.current
+        let remainingMonths = [
+            calendar.date(byAdding: .month, value: -2, to: centerDate)!,
+            calendar.date(byAdding: .month, value: 1, to: centerDate)!,
+            calendar.date(byAdding: .month, value: 2, to: centerDate)!
+        ]
+
+        print("📊 DataStore: 나머지 3개월 백그라운드 로드 시작")
+
+        await withTaskGroup(of: Void.self) { group in
+            for date in remainingMonths {
+                group.addTask {
+                    await self.loadMonth(for: date)
+                }
+            }
+        }
+
+        print("✅ DataStore: 백그라운드 로드 완료 (총 \(await MainActor.run { posts.count })개 포스트)")
+    }
+
+    /// 5개월 윈도우 로드 (refresh 등에서 사용)
     private func loadFiveMonthWindow(centerDate: Date) async {
         isLoading = true
         errorMessage = nil
-        
+
         let calendar = Calendar.current
         let monthsToLoad = [
             calendar.date(byAdding: .month, value: -2, to: centerDate)!,
@@ -198,13 +285,17 @@ class DataStore: ObservableObject {
             calendar.date(byAdding: .month, value: 1, to: centerDate)!,
             calendar.date(byAdding: .month, value: 2, to: centerDate)!
         ]
-        
+
         print("📊 DataStore: 5개월 윈도우 로딩 시작")
-        
-        for date in monthsToLoad {
-            await loadMonth(for: date)
+
+        await withTaskGroup(of: Void.self) { group in
+            for date in monthsToLoad {
+                group.addTask {
+                    await self.loadMonth(for: date)
+                }
+            }
         }
-        
+
         isLoading = false
         print("✅ DataStore: 로드 완료 (총 \(posts.count)개 포스트)")
     }
@@ -294,7 +385,7 @@ class DataStore: ObservableObject {
     }
     
     // DataStore.swift
-
+    
     /// 여러 월을 서버와 동기화 (Diff 기반)
     private func syncMonthsWithServer(months: [Date], monthKeys: [String]) async {
         var successCount = 0
@@ -356,7 +447,7 @@ class DataStore: ObservableObject {
     }
     
     // DataStore.swift
-
+    
     /// 단일 월을 서버와 동기화 (Diff 기반 + PostChangeNotification)
     private func syncSingleMonth(date: Date, monthKey: String) async throws -> SyncMetrics {
         print("\n🔍 [\(monthKey)] 동기화 시작...")
@@ -487,7 +578,7 @@ class DataStore: ObservableObject {
             updated: postsToUpdate.count
         )
     }
-
+    
     /// Realm 데이터로 메모리 복구
     private func recoverFromRealmForMonth(_ monthKey: String) async {
         print("💾 [\(monthKey)] Realm 데이터로 복구 시도...")
@@ -697,7 +788,7 @@ class DataStore: ObservableObject {
             throw error
         }
     }
-
+    
     /// Post 업데이트 (content, mood, hashtags, images)
     func updatePost(
         id: Int,

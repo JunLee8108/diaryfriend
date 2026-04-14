@@ -210,8 +210,11 @@ struct PostContentView: View {
     let detail: PostDetail
     let enrichedComments: [EnrichedComment]
     let isWaitingForAI: Bool
-    
+
     @State private var selectedCharacter: CharacterWithAffinity?
+    @State private var showChatHistory = false
+
+    @Localized(.post_detail_view_chat) var viewChatText
     
     private var dayNumber: String {
         DateUtility.shared.dayNumber(from: detail.entry_date)
@@ -237,7 +240,7 @@ struct PostContentView: View {
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 30) {
+            VStack(alignment: .leading, spacing: 20) {
                 // 날짜 헤더
                 HStack(alignment: .center, spacing: 20) {
                     Text(dayNumber)
@@ -261,8 +264,27 @@ struct PostContentView: View {
                     }
                     
                     Spacer()
+
+                    // AI 대화 보기 버튼
+                    if detail.ai_generated == true {
+                        Button(action: { showChatHistory = true }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "bubble.left.and.text.bubble.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text(viewChatText)
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundColor(Color(hex: "00C896"))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule()
+                                    .fill(Color(hex: "00C896").opacity(0.12))
+                            )
+                        }
+                    }
                 }
-                
+
                 // 본문
                 Text(detail.plainContent)
                     .font(.system(size: 16))
@@ -283,19 +305,23 @@ struct PostContentView: View {
                 
                 // 해시태그
                 if !detail.hashtags.isEmpty {
-                    HStack(spacing: 8) {
-                        ForEach(detail.hashtags, id: \.self) { tag in
-                            Text("#\(tag)")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.gray)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Color.gray.opacity(0.1)
-                                )
-                                .clipShape(Capsule())
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(detail.hashtags, id: \.self) { tag in
+                                Text("#\(tag)")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Color.gray.opacity(0.1)
+                                    )
+                                    .clipShape(Capsule())
+                            }
                         }
+                        .padding(.horizontal, 20)
                     }
+                    .padding(.horizontal, -20)
                 }
                 
                 Divider()
@@ -337,6 +363,9 @@ struct PostContentView: View {
                     }
                 }
             )
+        }
+        .sheet(isPresented: $showChatHistory) {
+            ChatHistoryView(postId: detail.id)
         }
     }
 }

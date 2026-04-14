@@ -25,38 +25,39 @@ struct ProfileView: View {
     @Localized(.profile_following) var followingText
     @Localized(.profile_no_characters) var noCharactersText
     @Localized(.profile_show_less) var showLessText
-    
+    @Localized(.profile_classic_characters) var classicCharactersTitle
+
     // Sign Out 관련 State
     @State private var showSignOutConfirmation = false
     @State private var signOutError: String?
     @State private var showSignOutError = false
-    
+
     // Character 관련 State
     @State private var selectedCharacter: CharacterWithAffinity?
     @State private var isExpanded = false
-    
+    @State private var isClassicExpanded = false
+
     // 처음 표시할 캐릭터 수
     private let initialDisplayCount = 6
-    
-    // 표시할 캐릭터 목록
-    private var displayedCharacters: [CharacterWithAffinity] {
+
+    // Modern 캐릭터 표시
+    private var displayedModernCharacters: [CharacterWithAffinity] {
+        let modern = characterStore.modernCharacters
         if isExpanded {
-            return characterStore.allCharacters
+            return modern
         } else {
-            return Array(characterStore.allCharacters.prefix(initialDisplayCount))
+            return Array(modern.prefix(initialDisplayCount))
         }
     }
-    
-    // 더보기 버튼 표시 여부
+
     private var shouldShowExpandButton: Bool {
-        characterStore.allCharacters.count > initialDisplayCount
+        characterStore.modernCharacters.count > initialDisplayCount
     }
-    
-    // 남은 캐릭터 수
+
     private var remainingCount: Int {
-        max(0, characterStore.allCharacters.count - initialDisplayCount)
+        max(0, characterStore.modernCharacters.count - initialDisplayCount)
     }
-    
+
     // ⭐ "Show X More" 동적 텍스트
     private var showMoreText: String {
         String(format: LocalizationManager.shared.localized(.profile_show_more), remainingCount)
@@ -77,7 +78,7 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal)
             }
-            .padding(.top, 40)
+            .padding(.top, 16)
             .safeAreaInset(edge: .bottom) {
                 // TabBar 높이를 고려한 안전 영역 확보
                 Color.clear.frame(height: 20)
@@ -183,25 +184,36 @@ struct ProfileView: View {
     
     // MARK: - Characters Section
     private var charactersSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Header
+        VStack(alignment: .leading, spacing: 20) {
+            // Modern Characters Section
+            modernCharactersSection
+
+            // Classic Characters Section (Accordion)
+            if !characterStore.classicCharacters.isEmpty {
+                classicCharactersSection
+            }
+        }
+    }
+
+    // MARK: - Modern Characters
+    private var modernCharactersSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(aiCharactersTitle)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
-                
+
                 Spacer()
-                
+
                 Text("\(characterStore.followingCharacters.count) \(followingText)")
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
             }
-            
-            // Content
+
             if characterStore.isLoading && characterStore.allCharacters.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
-            } else if characterStore.allCharacters.isEmpty {
+            } else if characterStore.modernCharacters.isEmpty {
                 Text(noCharactersText)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
@@ -209,7 +221,7 @@ struct ProfileView: View {
             } else {
                 VStack(spacing: 0) {
                     LazyVStack(spacing: 0) {
-                        ForEach(Array(displayedCharacters.enumerated()), id: \.element.id) { index, character in
+                        ForEach(Array(displayedModernCharacters.enumerated()), id: \.element.id) { index, character in
                             VStack(spacing: 0) {
                                 CharacterCard(
                                     character: character,
@@ -221,8 +233,8 @@ struct ProfileView: View {
                                 .onTapGesture {
                                     selectedCharacter = character
                                 }
-                                
-                                if character.id != displayedCharacters.last?.id {
+
+                                if character.id != displayedModernCharacters.last?.id {
                                     Divider()
                                         .padding(.leading, 62)
                                 }
@@ -230,8 +242,7 @@ struct ProfileView: View {
                         }
                     }
                     .animation(.easeInOut(duration: 0.3), value: isExpanded)
-                    
-                    // Show More/Less Button
+
                     if shouldShowExpandButton {
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.3)) {
@@ -240,7 +251,7 @@ struct ProfileView: View {
                         }) {
                             HStack {
                                 Spacer()
-                                
+
                                 if isExpanded {
                                     Label(showLessText, systemImage: "chevron.up")
                                         .font(.system(size: 14, weight: .medium))
@@ -251,7 +262,7 @@ struct ProfileView: View {
                                     }
                                     .font(.system(size: 14, weight: .medium))
                                 }
-                                
+
                                 Spacer()
                             }
                             .foregroundColor(Color(hex: "00A077"))
@@ -262,6 +273,60 @@ struct ProfileView: View {
                                 .fill(Color.modernSurfaceSecondary)
                         )
                         .padding(.top, 8)
+                    }
+                }
+                .background(Color.modernSurfacePrimary)
+                .cornerRadius(12)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+    }
+
+    // MARK: - Classic Characters (Accordion)
+    private var classicCharactersSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Accordion Header
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isClassicExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    Text(classicCharactersTitle)
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundColor(.primary)
+
+                    Spacer()
+
+                    Image(systemName: isClassicExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            // Accordion Content
+            if isClassicExpanded {
+                VStack(spacing: 0) {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(characterStore.classicCharacters.enumerated()), id: \.element.id) { index, character in
+                            VStack(spacing: 0) {
+                                CharacterCard(
+                                    character: character,
+                                    onFollowToggle: {
+                                        await characterStore.toggleFollowing(characterId: character.id)
+                                    },
+                                    index: index
+                                )
+                                .onTapGesture {
+                                    selectedCharacter = character
+                                }
+
+                                if character.id != characterStore.classicCharacters.last?.id {
+                                    Divider()
+                                        .padding(.leading, 62)
+                                }
+                            }
+                        }
                     }
                 }
                 .background(Color.modernSurfacePrimary)

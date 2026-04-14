@@ -130,7 +130,7 @@ struct CharacterDetailSheet: View {
     var body: some View {
         ZStack(alignment: .top) {
             // Background
-            Color.black
+            Color.clear
                 .ignoresSafeArea()
             
             GeometryReader { geometry in
@@ -219,14 +219,14 @@ struct CharacterDetailSheet: View {
                                                 Capsule()
                                                     .fill(
                                                         character.isFollowing ?
-                                                            Color(hex:"00A077") :                    // Following = 진한 초록
+                                                        Color(hex:"00A077") :                    // Following = 진한 초록
                                                         Color.secondary.opacity(0.5)         // Follow + = 50% 초록 (secondary 느낌)
                                                     )
                                                     .overlay(
                                                         Capsule()
                                                             .stroke(
                                                                 character.isFollowing ?
-                                                                    Color.clear :                     // Following = 테두리 없음
+                                                                Color.clear :                     // Following = 테두리 없음
                                                                 Color.secondary.opacity(0.6), // Follow + = 초록 테두리
                                                                 lineWidth: 1
                                                             )
@@ -252,6 +252,7 @@ struct CharacterDetailSheet: View {
                                         HStack(spacing: 8) {
                                             Image(systemName: "sparkles")
                                                 .font(.system(size: 14))
+                                                .foregroundColor(Color(hex: "9B59B6"))
                                             Text(personalityLabel)
                                                 .font(.system(size: 16, weight: .semibold))
                                         }
@@ -276,7 +277,7 @@ struct CharacterDetailSheet: View {
                                         .padding(.horizontal, -24)
                                     }
                                     .padding(.horizontal, 24)
-                                    .padding(.vertical, 28)
+                                    .padding(.vertical, 20)
                                     
                                     Divider()
                                         .padding(.horizontal, 24)
@@ -287,7 +288,7 @@ struct CharacterDetailSheet: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: "heart.fill")
                                             .font(.system(size: 14))
-                                            .foregroundColor(getAffinityColor(for: character.affinity))
+                                            .foregroundColor(Color(hex: "FF6B6B"))
                                         Text(affinityLabel)
                                             .font(.system(size: 16, weight: .semibold))
                                     }
@@ -295,11 +296,11 @@ struct CharacterDetailSheet: View {
                                     
                                     HStack(alignment: .center, spacing: 16) {
                                         Text("\(displayedAffinity)")
-                                            .font(.system(size: 35, weight: .medium, design: .rounded))
+                                            .font(.system(size: 36, weight: .medium, design: .rounded))
                                             .foregroundColor(getAffinityColor(for: character.affinity))
                                             .animation(.none, value: displayedAffinity)
                                         
-                                        VStack(alignment: .leading, spacing: 8) {
+                                        VStack(alignment: .leading, spacing: 4) {
                                             Text("out of 100")
                                                 .font(.system(size: 14))
                                                 .foregroundColor(.secondary)
@@ -332,12 +333,12 @@ struct CharacterDetailSheet: View {
                                     }
                                 }
                                 .padding(.horizontal, 24)
-                                .padding(.vertical, 28)
+                                .padding(.vertical, 20)
                                 
                                 Divider()
                                     .padding(.horizontal, 24)
                                 
-                               
+                                
                                 
                                 // About Section
                                 if let description = displayDescription {
@@ -356,12 +357,12 @@ struct CharacterDetailSheet: View {
                                             .lineSpacing(6)
                                     }
                                     .padding(.horizontal, 24)
-                                    .padding(.vertical, 28)
+                                    .padding(.vertical, 20)
                                 }
                                 
                                 // Bottom padding
                                 Color.clear
-                                    .frame(height: 40)
+                                    .frame(height: 20)
                             }
                             .background(Color(UIColor.systemBackground))
                         }

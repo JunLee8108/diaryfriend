@@ -8,20 +8,22 @@ import SwiftUI
 struct CustomLaunchView: View {
     var body: some View {
         ZStack {
-            // 배경색
             Color.modernBackground
                 .ignoresSafeArea()
-            VStack(spacing: 4) {
-                // 로고 - 애니메이션 없이 바로 표시
+
+            VStack(spacing: 10) {
                 Image("Logo")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 120, height: 120)
-                
+                    .frame(width: 150, height: 112)
+
                 Text("DiaryFriend")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+
+                Text("Your Daily Companion")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundColor(Color(hex: "00C896"))
             }
-            .padding(.bottom, 40)
         }
     }
 }

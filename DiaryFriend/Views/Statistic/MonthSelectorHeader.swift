@@ -38,8 +38,12 @@ struct MonthSelectorHeader: View {
                 Spacer()
                 
                 HStack(spacing: 8) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                    
                     Text(monthYearString)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                     
                     Image(systemName: showMonthPicker ? "chevron.up" : "chevron.down")
@@ -50,7 +54,7 @@ struct MonthSelectorHeader: View {
                 
                 Spacer()
             }
-            .frame(height: 56)
+//            .frame(height: 56)
         }
         .disabled(isLoading)
         .sheet(isPresented: $showMonthPicker) {

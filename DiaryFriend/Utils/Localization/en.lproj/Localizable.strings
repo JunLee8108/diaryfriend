@@ -93,6 +93,7 @@
 "profile.no_characters" = "No characters available";
 "profile.show_more" = "Show %d More";
 "profile.show_less" = "Show Less";
+"profile.classic_characters" = "Classic Characters";
 
 /* Search View */
 "search.placeholder" = "Search posts, dates, moods...";
@@ -132,6 +133,8 @@
 "stats.entry_tracker" = "ENTRY TRACKER";
 "stats.no_entry" = "No entry";
 "stats.entry" = "Entry";
+"stats.empty_no_entries" = "No entries in %@";
+"stats.empty_start_writing" = "Start writing to see your statistics!";
 
 /* Mood Names */
 "mood.happy" = "Happy";
@@ -143,10 +146,17 @@
 "greeting.afternoon" = "Good afternoon";
 "greeting.evening" = "Good evening";
 "greeting.night" = "Good night";
+"intro_stats.streak" = "day streak";
+"intro_stats.this_month" = "this month";
+"intro_stats.days" = "days";
+"intro_stats.entries" = "entries";
 
 /* Recent Posts */
 "recent_posts.title" = "RECENT";
 "recent_posts.no_posts" = "No posts in %@";
+"recent_posts.write_diary" = "Write Diary";
+"recent_posts.select_date_title" = "Select Date";
+"recent_posts.select_date_confirm" = "Continue";
 
 /* Home View Modals */
 "home.future_date_title" = "Future Date";
@@ -192,13 +202,19 @@
 "post.accessibility_save_label" = "Save your diary entry";
 "post.accessibility_complete_label" = "Complete your entry to save";
 "post.accessibility_save_hint" = "Tap to save your diary entry";
-"post.accessibility_complete_hint" = "Fill in at least 10 characters to enable saving";
+"post.accessibility_complete_hint" = "Fill in at least 5 characters to enable saving";
 
 /* loginView */
 "login.subtitle" = "Sign in to start diary journy with AI friends!";
 "login.apple" = "Continue with Apple";
 "login.google" = "Continue with Google";
 "login.why_signin" = "Why sign in?";
+"login.feature1_title" = "AI understands your emotions";
+"login.feature1_desc" = "Daily records become meaningful insights";
+"login.feature2_title" = "Chat with your AI friend";
+"login.feature2_desc" = "A comfortable space to share your thoughts";
+"login.feature3_title" = "Track your emotional changes";
+"login.feature3_desc" = "Know yourself better as time goes by";
 
 /* PostAISelectView */
 "ai_select.header" = "AI Chat";
@@ -215,6 +231,7 @@
 "post_detail.empty" = "No AI Insights yet";
 "post_detail.delete_title" = "Delete Post";
 "post_detail.delete_message" = "Are you sure you want to delete this post? This action cannot be undone.";
+"post_detail.view_chat" = "View Chat";
 
 /* PostAIConversation */
 "ai_conversation.header" = "Chat with AI";

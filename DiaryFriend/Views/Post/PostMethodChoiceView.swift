@@ -28,7 +28,7 @@ struct PostMethodChoiceView: View {
                 Spacer(minLength: 50)
                 
                 // Main Content
-                VStack(spacing: 40) {
+                VStack(spacing: 30) {
                     // Title section with bubble style
                     VStack(spacing: 8) {
                         Text(dateTitle)
@@ -40,37 +40,37 @@ struct PostMethodChoiceView: View {
                             .foregroundColor(.secondary)
                     }
                     
-                    // Choice cards
-                    VStack(spacing: 20) {
-                        // AI option bubble card
+                    // Console pad buttons
+                    HStack(spacing: 16) {
+                        // AI option pad
                         Button(action: {
                             navigationCoordinator.push(.aiSelect)
                         }) {
-                            BubbleCard(
+                            ConsolePadButton(
                                 icon: "bubble.left.and.bubble.right.fill",
                                 iconColor: Color(hex: "00A077"),
                                 title: aiTitle,
                                 description: aiDescription
                             )
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                        // Manual writing bubble card
+                        .buttonStyle(ConsolePadButtonStyle())
+
+                        // Manual writing pad
                         Button(action: {
                             navigationCoordinator.push(.manualWrite)
                         }) {
-                            BubbleCard(
+                            ConsolePadButton(
                                 icon: "pencil",
                                 iconColor: Color(hex: "FFB6A3"),
                                 title: manualTitle,
                                 description: manualDescription
                             )
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .buttonStyle(ConsolePadButtonStyle())
                     }
                     .padding(.horizontal, 24)
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 120)
                 
                 Spacer(minLength: 50)
             }
@@ -82,65 +82,142 @@ struct PostMethodChoiceView: View {
     }
 }
 
-// MARK: - Modern Bubble Card Component
+// MARK: - Console Pad Button Style (Press Animation)
 
-private struct BubbleCard: View {
+private struct ConsolePadButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.93 : 1.0)
+            .offset(y: configuration.isPressed ? 3 : 0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Console Pad Button Component
+
+private struct ConsolePadButton: View {
     let icon: String
     let iconColor: Color
     let title: String
     let description: String
-    
-    // 아이콘별 크기 조정
+
+    @Environment(\.colorScheme) private var colorScheme
+
     private var iconSize: CGFloat {
         switch icon {
         case "bubble.left.and.bubble.right.fill":
-            return 18  // AI 채팅 아이콘은 작게
+            return 26
         default:
-            return 26  // 나머지는 기본 크기
+            return 32
         }
     }
-    
+
+    // 베이스(받침) 색상
+    private var baseColor: Color {
+        colorScheme == .dark
+            ? Color(hex: "1A1A1A")
+            : Color(hex: "D8D8D8")
+    }
+
+    // 상단면 색상
+    private var surfaceColor: Color {
+        colorScheme == .dark
+            ? Color(hex: "2A2A2A")
+            : Color(hex: "F0F0F0")
+    }
+
+    // 상단면 하이라이트
+    private var highlightColor: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.08)
+            : Color.white.opacity(0.9)
+    }
+
+    // 하단 엣지(그림자 역할)
+    private var edgeColor: Color {
+        colorScheme == .dark
+            ? Color.black.opacity(0.6)
+            : Color.black.opacity(0.12)
+    }
+
     var body: some View {
-        HStack(spacing: 20) {
-            // Icon circle - 통일된 크기와 스타일
+        GeometryReader { geometry in
+            let size = geometry.size.width
+
             ZStack {
-                Circle()
-                    .fill(iconColor.opacity(0.1))
-                    .frame(width: 56, height: 56)
-                
-                Image(systemName: icon)
-                    .font(.system(size: iconSize, weight: .medium))
-                    .foregroundColor(iconColor)
+                // Layer 1: 베이스 받침 (버튼이 올라앉는 바닥)
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(baseColor)
+
+                // Layer 2: 하단 엣지 (두께감)
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(edgeColor)
+                    .padding(2)
+
+                // Layer 3: 상단면 (볼록한 버튼 면)
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                surfaceColor,
+                                colorScheme == .dark
+                                    ? Color(hex: "222222")
+                                    : Color(hex: "E4E4E4")
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .padding(.horizontal, 2)
+                    .padding(.top, 2)
+                    .padding(.bottom, 5)
+
+                // Layer 4: 상단 하이라이트 (빛 반사)
+                RoundedRectangle(cornerRadius: 19)
+                    .stroke(highlightColor, lineWidth: 1)
+                    .padding(.horizontal, 3)
+                    .padding(.top, 3)
+                    .padding(.bottom, 6)
+
+                // Layer 5: 콘텐츠
+                VStack(spacing: 10) {
+                    Spacer()
+
+                    // 아이콘
+                    ZStack {
+                        Circle()
+                            .fill(iconColor.opacity(0.12))
+                            .frame(width: 56, height: 56)
+
+                        Image(systemName: icon)
+                            .font(.system(size: iconSize, weight: .semibold))
+                            .foregroundColor(iconColor)
+                    }
+
+                    // 타이틀
+                    Text(title)
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .multilineTextAlignment(.center)
+
+                    // 설명
+                    Text(description)
+                        .font(.system(size: 11, weight: .regular, design: .rounded))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 3)
             }
-            
-            // Text content - 타이포그래피 개선
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
-                
-                Text(description)
-                    .font(.system(size: 12, weight: .regular, design: .rounded))
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            
-            Spacer(minLength: 8)
-            
-            // Chevron indicator - 인터랙션 암시
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.secondary.opacity(0.5))
+            .frame(width: size, height: size)
+            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.4 : 0.08), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 2, x: 0, y: 2)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.modernSurfacePrimary)
-                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-                .shadow(color: Color.black.opacity(0.02), radius: 16, x: 0, y: 4)
-        )
+        .aspectRatio(1, contentMode: .fit)
     }
 }
 

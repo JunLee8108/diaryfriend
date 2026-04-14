@@ -14,45 +14,83 @@ class AuthService: ObservableObject {
     func initialize() async {
         await checkSession()
     }
-    
-    // MARK: - Session Check
-    func checkSession() async {
+
+    // MARK: - Lightweight Session Check (세션만 확인, 프로필 로드 안 함)
+    func checkSessionOnly() async {
         do {
             let session = try await supabase.auth.session
-            
+
             await MainActor.run {
                 self.session = session
                 self.currentUser = session.user
                 self.isAuthenticated = true
-                
+
                 SupabaseManager.shared.updateCurrentUser(session.user)
             }
-            
-            let userId = session.user.id
-            
-            Logger.debug("Loading user profile for existing session...")
-            
-            do {
-                try await UserProfileStore.shared.fetchUserProfile(userId: userId)
-                Logger.debug("User profile loaded successfully")
-            } catch {
-                Logger.debug("Failed to load user profile: \(error)")
-            }
-            
-            await MainActor.run {
-                self.isLoading = false
-            }
-            
+
+            Logger.debug("⚡ Session restored (lightweight)")
+
         } catch {
             await MainActor.run {
                 self.session = nil
                 self.currentUser = nil
                 self.isAuthenticated = false
                 self.isLoading = false
-                
+
                 SupabaseManager.shared.updateCurrentUser(nil)
             }
-            
+
+            await UserProfileStore.shared.clearProfile()
+        }
+    }
+
+    // MARK: - Session Check (Full - 프로필 포함)
+    func checkSession() async {
+        do {
+            let session = try await supabase.auth.session
+
+            await MainActor.run {
+                self.session = session
+                self.currentUser = session.user
+                self.isAuthenticated = true
+
+                SupabaseManager.shared.updateCurrentUser(session.user)
+            }
+
+            let userId = session.user.id
+
+            Logger.debug("Loading user profile for existing session...")
+
+            do {
+                try await UserProfileStore.shared.fetchUserProfile(userId: userId)
+                Logger.debug("User profile loaded successfully")
+
+                // ✅ is_new 체크 추가
+                if let profile = UserProfileStore.shared.userProfile {
+                    await MainActor.run {
+                        self.isNewUser = profile.is_new
+                        print("📊 Session restored - isNewUser: \(profile.is_new)")
+                    }
+                }
+
+            } catch {
+                Logger.debug("Failed to load user profile: \(error)")
+            }
+
+            await MainActor.run {
+                self.isLoading = false
+            }
+
+        } catch {
+            await MainActor.run {
+                self.session = nil
+                self.currentUser = nil
+                self.isAuthenticated = false
+                self.isLoading = false
+
+                SupabaseManager.shared.updateCurrentUser(nil)
+            }
+
             await UserProfileStore.shared.clearProfile()
         }
     }
@@ -66,37 +104,36 @@ class AuthService: ObservableObject {
         }
         
         do {
-            // ASWebAuthenticationSession 사용
-            // Apple은 자체 계정 선택 UI 제공하므로 ephemeral = false
             try await supabase.auth.signInWithOAuth(
                 provider: .apple,
                 redirectTo: URL(string: "diaryfriend://auth-callback")
             ) { session in
                 session.prefersEphemeralWebBrowserSession = false
             }
-            
-            // 세션 확인 및 프로필 로드
+
             try await handleOAuthSuccess()
-            
+
         } catch {
             await MainActor.run {
                 self.isLoading = false
             }
+            let nsError = error as NSError
+            if nsError.domain.contains("AuthenticationServices") && nsError.code == 1 {
+                throw AuthError.userCancelled
+            }
             throw AuthError.signInFailed("Failed to sign in with Apple")
         }
     }
-    
+
     // MARK: - Google Sign In
     func signInWithGoogle() async throws {
         print("Google sign in attempt...")
-        
+
         await MainActor.run {
             self.isLoading = true
         }
-        
+
         do {
-            // ASWebAuthenticationSession 사용
-            // ✅ queryParams에 prompt=select_account 추가하여 매번 계정 선택 화면 표시
             try await supabase.auth.signInWithOAuth(
                 provider: .google,
                 redirectTo: URL(string: "diaryfriend://auth-callback"),
@@ -104,13 +141,16 @@ class AuthService: ObservableObject {
             ) { session in
                 session.prefersEphemeralWebBrowserSession = false
             }
-            
-            // 세션 확인 및 프로필 로드
+
             try await handleOAuthSuccess()
-            
+
         } catch {
             await MainActor.run {
                 self.isLoading = false
+            }
+            let nsError = error as NSError
+            if nsError.domain.contains("AuthenticationServices") && nsError.code == 1 {
+                throw AuthError.userCancelled
             }
             throw AuthError.signInFailed("Failed to sign in with Google")
         }
@@ -120,24 +160,21 @@ class AuthService: ObservableObject {
     private func handleOAuthSuccess() async throws {
         do {
             let session = try await supabase.auth.session
-            
+
             print("Session created for: \(session.user.email ?? "unknown")")
-            
+
+            let userId = session.user.id
+            let isNew = await checkIfNewUser(session.user)
+
             await MainActor.run {
                 self.session = session
                 self.currentUser = session.user
+                self.isNewUser = isNew
                 self.isAuthenticated = true
-                
+
                 SupabaseManager.shared.updateCurrentUser(session.user)
             }
-            
-            let userId = session.user.id
-            let isNew = await checkIfNewUser(session.user)
-            
-            await MainActor.run {
-                self.isNewUser = isNew
-            }
-            
+
             if !isNew {
                 do {
                     try await UserProfileStore.shared.fetchUserProfile(userId: userId)
@@ -146,50 +183,47 @@ class AuthService: ObservableObject {
                     print("Failed to load user profile: \(error)")
                 }
             }
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
         } catch {
             print("OAuth handling failed: \(error)")
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
             throw AuthError.signInFailed("Authentication failed. Please try signing in.")
         }
     }
     
-    // MARK: - Deep Link Handling (기존 코드 - 백업용)
+    // MARK: - Deep Link Handling
     func handleDeepLink(_ url: URL) async throws {
         print("Handling deep link: \(url)")
-        
+
         await MainActor.run {
             self.isLoading = true
         }
-        
+
         do {
             let session = try await supabase.auth.session(from: url)
-            
+
             print("Session created for: \(session.user.email ?? "unknown")")
-            
+
+            let userId = session.user.id
+            let isNew = await checkIfNewUser(session.user)
+
             await MainActor.run {
                 self.session = session
                 self.currentUser = session.user
+                self.isNewUser = isNew
                 self.isAuthenticated = true
-                
+
                 SupabaseManager.shared.updateCurrentUser(session.user)
             }
-            
-            let userId = session.user.id
-            let isNew = await checkIfNewUser(session.user)
-            
-            await MainActor.run {
-                self.isNewUser = isNew
-            }
-            
+
             if !isNew {
                 do {
                     try await UserProfileStore.shared.fetchUserProfile(userId: userId)
@@ -198,18 +232,18 @@ class AuthService: ObservableObject {
                     print("Failed to load user profile: \(error)")
                 }
             }
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
         } catch {
             print("Deep link handling failed: \(error)")
-            
+
             await MainActor.run {
                 self.isLoading = false
             }
-            
+
             throw AuthError.signInFailed("Authentication failed. Please try signing in.")
         }
     }
@@ -306,6 +340,13 @@ class AuthService: ObservableObject {
             let userId = session.user.id
             try await UserProfileStore.shared.fetchUserProfile(userId: userId)
             
+            // ✅ is_new 체크 추가
+            if let profile = UserProfileStore.shared.userProfile {
+                await MainActor.run {
+                    self.isNewUser = profile.is_new
+                }
+            }
+            
         } catch {
             try? await signOut()
             throw error
@@ -314,12 +355,29 @@ class AuthService: ObservableObject {
     
     // MARK: - Helper Methods
     private func checkIfNewUser(_ user: User) async -> Bool {
-        do {
-            try await UserProfileStore.shared.fetchUserProfile(userId: user.id)
-            return false
-        } catch {
-            return true
+        for attempt in 1...3 {
+            do {
+                try await UserProfileStore.shared.fetchUserProfile(userId: user.id)
+                
+                let isNew = UserProfileStore.shared.userProfile?.is_new ?? false
+                
+                print("📊 User profile loaded (attempt \(attempt))")
+                print("   - is_new: \(isNew)")
+                print("   - created_at: \(UserProfileStore.shared.userProfile?.created_at ?? Date())")
+                
+                return isNew
+                
+            } catch {
+                if attempt < 3 {
+                    print("⏳ Waiting for profile creation... (attempt \(attempt)/3)")
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                } else {
+                    print("❌ Profile not found after 3 attempts")
+                    return false
+                }
+            }
         }
+        return false
     }
 }
 
@@ -329,10 +387,11 @@ enum AuthError: LocalizedError {
     case profileFetchFailed(String)
     case notAuthenticated
     case networkRequired
-    
+    case userCancelled
+
     var errorDescription: String? {
         let loc = LocalizationManager.shared
-        
+
         switch self {
         case .signInFailed(let message):
             return message
@@ -342,6 +401,8 @@ enum AuthError: LocalizedError {
             return loc.localized(.error_not_authenticated)
         case .networkRequired:
             return loc.localized(.error_network_required)
+        case .userCancelled:
+            return nil
         }
     }
 }

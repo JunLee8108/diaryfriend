@@ -51,7 +51,7 @@ struct PostEditView: View {
     }
     
     private var isValid: Bool {
-        editedContent.count >= 10 && editedContent.count <= 1000
+        editedContent.count >= 5 && editedContent.count <= 1000
     }
     
     private var dateTitle: String {
@@ -68,10 +68,8 @@ struct PostEditView: View {
         }
         .safeAreaInset(edge: .bottom) {
             ScrollView {
-                VStack(spacing: 34) {
+                VStack(spacing: 28) {
                     HeaderSection(dateTitle: dateTitle)
-                        .padding(.top, 30)
-                        .padding(.bottom, 20)
                     
                     DiaryTextSection(
                         diaryText: $editedContent,
@@ -120,7 +118,7 @@ struct PostEditView: View {
                     } else {
                         Text(saveText)
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
-                            .foregroundColor(isValid && hasChanges ? Color(hex: "FFB6A3") : Color.gray)
+                            .foregroundColor(isValid && hasChanges ? Color(hex: "E8826B") : Color.gray)
                     }
                 }
                 .disabled(!isValid || !hasChanges || isSaving)

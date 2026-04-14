@@ -19,30 +19,12 @@ class SupabaseManager: ObservableObject {
     @Published var currentUser: User?
     
     private init() {
-        // Config에서 설정값 가져와서 연결
         self.client = SupabaseClient(
             supabaseURL: URL(string: Config.supabaseURL)!,
             supabaseKey: Config.supabaseAnonKey
         )
-        
+
         print("✅ Supabase 연결 완료")
-        
-        // 세션 체크
-        Task {
-            await checkSession()
-        }
-    }
-    
-    // 세션 확인 및 유저 정보 업데이트
-    private func checkSession() async {
-        do {
-            let session = try await client.auth.session
-            await MainActor.run {
-                self.currentUser = session.user
-            }
-        } catch {
-            print("No active session")
-        }
     }
     
     // 유저 정보 업데이트 메서드

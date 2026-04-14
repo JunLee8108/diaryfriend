@@ -53,7 +53,14 @@ struct PostDisplayItem {
 struct RecentPostsSection: View {
     let posts: [Post]
     let currentMonth: Date
-    
+    let onWriteDiary: (() -> Void)?
+
+    init(posts: [Post], currentMonth: Date, onWriteDiary: (() -> Void)? = nil) {
+        self.posts = posts
+        self.currentMonth = currentMonth
+        self.onWriteDiary = onWriteDiary
+    }
+
     // ⭐ 다국어 적용
     @Localized(.recent_posts_title) var recentTitle
     
@@ -111,7 +118,8 @@ struct RecentPostsSection: View {
     private var contentView: some View {
         ZStack(alignment: .topLeading) {
             // Empty State
-            EmptyRecentView(currentMonth: currentMonth)
+            EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
+                .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .opacity(displayItems.isEmpty ? 1 : 0)
                 .scaleEffect(displayItems.isEmpty ? 1 : 0.9)
@@ -182,44 +190,87 @@ struct RecentPostItemView: View {
             .padding(16)
             .contentShape(Rectangle())
             .background(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(Color.modernSurfacePrimary)
                     .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
             )
+            .overlay(alignment: .topTrailing) {
+                DogEarShape()
+                    .fill(item.moodColor.opacity(0.25))
+                    .frame(width: 18, height: 18)
+                    .shadow(color: item.moodColor.opacity(0.1), radius: 2, x: -1, y: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Dog-ear Shape (접힌 페이지 모서리)
+struct DogEarShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.closeSubpath()
+        return path
     }
 }
 
 // MARK: - Empty State
 struct EmptyRecentView: View {
     let currentMonth: Date
-    
-    // ⭐ 다국어 적용
+    let onWriteDiary: (() -> Void)?
+
+    @Localized(.recent_no_posts) var noPostsTemplate
+    @Localized(.recent_write_diary) var writeDiaryText
+
     private var noPostsMessage: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "MMMM"
         let monthName = formatter.string(from: currentMonth)
-        
-        return String(
-            format: LocalizationManager.shared.localized(.recent_no_posts),
-            monthName
-        )
+
+        return String(format: noPostsTemplate, monthName)
     }
-    
+
     var body: some View {
-        VStack(spacing: 8) {
-            // 📅 작은 캘린더 아이콘
+        VStack(spacing: 14) {
             Image(systemName: "calendar")
                 .font(.system(size: 25, weight: .light))
-                .foregroundColor(Color(hex:"00C896"))
-            
+                .foregroundColor(Color(hex: "00C896"))
+
             Text(noPostsMessage)
                 .font(.system(size: 14, weight: .regular, design: .rounded))
                 .foregroundColor(.secondary)
+
+            if let onWriteDiary = onWriteDiary {
+                Button(action: onWriteDiary) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.and.pencil")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(writeDiaryText)
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Color(hex: "00C896"))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule()
+                            .fill(Color(hex: "00C896").opacity(0.12))
+                    )
+                }
+                .padding(.top, 2)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
+        .padding(.horizontal, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.modernSurfacePrimary)
+                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+        )
     }
 }

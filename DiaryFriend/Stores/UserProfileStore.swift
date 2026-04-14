@@ -8,6 +8,7 @@ struct UserProfile: Codable {
     let id: UUID
     let display_name: String?
     let language: String
+    let is_new: Bool
     let created_at: Date
     let updated_at: Date?
     /// Premium(광고 제거) 구독 상태. 기본값 false.
@@ -16,7 +17,7 @@ struct UserProfile: Codable {
     let is_premium: Bool?
 }
 
-enum Language: String, CaseIterable {
+enum Language: String, CaseIterable, Hashable {
     case english = "English"
     case korean = "Korean"
     
@@ -267,6 +268,58 @@ class UserProfileStore: ObservableObject {
             }
             
         } catch {
+            let errorMessage = error.localizedDescription
+            await MainActor.run {
+                self.error = errorMessage
+                self.isLoading = false
+            }
+            throw ProfileError.updateFailed(errorMessage)
+        }
+    }
+    
+    // MARK: - Complete Onboarding
+    func completeOnboarding() async throws {
+        guard let userId = userProfile?.id else {
+            throw ProfileError.notLoaded
+        }
+        
+        print("🎓 Completing onboarding for user: \(userId.uuidString.prefix(8))")
+        
+        await MainActor.run {
+            isLoading = true
+            error = nil
+        }
+        
+        do {
+            struct OnboardingUpdate: Encodable {
+                let is_new: Bool
+                let updated_at: String
+            }
+            
+            let updateData = OnboardingUpdate(
+                is_new: false,
+                updated_at: ISO8601DateFormatter().string(from: Date())
+            )
+            
+            try await supabase
+                .from("User_Profile")
+                .update(updateData)
+                .eq("id", value: userId.uuidString)
+                .execute()
+            
+            print("✅ User_Profile updated (is_new = false)")
+            
+            // 프로필 다시 로드
+            try await fetchUserProfile(userId: userId)
+            
+            print("✅ Onboarding completed successfully")
+            
+            await MainActor.run {
+                self.isLoading = false
+            }
+            
+        } catch {
+            print("❌ Onboarding completion failed: \(error)")
             let errorMessage = error.localizedDescription
             await MainActor.run {
                 self.error = errorMessage

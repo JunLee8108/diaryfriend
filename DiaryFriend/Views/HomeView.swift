@@ -36,6 +36,9 @@ struct HomeView: View {
     
     // sheet에 전달할 데이터
     @State private var dayPostsData: DayPostsData?
+
+    // 빈 월에서 일기 작성하기 - 날짜 선택 모달
+    @State private var showWriteDiaryDatePicker = false
     
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
@@ -44,9 +47,14 @@ struct HomeView: View {
                     // 🎯 NEW: Intro Section
                     IntroGreetingSection()
                         .padding(.horizontal, 20)
-                        .padding(.top, 20)
-                        .padding(.bottom, 20)
-                    
+                        .padding(.top, 30)
+                        .padding(.bottom, 16)
+
+                    // 오늘 날짜 표시
+                    TodayDateLabel()
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 14)
+
                     // 슬라이드 캘린더
                     SlideCalendarView(
                         currentMonth: $currentMonth,
@@ -62,12 +70,15 @@ struct HomeView: View {
                         }
                     )
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 30)
                     
                     // Recent Posts 섹션
                     RecentPostsSection(
                         posts: dataStore.recentPosts(for: currentMonth, limit: 3),
-                        currentMonth: currentMonth  // 월 레이블 표시용
+                        currentMonth: currentMonth,  // 월 레이블 표시용
+                        onWriteDiary: {
+                            showWriteDiaryDatePicker = true
+                        }
                     )
                     .padding(.bottom, 20)
 
@@ -100,6 +111,11 @@ struct HomeView: View {
                 )
                 // EnvironmentObject는 자동 전파되지만 명시적으로 추가 (안전성)
                 .environmentObject(dataStore)
+            }
+            .sheet(isPresented: $showWriteDiaryDatePicker) {
+                MonthDatePickerSheet(currentMonth: currentMonth) { pickedDate in
+                    handleDateTap(pickedDate)
+                }
             }
             .navigationDestination(for: PostDestination.self) { destination in
                 switch destination {
@@ -198,28 +214,46 @@ struct SlideCalendarView: View {
     let onMonthChanged: (Date) -> Void
     let onDateTapped: (Date) -> Void
     
-    @State private var tabSelection = 50
+    @State private var tabSelection = 12
     private let calendar = Calendar.current
-    
+    private let centerIndex = 12
+
+    private var isCurrentMonth: Bool {
+        tabSelection == centerIndex
+    }
+
+
     var body: some View {
-        VStack(spacing: 20) {
-            // 헤더
+        VStack(spacing: 0) {
+            // 헤더 (월 타이틀 좌측 + Today 버튼 우측)
             CalendarHeader(
                 currentMonth: currentMonth,
-                onPreviousMonth: {
-                    tabSelection -= 1
-                },
-                onNextMonth: {
-                    tabSelection += 1
+                isCurrentMonth: isCurrentMonth,
+                onGoToToday: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        tabSelection = centerIndex
+                    }
                 }
             )
-            
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 12)
+
+            // 미니멀 구분선
+            Rectangle()
+                .fill(Color.secondary.opacity(0.15))
+                .frame(height: 0.5)
+                .padding(.horizontal, 20)
+
             // 요일 헤더
             WeekdayHeader()
-            
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 14)
+
             // TabView로 슬라이드 구현
             TabView(selection: $tabSelection) {
-                ForEach(0..<100, id: \.self) { index in
+                ForEach(0..<24, id: \.self) { index in
                     CalendarGridView(
                         month: monthForIndex(index),
                         selectedDate: $selectedDate,
@@ -230,15 +264,17 @@ struct SlideCalendarView: View {
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .frame(height: 300)
+            .frame(height: 270)
+
+            .padding(.horizontal, 16)
+            .padding(.bottom, 18)
             .onChange(of: tabSelection) { oldValue, newValue in
-                let diff = newValue - 50
+                let diff = newValue - centerIndex
                 let newMonth = calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
                 currentMonth = newMonth
                 onMonthChanged(newMonth)
             }
         }
-        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.modernSurfacePrimary)
@@ -247,7 +283,7 @@ struct SlideCalendarView: View {
     }
     
     private func monthForIndex(_ index: Int) -> Date {
-        let diff = index - 50
+        let diff = index - centerIndex
         return calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
     }
 }
@@ -255,9 +291,9 @@ struct SlideCalendarView: View {
 // MARK: - 캘린더 헤더 컴포넌트
 struct CalendarHeader: View {
     let currentMonth: Date
-    let onPreviousMonth: () -> Void
-    let onNextMonth: () -> Void
-    
+    let isCurrentMonth: Bool
+    let onGoToToday: () -> Void
+
     // ⭐ 월 이름
     private var monthName: String {
         let formatter = DateFormatter()
@@ -265,7 +301,7 @@ struct CalendarHeader: View {
         formatter.dateFormat = "MMMM"
         return formatter.string(from: currentMonth)
     }
-    
+
     // ⭐ 연도
     private var yearString: String {
         let formatter = DateFormatter()
@@ -273,7 +309,7 @@ struct CalendarHeader: View {
         formatter.dateFormat = "yyyy"
         return formatter.string(from: currentMonth)
     }
-    
+
     // ⭐ 한국어에서 "년" 추가
     private var yearWithSuffix: String {
         if LocalizationManager.shared.currentLanguage == .korean {
@@ -282,7 +318,7 @@ struct CalendarHeader: View {
             return yearString
         }
     }
-    
+
     // ⭐ 한국어에서 "월" 추가
     private var monthWithSuffix: String {
         if LocalizationManager.shared.currentLanguage == .korean {
@@ -292,62 +328,64 @@ struct CalendarHeader: View {
             return monthName
         }
     }
-    
+
     var body: some View {
         HStack {
-            Button(action: onPreviousMonth) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
-                    .frame(width: 40, height: 40)
-            }
-            
-            Spacer()
-            
-            // ⭐ 언어별 순서 분기
+            // 좌측: 월 타이틀
             if LocalizationManager.shared.currentLanguage == .korean {
-                // 한국어: 2025년 1월
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(yearWithSuffix)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary.opacity(0.85))
-                    
+
                     Text(monthWithSuffix)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
-                    
-                    
                 }
             } else {
-                // 영어: January 2025
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(monthName)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
-                    
+
                     Text(yearString)
                         .font(.system(size: 15, weight: .regular, design: .rounded))
                         .foregroundColor(.primary.opacity(0.65))
                 }
             }
-            
+
             Spacer()
-            
-            Button(action: onNextMonth) {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 40, height: 40)
+
+            // 우측: Today 버튼 (항상 표시, 현재 월이면 비활성화)
+            Button(action: onGoToToday) {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.uturn.left")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                }
+                .foregroundColor(Color(hex: "00C896"))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(Color(hex: "00C896").opacity(0.12))
+                )
             }
+            .disabled(isCurrentMonth)
+            .opacity(isCurrentMonth ? 0.35 : 1)
         }
+        .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
     }
 }
 
 // MARK: - 요일 헤더
 struct WeekdayHeader: View {
+    @ObservedObject private var localization = LocalizationManager.shared
+    
     private var weekdays: [String] {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
+        formatter.locale = Locale(identifier: localization.currentLanguage.code)
         return formatter.shortWeekdaySymbols
     }
     
@@ -374,51 +412,113 @@ struct WeekdayHeader: View {
     }
 }
 
+// MARK: - 셀 사전 계산 데이터
+struct CalendarCellData {
+    let date: Date
+    let day: Int
+    let isCurrentMonth: Bool
+    let dateString: String
+    let isToday: Bool
+}
+
 // MARK: - 캘린더 그리드
-struct CalendarGridView: View {
+struct CalendarGridView: View, Equatable {
     let month: Date
     @Binding var selectedDate: Date
     let postDatesSet: Set<String>
     let onDateTapped: (Date) -> Void
-    
-    private let calendar = Calendar.current
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-    
+
     private let sundayColor = Color(hex:"00A077")
     private let saturdayColor = Color(hex:"FF7AB2")
-    
-    private var monthData: MonthData {
-        MonthData(date: month)
+
+    // ⭐ Equatable 구현
+    static func == (lhs: CalendarGridView, rhs: CalendarGridView) -> Bool {
+        lhs.month == rhs.month &&
+        lhs.selectedDate == rhs.selectedDate &&
+        lhs.postDatesSet == rhs.postDatesSet
     }
-    
+
+    /// 42개 셀 데이터를 한 번에 사전 계산
+    private var cells: [CalendarCellData] {
+        let calendar = Calendar.current
+        let current = MonthData(date: month)
+
+        let prevMonthDate = calendar.date(byAdding: .month, value: -1, to: month) ?? month
+        let prev = MonthData(date: prevMonthDate)
+
+        let nextMonthDate = calendar.date(byAdding: .month, value: 1, to: month) ?? month
+        let next = MonthData(date: nextMonthDate)
+
+        let today = calendar.startOfDay(for: Date())
+
+        var result: [CalendarCellData] = []
+        result.reserveCapacity(42)
+
+        for index in 0..<42 {
+            let dayOffset = index - current.firstWeekday + 1
+
+            let date: Date
+            let day: Int
+            let isCurrentMonth: Bool
+
+            if dayOffset > 0 && dayOffset <= current.daysInMonth {
+                date = current.date(for: dayOffset) ?? Date()
+                day = dayOffset
+                isCurrentMonth = true
+            } else if dayOffset <= 0 {
+                let prevDay = prev.daysInMonth + dayOffset
+                date = prev.date(for: prevDay) ?? Date()
+                day = prevDay
+                isCurrentMonth = false
+            } else {
+                let nextDay = dayOffset - current.daysInMonth
+                date = next.date(for: nextDay) ?? Date()
+                day = nextDay
+                isCurrentMonth = false
+            }
+
+            let dateString = DateUtility.shared.dateString(from: date)
+            let isToday = calendar.startOfDay(for: date) == today
+
+            result.append(CalendarCellData(
+                date: date,
+                day: day,
+                isCurrentMonth: isCurrentMonth,
+                dateString: dateString,
+                isToday: isToday
+            ))
+        }
+
+        return result
+    }
+
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
+        let cellData = cells
+        let calendar = Calendar.current
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+
+        LazyVGrid(columns: columns, spacing: 6) {
             ForEach(0..<42, id: \.self) { index in
-                if let day = dayNumber(for: index),
-                   let date = monthData.date(for: day) {
-                    OptimizedDayView(
-                        date: date,
-                        day: day,
-                        selectedDate: selectedDate,
-                        hasPost: postDatesSet.contains(DateUtility.shared.dateString(from: date)),
-                        weekdayColor: getWeekdayColor(for: index),
-                        onTap: {
-                            onDateTapped(date)
-                        }
-                    )
-                } else {
-                    Color.clear
-                        .frame(height: 40)
-                }
+                let cell = cellData[index]
+                let isSelected = calendar.startOfDay(for: cell.date) == selectedDay
+
+                OptimizedDayView(
+                    day: cell.day,
+                    isToday: cell.isToday,
+                    isSelected: isSelected,
+                    hasPost: postDatesSet.contains(cell.dateString),
+                    weekdayColor: getWeekdayColor(for: index),
+                    onTap: {
+                        onDateTapped(cell.date)
+                    }
+                )
+                .opacity(cell.isCurrentMonth ? 1 : 0.35)
             }
         }
     }
-    
-    private func dayNumber(for index: Int) -> Int? {
-        let day = index - monthData.firstWeekday + 1
-        return (day > 0 && day <= monthData.daysInMonth) ? day : nil
-    }
-    
+
     private func getWeekdayColor(for index: Int) -> Color? {
         let weekday = index % 7
         switch weekday {
@@ -458,28 +558,23 @@ struct HighlighterUnderline: Shape {
 }
 
 // MARK: - 최적화된 Day View
-struct OptimizedDayView: View {
-    let date: Date
+struct OptimizedDayView: View, Equatable {
     let day: Int
-    let selectedDate: Date
+    let isToday: Bool
+    let isSelected: Bool
     let hasPost: Bool
     let weekdayColor: Color?
     let onTap: () -> Void
-    
-    private let calendar = Calendar.current
-    
-    private var isToday: Bool {
-        calendar.isDateInToday(date)
+
+    // ⭐ Equatable 구현
+    static func == (lhs: OptimizedDayView, rhs: OptimizedDayView) -> Bool {
+        lhs.day == rhs.day &&
+        lhs.isToday == rhs.isToday &&
+        lhs.isSelected == rhs.isSelected &&
+        lhs.hasPost == rhs.hasPost &&
+        lhs.weekdayColor == rhs.weekdayColor
     }
-    
-    private var isSelected: Bool {
-        calendar.isDate(date, inSameDayAs: selectedDate)
-    }
-    
-    private var highlighterColor: Color {
-        Color(hex:"00C896").opacity(0.3)
-    }
-    
+
     private var textColor: Color {
         if hasPost {
             return Color(hex: "00C896")
@@ -489,30 +584,30 @@ struct OptimizedDayView: View {
             return .primary
         }
     }
-    
+
     var body: some View {
         ZStack {
             if isSelected {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(hex:"89dfbc").opacity(0.1))
             }
-            
+
             if isToday {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color(hex:"89dfbc"), lineWidth: 2)
                     .padding(0.5)
             }
-            
+
             ZStack {
                 if hasPost {
                     HighlighterUnderline()
-                        .fill(highlighterColor)
+                        .fill(Color(hex:"00C896").opacity(0.3))
                         .frame(width: 22, height: 20)
                         .offset(y: 3)
                 }
-                
+
                 Text("\(day)")
-                    .font(.system(size: 16, weight: hasPost ? .semibold : .regular))
+                    .font(.system(size: 14, weight: hasPost ? .semibold : .regular))
                     .foregroundColor(textColor)
             }
         }
@@ -522,27 +617,21 @@ struct OptimizedDayView: View {
     }
 }
 
-// MARK: - Month Data Helper
+// MARK: - Month Data Helper (사전 계산, stored properties)
 struct MonthData {
-    let date: Date
-    private let calendar = Calendar.current
-    
-    var year: Int {
-        calendar.component(.year, from: date)
+    let year: Int
+    let month: Int
+    let daysInMonth: Int
+    let firstWeekday: Int
+
+    init(date: Date) {
+        let calendar = Calendar.current
+        self.year = calendar.component(.year, from: date)
+        self.month = calendar.component(.month, from: date)
+        self.daysInMonth = DateUtility.shared.daysInMonth(year: year, month: month)
+        self.firstWeekday = DateUtility.shared.firstWeekday(year: year, month: month)
     }
-    
-    var month: Int {
-        calendar.component(.month, from: date)
-    }
-    
-    var daysInMonth: Int {
-        DateUtility.shared.daysInMonth(year: year, month: month)
-    }
-    
-    var firstWeekday: Int {
-        DateUtility.shared.firstWeekday(year: year, month: month)
-    }
-    
+
     func date(for day: Int) -> Date? {
         DateUtility.shared.date(year: year, month: month, day: day)
     }

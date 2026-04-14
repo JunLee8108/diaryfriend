@@ -86,6 +86,7 @@
 "profile.no_characters" = "사용 가능한 캐릭터가 없습니다";
 "profile.show_more" = "%d개 더보기";
 "profile.show_less" = "접기";
+"profile.classic_characters" = "클래식 캐릭터";
 
 /* Search View */
 "search.placeholder" = "게시물, 날짜, 기분 검색...";
@@ -125,6 +126,8 @@
 "stats.entry_tracker" = "작성 현황";
 "stats.no_entry" = "작성 안 함";
 "stats.entry" = "작성함";
+"stats.empty_no_entries" = "%@에 작성한 일기가 없습니다.";
+"stats.empty_start_writing" = "일기를 작성하고 통계를 확인해보세요!";
 
 /* Mood Names */
 "mood.happy" = "행복";
@@ -136,10 +139,17 @@
 "greeting.afternoon" = "좋은 오후에요";
 "greeting.evening" = "좋은 저녁이에요";
 "greeting.night" = "좋은 밤이에요";
+"intro_stats.streak" = "일 연속";
+"intro_stats.this_month" = "이번 달";
+"intro_stats.days" = "일";
+"intro_stats.entries" = "개";
 
 /* Recent Posts */
 "recent_posts.title" = "최근 게시물";
 "recent_posts.no_posts" = "%@에 게시물이 없습니다";
+"recent_posts.write_diary" = "일기 작성하기";
+"recent_posts.select_date_title" = "날짜 선택";
+"recent_posts.select_date_confirm" = "계속";
 
 /* Home View Modals */
 "home.future_date_title" = "미래 날짜";
@@ -152,7 +162,7 @@
 "post_method.ai_title" = "AI와 대화하기";
 "post_method.ai_description" = "AI가 당신의 생각을 표현하도록 도와드려요";
 "post_method.manual_title" = "자유롭게 작성";
-"post_method.manual_description" = "당신만의 언어로 표현해보세요";
+"post_method.manual_description" = "당신만의 언어로 자유롭게 표현해보세요";
 
 /* Diary Text Section */
 "diary.section_title" = "오늘의 이야기";
@@ -185,13 +195,19 @@
 "post.accessibility_save_label" = "일기 저장하기";
 "post.accessibility_complete_label" = "일기를 완성해야 저장할 수 있습니다";
 "post.accessibility_save_hint" = "탭하여 일기를 저장하세요";
-"post.accessibility_complete_hint" = "최소 10자 이상 작성해야 저장할 수 있습니다";
+"post.accessibility_complete_hint" = "최소 5자 이상 작성해야 저장할 수 있습니다";
 
 /* loginView */
 "login.subtitle" = "로그인하고 AI 친구들과 대화를 통해 일기를 작성해보세요!";
-"login.apple" = "애플 로그인";
-"login.google" = "구글 로그인";
+"login.apple" = "애플 로그인 하기";
+"login.google" = "구글 로그인 하기";
 "login.why_signin" = "왜 로그인을 해야하나요?";
+"login.feature1_title" = "AI가 당신의 감정을 이해해요";
+"login.feature1_desc" = "매일의 기록이 의미 있는 인사이트로";
+"login.feature2_title" = "나만의 AI 친구와 대화해요";
+"login.feature2_desc" = "언제든 편하게 이야기할 수 있어요";
+"login.feature3_title" = "감정의 변화를 확인해요";
+"login.feature3_desc" = "시간이 지날수록 나를 더 잘 알게 돼요";
 
 /* PostAISelectView */
 "ai_select.header" = "AI 선택";
@@ -208,6 +224,7 @@
 "post_detail.empty" = "아직 AI 인사이트가 없습니다.";
 "post_detail.delete_title" = "게시글 삭제";
 "post_detail.delete_message" = "이 게시물을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.";
+"post_detail.view_chat" = "대화보기";
 
 /* PostAIConversation */
 "ai_conversation.header" = "AI 대화";

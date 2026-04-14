@@ -11,6 +11,9 @@ struct StaticsView: View {
     @State private var monthPosts: [Post] = []
     @State private var isLoadingMonth = true
     
+    // ⭐ 추가: 실제 화면에 표시할 월 (로딩 완료 후에만 업데이트)
+    @State private var displayMonth = Date()
+    
     // 최소 로딩 시간 (깜빡임 방지)
     private let minimumLoadingDuration: TimeInterval = 0.5
     
@@ -23,14 +26,16 @@ struct StaticsView: View {
                         isLoading: .constant(statsDataStore.isLoading),
                         onMonthChanged: handleMonthChange
                     )
+                    .padding(.bottom, 10)
                     
                     // ⭐ transition 제거 + id로 강제 재생성
                     if isLoadingMonth {
                         StatisticsLoadingView()
                             .id("loading")
                     } else if monthPosts.isEmpty {
-                        StatisticsEmptyStateCard(month: currentMonth)
-                            .id("empty-\(currentMonth.timeIntervalSince1970)")
+                        // ⭐ 수정: currentMonth → displayMonth
+                        StatisticsEmptyStateCard(month: displayMonth)
+                            .id("empty-\(displayMonth.timeIntervalSince1970)")
                     } else {
                         statisticsContent
                             .id("content-\(monthPosts.count)-\(currentMonth.timeIntervalSince1970)")
@@ -82,6 +87,7 @@ struct StaticsView: View {
             // 캐시가 있으면 즉시 표시 (스켈레톤 스킵)
             print("✅ StaticsView: \(monthKey) 캐시 사용 (스켈레톤 스킵)")
             monthPosts = cachedPosts
+            displayMonth = currentMonth  // ⭐ 추가: 캐시 사용 시 displayMonth 업데이트
             isLoadingMonth = false
             
             // 백그라운드에서 조용히 최신화
@@ -107,6 +113,7 @@ struct StaticsView: View {
                 try? await Task.sleep(nanoseconds: UInt64(remainingTime * 1_000_000_000))
             }
             
+            displayMonth = currentMonth  // ⭐ 추가: 로딩 완료 후 displayMonth 업데이트
             // ⭐ withAnimation 제거 - iOS 18 버그 방지
             isLoadingMonth = false
             

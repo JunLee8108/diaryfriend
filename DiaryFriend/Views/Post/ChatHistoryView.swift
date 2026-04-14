@@ -13,9 +13,11 @@ struct ChatHistoryView: View {
     @ObservedObject private var profileStore = UserProfileStore.shared
 
     @State private var messages: [ChatMessage] = []
+    @State private var characterId: Int?
     @State private var characterName: String = ""
     @State private var characterAvatarUrl: String?
     @State private var isLoading = true
+    @State private var selectedCharacterForDetail: CharacterWithAffinity?
 
     @Localized(.post_detail_view_chat) var viewChatTitle
 
@@ -42,7 +44,10 @@ struct ChatHistoryView: View {
                                 ChatHistoryBubble(
                                     message: message,
                                     characterName: characterName,
-                                    characterAvatarUrl: characterAvatarUrl
+                                    characterAvatarUrl: characterAvatarUrl,
+                                    onAvatarTap: {
+                                        handleAvatarTap()
+                                    }
                                 )
                             }
                         }
@@ -64,6 +69,17 @@ struct ChatHistoryView: View {
                 }
             }
         }
+        .sheet(item: $selectedCharacterForDetail) { character in
+            CharacterDetailSheet(
+                character: character,
+                onFollowToggle: {
+                    await characterStore.toggleFollowing(characterId: character.id)
+                    if let updated = characterStore.allCharacters.first(where: { $0.id == character.id }) {
+                        selectedCharacterForDetail = updated
+                    }
+                }
+            )
+        }
         .task {
             await loadChatHistory()
         }
@@ -75,11 +91,20 @@ struct ChatHistoryView: View {
 
         if let charId = result.characterId,
            let character = await characterStore.getCharacter(id: charId) {
+            characterId = charId
             characterName = character.localizedName(isKorean: profileStore.isKoreanUser)
             characterAvatarUrl = character.avatar_url
         }
 
         isLoading = false
+    }
+
+    private func handleAvatarTap() {
+        guard let charId = characterId,
+              let character = characterStore.allCharacters.first(where: { $0.id == charId }) else {
+            return
+        }
+        selectedCharacterForDetail = character
     }
 }
 
@@ -88,6 +113,7 @@ struct ChatHistoryBubble: View {
     let message: ChatMessage
     let characterName: String
     let characterAvatarUrl: String?
+    let onAvatarTap: (() -> Void)?
 
     private var isUser: Bool {
         message.sender == .user
@@ -102,11 +128,15 @@ struct ChatHistoryBubble: View {
             if isUser {
                 Spacer(minLength: 60)
             } else {
-                CachedAvatarImage(
-                    url: characterAvatarUrl,
-                    size: 32,
-                    initial: avatarInitial
-                )
+                Button(action: { onAvatarTap?() }) {
+                    CachedAvatarImage(
+                        url: characterAvatarUrl,
+                        size: 32,
+                        initial: avatarInitial
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .disabled(onAvatarTap == nil)
             }
 
             VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {

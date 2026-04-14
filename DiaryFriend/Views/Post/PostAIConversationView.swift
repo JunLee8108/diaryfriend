@@ -24,6 +24,7 @@ struct PostAIConversationView: View {
     
     @State private var isGeneratingDiary = false
     @State private var generatedDiaryData: GeneratedDiaryData?
+    @State private var selectedCharacterForDetail: CharacterWithAffinity?
     
     @State private var showError = false
     @State private var errorMessage = ""
@@ -104,15 +105,23 @@ struct PostAIConversationView: View {
                                         content: tempGreeting,
                                         timestamp: Date()
                                     ),
-                                    characterName: character?.name ?? "AI"
+                                    characterName: character?.name ?? "AI",
+                                    characterAvatarUrl: character?.avatar_url,
+                                    onAvatarTap: {
+                                        selectedCharacterForDetail = character
+                                    }
                                 )
                             }
-                            
+
                             // Active messages
                             ForEach(activeMessages) { message in
                                 MessageBubbleView(
                                     message: message,
-                                    characterName: character?.name ?? "AI"
+                                    characterName: character?.name ?? "AI",
+                                    characterAvatarUrl: character?.avatar_url,
+                                    onAvatarTap: {
+                                        selectedCharacterForDetail = character
+                                    }
                                 )
                                 .id(message.id)
                             }
@@ -258,8 +267,19 @@ struct PostAIConversationView: View {
         } message: {
             Text(errorMessage)
         }
+        .sheet(item: $selectedCharacterForDetail) { character in
+            CharacterDetailSheet(
+                character: character,
+                onFollowToggle: {
+                    await characterStore.toggleFollowing(characterId: character.id)
+                    if let updated = characterStore.allCharacters.first(where: { $0.id == character.id }) {
+                        selectedCharacterForDetail = updated
+                    }
+                }
+            )
+        }
     }
-    
+
     // MARK: - Methods
     
     private func loadSession() async {
@@ -650,15 +670,45 @@ struct ChatHeaderView: View {
 struct MessageBubbleView: View {
     let message: ChatMessage
     let characterName: String
-    
+    let characterAvatarUrl: String?
+    let onAvatarTap: (() -> Void)?
+
+    init(
+        message: ChatMessage,
+        characterName: String,
+        characterAvatarUrl: String? = nil,
+        onAvatarTap: (() -> Void)? = nil
+    ) {
+        self.message = message
+        self.characterName = characterName
+        self.characterAvatarUrl = characterAvatarUrl
+        self.onAvatarTap = onAvatarTap
+    }
+
     private var isUser: Bool {
         message.sender == .user
     }
-    
+
+    private var avatarInitial: String {
+        String(characterName.first ?? "?").uppercased()
+    }
+
     var body: some View {
-        HStack {
-            if isUser { Spacer(minLength: 60) }
-            
+        HStack(alignment: .top, spacing: 8) {
+            if isUser {
+                Spacer(minLength: 60)
+            } else {
+                Button(action: { onAvatarTap?() }) {
+                    CachedAvatarImage(
+                        url: characterAvatarUrl,
+                        size: 32,
+                        initial: avatarInitial
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .disabled(onAvatarTap == nil)
+            }
+
             VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
                 if !isUser {
                     Text(characterName)
@@ -666,7 +716,7 @@ struct MessageBubbleView: View {
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 4)
                 }
-                
+
                 Text(message.content)
                     .font(.system(size: 14, design: .rounded))
                     .foregroundColor(isUser ? .white : .primary)
@@ -681,7 +731,7 @@ struct MessageBubbleView: View {
                             .stroke(isUser ? Color.clear : Color.gray.opacity(0.1), lineWidth: 1)
                     )
             }
-            
+
             if !isUser { Spacer(minLength: 60) }
         }
     }

@@ -154,6 +154,9 @@
 /* Recent Posts */
 "recent_posts.title" = "RECENT";
 "recent_posts.no_posts" = "No posts in %@";
+"recent_posts.write_diary" = "Write Diary";
+"recent_posts.select_date_title" = "Select Date";
+"recent_posts.select_date_confirm" = "Continue";
 
 /* Home View Modals */
 "home.future_date_title" = "Future Date";

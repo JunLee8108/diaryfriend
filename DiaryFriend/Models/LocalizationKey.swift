@@ -154,6 +154,9 @@ enum LocalizationKey: String {
     // MARK: - Recent Posts
     case recent_posts_title = "recent_posts.title"
     case recent_no_posts = "recent_posts.no_posts"
+    case recent_write_diary = "recent_posts.write_diary"
+    case recent_select_date_title = "recent_posts.select_date_title"
+    case recent_select_date_confirm = "recent_posts.select_date_confirm"
     
     // MARK: - Home View Modals
     case home_future_date_title = "home.future_date_title"
@@ -531,6 +534,12 @@ enum LocalizationKey: String {
             return "RECENT"
         case .recent_no_posts:
             return "No posts in %@"
+        case .recent_write_diary:
+            return "Write Diary"
+        case .recent_select_date_title:
+            return "Select Date"
+        case .recent_select_date_confirm:
+            return "Continue"
             
             // Home View Modals
         case .home_future_date_title:

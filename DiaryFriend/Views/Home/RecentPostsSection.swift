@@ -53,7 +53,14 @@ struct PostDisplayItem {
 struct RecentPostsSection: View {
     let posts: [Post]
     let currentMonth: Date
-    
+    let onWriteDiary: (() -> Void)?
+
+    init(posts: [Post], currentMonth: Date, onWriteDiary: (() -> Void)? = nil) {
+        self.posts = posts
+        self.currentMonth = currentMonth
+        self.onWriteDiary = onWriteDiary
+    }
+
     // ⭐ 다국어 적용
     @Localized(.recent_posts_title) var recentTitle
     
@@ -111,7 +118,7 @@ struct RecentPostsSection: View {
     private var contentView: some View {
         ZStack(alignment: .topLeading) {
             // Empty State
-            EmptyRecentView(currentMonth: currentMonth)
+            EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
                 .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .opacity(displayItems.isEmpty ? 1 : 0)
@@ -214,32 +221,51 @@ struct DogEarShape: Shape {
 // MARK: - Empty State
 struct EmptyRecentView: View {
     let currentMonth: Date
-    
-    // ⭐ @Localized 추가!
+    let onWriteDiary: (() -> Void)?
+
     @Localized(.recent_no_posts) var noPostsTemplate
-    
+    @Localized(.recent_write_diary) var writeDiaryText
+
     private var noPostsMessage: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
         formatter.dateFormat = "MMMM"
         let monthName = formatter.string(from: currentMonth)
-        
-        // ⭐ @Localized 프로퍼티 사용
+
         return String(format: noPostsTemplate, monthName)
     }
-    
+
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 14) {
             Image(systemName: "calendar")
                 .font(.system(size: 25, weight: .light))
-                .foregroundColor(Color(hex:"00C896"))
+                .foregroundColor(Color(hex: "00C896"))
 
             Text(noPostsMessage)
                 .font(.system(size: 14, weight: .regular, design: .rounded))
                 .foregroundColor(.secondary)
+
+            if let onWriteDiary = onWriteDiary {
+                Button(action: onWriteDiary) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.and.pencil")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(writeDiaryText)
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Color(hex: "00C896"))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule()
+                            .fill(Color(hex: "00C896").opacity(0.12))
+                    )
+                }
+                .padding(.top, 2)
+            }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 50)
+        .padding(.vertical, 40)
         .padding(.horizontal, 20)
         .background(
             RoundedRectangle(cornerRadius: 20)

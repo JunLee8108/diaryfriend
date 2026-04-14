@@ -60,7 +60,7 @@ struct MonthDatePickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
                 DatePicker(
                     "",
                     selection: $selectedDate,
@@ -72,24 +72,7 @@ struct MonthDatePickerSheet: View {
                 .tint(Color(hex: "00C896"))
                 .padding(.horizontal, 16)
 
-                Spacer()
-
-                Button(action: {
-                    onConfirm(selectedDate)
-                    dismiss()
-                }) {
-                    Text(confirmText)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(hex: "00C896"))
-                        )
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                Spacer(minLength: 0)
             }
             .padding(.top, 12)
             .background(Color.modernBackground)
@@ -102,8 +85,18 @@ struct MonthDatePickerSheet: View {
                     }
                     .foregroundColor(.secondary)
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        onConfirm(selectedDate)
+                        dismiss()
+                    }) {
+                        Text(confirmText)
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(Color(hex: "00C896"))
+                    }
+                }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium])
     }
 }

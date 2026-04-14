@@ -36,6 +36,9 @@ struct HomeView: View {
     
     // sheet에 전달할 데이터
     @State private var dayPostsData: DayPostsData?
+
+    // 빈 월에서 일기 작성하기 - 날짜 선택 모달
+    @State private var showWriteDiaryDatePicker = false
     
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
@@ -72,7 +75,10 @@ struct HomeView: View {
                     // Recent Posts 섹션
                     RecentPostsSection(
                         posts: dataStore.recentPosts(for: currentMonth, limit: 3),
-                        currentMonth: currentMonth  // 월 레이블 표시용
+                        currentMonth: currentMonth,  // 월 레이블 표시용
+                        onWriteDiary: {
+                            showWriteDiaryDatePicker = true
+                        }
                     )
 //                    .padding(.bottom, 20)
                 }
@@ -100,6 +106,11 @@ struct HomeView: View {
                 )
                 // EnvironmentObject는 자동 전파되지만 명시적으로 추가 (안전성)
                 .environmentObject(dataStore)
+            }
+            .sheet(isPresented: $showWriteDiaryDatePicker) {
+                MonthDatePickerSheet(currentMonth: currentMonth) { pickedDate in
+                    handleDateTap(pickedDate)
+                }
             }
             .navigationDestination(for: PostDestination.self) { destination in
                 switch destination {

@@ -147,6 +147,9 @@
 /* Recent Posts */
 "recent_posts.title" = "최근 게시물";
 "recent_posts.no_posts" = "%@에 게시물이 없습니다";
+"recent_posts.write_diary" = "일기 작성하기";
+"recent_posts.select_date_title" = "날짜 선택";
+"recent_posts.select_date_confirm" = "계속";
 
 /* Home View Modals */
 "home.future_date_title" = "미래 날짜";

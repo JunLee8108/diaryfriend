@@ -70,6 +70,11 @@ struct HomeView: View {
                         currentMonth: currentMonth  // 월 레이블 표시용
                     )
                     .padding(.bottom, 20)
+
+                    // 배너 광고 (프리미엄/consent 미완 시 자동 숨김)
+                    AdContainer(unitID: Config.AdMob.homeBannerUnitID)
+                        .padding(.top, 8)
+                        .padding(.bottom, 20)
                 }
             }
             .refreshable {

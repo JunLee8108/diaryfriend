@@ -51,7 +51,7 @@ struct PostEditView: View {
     }
     
     private var isValid: Bool {
-        editedContent.count >= 10 && editedContent.count <= 1000
+        editedContent.count >= 5 && editedContent.count <= 1000
     }
     
     private var dateTitle: String {

@@ -195,7 +195,7 @@
 "post.accessibility_save_label" = "일기 저장하기";
 "post.accessibility_complete_label" = "일기를 완성해야 저장할 수 있습니다";
 "post.accessibility_save_hint" = "탭하여 일기를 저장하세요";
-"post.accessibility_complete_hint" = "최소 10자 이상 작성해야 저장할 수 있습니다";
+"post.accessibility_complete_hint" = "최소 5자 이상 작성해야 저장할 수 있습니다";
 
 /* loginView */
 "login.subtitle" = "로그인하고 AI 친구들과 대화를 통해 일기를 작성해보세요!";

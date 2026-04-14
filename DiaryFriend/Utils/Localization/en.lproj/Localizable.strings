@@ -202,7 +202,7 @@
 "post.accessibility_save_label" = "Save your diary entry";
 "post.accessibility_complete_label" = "Complete your entry to save";
 "post.accessibility_save_hint" = "Tap to save your diary entry";
-"post.accessibility_complete_hint" = "Fill in at least 10 characters to enable saving";
+"post.accessibility_complete_hint" = "Fill in at least 5 characters to enable saving";
 
 /* loginView */
 "login.subtitle" = "Sign in to start diary journy with AI friends!";

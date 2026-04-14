@@ -615,7 +615,7 @@ enum LocalizationKey: String {
         case .post_accessibility_save_hint:
             return "Tap to save your diary entry"
         case .post_accessibility_complete_hint:
-            return "Fill in at least 10 characters to enable saving"
+            return "Fill in at least 5 characters to enable saving"
             
             // loginView
         case .login_subtitle:

@@ -93,7 +93,7 @@ struct SettingsView: View {
                 HStack {
                     Text(versionLabel)
                     Spacer()
-                    Text("1.1.3")
+                    Text("1.1.5")
                         .foregroundColor(.secondary)
                 }
                 

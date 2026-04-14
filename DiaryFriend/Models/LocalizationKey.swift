@@ -273,7 +273,10 @@ enum LocalizationKey: String {
     case common_add = "common.add"
     case common_edit = "common.edit"
     case common_delete = "common.delete"
-    
+
+    // MARK: - Ads / Tracking
+    case ads_att_usage = "ads.att_usage"
+
     // MARK: - Fallback (번역 누락 시)
     var fallback: String {
         switch self {
@@ -697,6 +700,10 @@ enum LocalizationKey: String {
             return "Edit"
         case .common_delete:
             return "Delete"
+
+            // Ads / Tracking
+        case .ads_att_usage:
+            return "We use this to show more relevant ads and keep DiaryFriend free."
         }
     }
 }

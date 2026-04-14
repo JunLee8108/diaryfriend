@@ -272,3 +272,6 @@
 "common.add" = "Add";
 "common.edit" = "Edit";
 "common.delete" = "Delete";
+
+/* Ads / Tracking */
+"ads.att_usage" = "We use this to show more relevant ads and keep DiaryFriend free.";

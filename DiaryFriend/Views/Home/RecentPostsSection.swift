@@ -116,14 +116,13 @@ struct RecentPostsSection: View {
     // ⭐ 별도 View로 분리 - Empty ↔ Posts 애니메이션
     @ViewBuilder
     private var contentView: some View {
-        ZStack(alignment: .topLeading) {
+        if displayItems.isEmpty {
             // Empty State
             EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
                 .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity, alignment: .center)
-                .opacity(displayItems.isEmpty ? 1 : 0)
-                .scaleEffect(displayItems.isEmpty ? 1 : 0.9)
-            
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+        } else {
             // Posts List
             LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(displayItems, id: \.id) { item in
@@ -133,8 +132,7 @@ struct RecentPostsSection: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .topLeading)
-            .opacity(displayItems.isEmpty ? 0 : 1)
-            .scaleEffect(displayItems.isEmpty ? 0.9 : 1)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: displayItems.isEmpty)
     }

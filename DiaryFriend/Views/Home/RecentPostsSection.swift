@@ -76,12 +76,6 @@ struct RecentPostsSection: View {
         return formatter.string(from: currentMonth).uppercased()
     }
     
-    private var monthKey: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM"
-        return formatter.string(from: currentMonth)
-    }
-    
     var body: some View {
         LazyVStack(alignment: .leading, spacing: 0) {
             // RECENT 헤더
@@ -107,10 +101,7 @@ struct RecentPostsSection: View {
             
             // ⭐ 콘텐츠 영역 - 애니메이션 분리
             contentView
-                .id(monthKey)  // 월 변경 시 뷰 재생성
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: monthKey)
     }
     
     // ⭐ 별도 View로 분리 - Empty ↔ Posts 애니메이션
@@ -122,7 +113,6 @@ struct RecentPostsSection: View {
                 EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
                     .padding(.horizontal, 20)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .transition(.opacity)
             } else {
                 // Posts List
                 LazyVStack(alignment: .leading, spacing: 0) {
@@ -133,10 +123,8 @@ struct RecentPostsSection: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
-                .transition(.opacity)
             }
         }
-        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: displayItems.isEmpty)
     }
 }
 

@@ -101,9 +101,10 @@ struct RecentPostsSection: View {
             
             // ⭐ 콘텐츠 영역 - 애니메이션 분리
             contentView
+                .animation(.easeInOut(duration: 0.3), value: monthLabel)
         }
     }
-    
+
     // ⭐ 별도 View로 분리 - Empty ↔ Posts 애니메이션
     @ViewBuilder
     private var contentView: some View {
@@ -125,6 +126,8 @@ struct RecentPostsSection: View {
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
         }
+        .id(monthLabel)
+        .transition(.opacity)
     }
 }
 

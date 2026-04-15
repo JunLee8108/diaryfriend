@@ -29,12 +29,18 @@ struct MonthDatePickerSheet: View {
 
         let monthComponents = calendar.dateComponents([.year, .month], from: currentMonth)
         let todayComponents = calendar.dateComponents([.year, .month], from: today)
+        let firstOfMonth = calendar.date(from: monthComponents) ?? currentMonth
+        let currentMonthStart = calendar.date(from: todayComponents) ?? startOfToday
+
+        if firstOfMonth > currentMonthStart {
+            _selectedDate = State(initialValue: startOfToday)
+            return
+        }
 
         if monthComponents.year == todayComponents.year &&
             monthComponents.month == todayComponents.month {
             _selectedDate = State(initialValue: startOfToday)
         } else {
-            let firstOfMonth = calendar.date(from: monthComponents) ?? currentMonth
             _selectedDate = State(initialValue: firstOfMonth)
         }
     }
@@ -47,6 +53,10 @@ struct MonthDatePickerSheet: View {
         guard let firstOfMonth = calendar.date(from: monthComponents),
               let nextMonth = calendar.date(byAdding: .month, value: 1, to: firstOfMonth),
               let lastOfMonth = calendar.date(byAdding: .day, value: -1, to: nextMonth) else {
+            return today...today
+        }
+
+        if firstOfMonth > today {
             return today...today
         }
 

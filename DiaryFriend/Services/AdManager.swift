@@ -13,6 +13,7 @@
 import Foundation
 import Combine
 import GoogleMobileAds
+import UIKit
 
 @MainActor
 final class AdManager: ObservableObject {
@@ -24,7 +25,48 @@ final class AdManager: ObservableObject {
 
     private var hasBootstrapped = false
 
+    /// BannerView 인스턴스 캐시 (unitID 기준).
+    /// LazyVStack이 AdContainer를 release/recreate해도 같은 BannerView를
+    /// 재사용해서 광고 크리에이티브가 누적되지 않도록 한다 (OOM 방지).
+    private var bannerCache: [String: BannerView] = [:]
+
     private init() {}
+
+    // MARK: - Banner Cache
+
+    /// 주어진 unitID에 대한 공유 BannerView를 반환한다.
+    /// 최초 호출에서만 BannerView를 생성·광고 로드하고, 이후 호출은 캐시된
+    /// 인스턴스를 돌려준다. 사이즈가 변경된 경우(회전 등)에만 size를 갱신한다.
+    func bannerView(for unitID: String, width: CGFloat) -> BannerView {
+        let expected = currentOrientationAnchoredAdaptiveBanner(width: width)
+
+        if let cached = bannerCache[unitID] {
+            if cached.adSize.size != expected.size {
+                cached.adSize = expected
+                cached.load(Request())
+            }
+            // rootViewController는 scene restart 등으로 stale해질 수 있으니 재바인딩
+            if cached.rootViewController == nil {
+                cached.rootViewController = Self.rootViewController()
+            }
+            return cached
+        }
+
+        let banner = BannerView(adSize: expected)
+        banner.adUnitID = unitID
+        banner.rootViewController = Self.rootViewController()
+        banner.load(Request())
+        bannerCache[unitID] = banner
+        return banner
+    }
+
+    private static func rootViewController() -> UIViewController? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController
+    }
 
     /// 앱 시작 시 1회 호출. 두 번째 호출은 무시됩니다.
     func bootstrap() async {

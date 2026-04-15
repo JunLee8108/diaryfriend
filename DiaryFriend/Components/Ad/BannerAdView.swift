@@ -33,6 +33,15 @@ struct BannerAdView: UIViewRepresentable {
         }
     }
 
+    // ⭐ SwiftUI가 뷰를 파괴할 때 BannerView 리소스 명시적 해제
+    // LazyVStack이 AdContainer를 release할 때 광고 이미지/비디오/네트워크
+    // 리소스가 누수되는 OOM을 방지한다.
+    static func dismantleUIView(_ uiView: BannerView, coordinator: ()) {
+        uiView.delegate = nil
+        uiView.rootViewController = nil
+        uiView.removeFromSuperview()
+    }
+
     // MARK: - Helpers
 
     private func availableWidth() -> CGFloat {

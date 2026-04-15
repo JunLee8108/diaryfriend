@@ -77,7 +77,7 @@ struct RecentPostsSection: View {
     }
     
     var body: some View {
-        LazyVStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             // RECENT 헤더
             HStack {
                 Text(recentTitle)
@@ -116,7 +116,7 @@ struct RecentPostsSection: View {
                     .frame(maxWidth: .infinity, alignment: .center)
             } else {
                 // Posts List
-                LazyVStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 0) {
                     ForEach(displayItems, id: \.id) { item in
                         RecentPostItemView(item: item)
                             .padding(.horizontal, 20)

@@ -85,49 +85,48 @@ struct RecentPostsSection: View {
                     .foregroundColor(.primary)
                     .tracking(1.2)
                     .modernHighlight()
-                
+
                 Text(monthLabel)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundColor(.secondary)
                     .tracking(1.0)
                     .id(monthLabel)
                     .transition(.opacity)
-                
+
                 Spacer()
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 16)
-            .animation(.easeInOut(duration: 0.3), value: monthLabel)
-            
-            // ⭐ 콘텐츠 영역 - 애니메이션 분리
+
+            // ⭐ 콘텐츠 영역 - concrete 뷰에 직접 .id/.transition 적용
             contentView
-                .animation(.easeInOut(duration: 0.3), value: monthLabel)
         }
+        .animation(.easeInOut(duration: 0.3), value: monthLabel)
     }
 
-    // ⭐ 별도 View로 분리 - Empty ↔ Posts 애니메이션
+    // ⭐ Group 제거: .id/.transition 을 각 브랜치의 concrete 뷰에 직접 적용
     @ViewBuilder
     private var contentView: some View {
-        Group {
-            if displayItems.isEmpty {
-                // Empty State
-                EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
-                    .padding(.horizontal, 20)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            } else {
-                // Posts List
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(displayItems, id: \.id) { item in
-                        RecentPostItemView(item: item)
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 16)
-                    }
+        if displayItems.isEmpty {
+            // Empty State
+            EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
+                .padding(.horizontal, 20)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .id("empty-\(monthLabel)")
+                .transition(.opacity)
+        } else {
+            // Posts List
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(displayItems, id: \.id) { item in
+                    RecentPostItemView(item: item)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
                 }
-                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .id("posts-\(monthLabel)")
+            .transition(.opacity)
         }
-        .id(monthLabel)
-        .transition(.opacity)
     }
 }
 

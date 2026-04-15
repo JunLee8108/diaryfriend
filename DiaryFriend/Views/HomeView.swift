@@ -50,7 +50,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
             ScrollView {
-                LazyVStack(spacing: 0) {
+                VStack(spacing: 0) {
                     // 🎯 NEW: Intro Section
                     IntroGreetingSection()
                         .padding(.horizontal, 20)

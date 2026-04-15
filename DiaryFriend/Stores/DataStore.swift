@@ -304,10 +304,8 @@ class DataStore: ObservableObject {
         // 즉시 정리
         cleanupPostsOutsideWindow(centerDate: date)
         
-        // 백그라운드 보충
-        Task.detached { [weak self] in
-            await self?.loadMissingMonthsInWindow(centerDate: date)
-        }
+        // 월 전환 직후 UI 깜빡임 방지를 위해 필요한 월 로드를 현재 흐름에서 보장
+        await loadMissingMonthsInWindow(centerDate: date)
         
         print("📅 현재 로드된 월: \(loadedMonths)")
     }

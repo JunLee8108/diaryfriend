@@ -19,12 +19,11 @@ struct AdContainer: View {
     var body: some View {
         Group {
             if adManager.shouldShowAds {
-                // ⭐ GeometryReader로 실제 container width를 측정.
-                // AdMob SDK가 해당 width에 맞는 정확한 adaptive banner height를
-                // 반환하므로 하드코딩된 50 대신 그걸 사용해서 UIView의 intrinsic
-                // size와 SwiftUI frame을 완벽히 일치시킨다 (overflow 원천 차단).
+                // ⭐ Inline Adaptive Banner (maxHeight AdManager.maxBannerHeight) 사용.
+                // Anchored 와 달리 광고 크리에이티브 크기에 맞춰 height가 가변이라
+                // 큰 광고도 잘리지 않고 완전히 표시된다.
                 GeometryReader { geo in
-                    let adSize = currentOrientationAnchoredAdaptiveBanner(width: geo.size.width)
+                    let adSize = inlineAdaptiveBanner(width: geo.size.width, maxHeight: AdManager.maxBannerHeight)
                     BannerAdView(unitID: unitID, width: geo.size.width)
                         .frame(width: geo.size.width, height: adSize.size.height)
                         .clipped()  // 최후 안전망: frame 밖 픽셀이 새어 나오지 않도록
@@ -41,6 +40,6 @@ struct AdContainer: View {
     /// 실제 렌더 시에는 GeometryReader 안의 adSize.size.height가 사용된다.
     private var fallbackBannerHeight: CGFloat {
         let width = UIScreen.main.bounds.width
-        return currentOrientationAnchoredAdaptiveBanner(width: width).size.height
+        return inlineAdaptiveBanner(width: width, maxHeight: AdManager.maxBannerHeight).size.height
     }
 }

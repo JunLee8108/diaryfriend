@@ -37,8 +37,11 @@ final class AdManager: ObservableObject {
     /// 주어진 unitID에 대한 공유 BannerView를 반환한다.
     /// 최초 호출에서만 BannerView를 생성·광고 로드하고, 이후 호출은 캐시된
     /// 인스턴스를 돌려준다. 사이즈가 변경된 경우(회전 등)에만 size를 갱신한다.
+    ///
+    /// Inline Adaptive Banner(maxHeight 120pt)를 사용해 광고 크리에이티브
+    /// 크기에 맞춰 height가 자연스럽게 맞춰지도록 한다.
     func bannerView(for unitID: String, width: CGFloat) -> BannerView {
-        let expected = currentOrientationAnchoredAdaptiveBanner(width: width)
+        let expected = inlineAdaptiveBanner(width: width, maxHeight: Self.maxBannerHeight)
 
         if let cached = bannerCache[unitID] {
             if cached.adSize.size != expected.size {
@@ -59,6 +62,9 @@ final class AdManager: ObservableObject {
         bannerCache[unitID] = banner
         return banner
     }
+
+    /// 배너의 최대 높이. AdContainer.maxBannerHeight와 동기화.
+    static let maxBannerHeight: CGFloat = 120
 
     private static func rootViewController() -> UIViewController? {
         UIApplication.shared.connectedScenes

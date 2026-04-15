@@ -50,58 +50,45 @@ struct HomeView: View {
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
             ScrollView {
-                // ⭐ 외부 VStack (eager) — AdContainer를 LazyVStack 밖에 두어
-                // lazy release/recreate 사이클로 인한 BannerView 재생성을 막는다.
-                // .frame(maxWidth: .infinity)로 내부 LazyVStack이 full width
-                // proposal을 받도록 보장해 기존 레이아웃을 그대로 유지한다.
-                VStack(spacing: 0) {
-                    LazyVStack(spacing: 0) {
-                        // 🎯 NEW: Intro Section
-                        IntroGreetingSection()
-                            .padding(.horizontal, 20)
-                            .padding(.top, 30)
-                            .padding(.bottom, 16)
-
-                        // 오늘 날짜 표시
-                        TodayDateLabel()
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 14)
-
-                        // 슬라이드 캘린더
-                        SlideCalendarView(
-                            currentMonth: $currentMonth,
-                            selectedDate: $selectedDate,
-                            postDatesSet: dataStore.postDates,
-                            onMonthChanged: { newMonth in
-                                Task {
-                                    await dataStore.ensureMonthLoaded(newMonth)
-                                }
-                            },
-                            onDateTapped: { date in
-                                handleDateTap(date)
-                            }
-                        )
+                LazyVStack(spacing: 0) {
+                    // 🎯 NEW: Intro Section
+                    IntroGreetingSection()
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 30)
+                        .padding(.top, 30)
+                        .padding(.bottom, 16)
 
-                        // Recent Posts 섹션
-                        RecentPostsSection(
-                            posts: dataStore.recentPosts(for: currentMonth, limit: 3),
-                            currentMonth: currentMonth,  // 월 레이블 표시용
-                            onWriteDiary: isFutureMonth ? nil : {
-                                showWriteDiaryDatePicker = true
+                    // 오늘 날짜 표시
+                    TodayDateLabel()
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 14)
+
+                    // 슬라이드 캘린더
+                    SlideCalendarView(
+                        currentMonth: $currentMonth,
+                        selectedDate: $selectedDate,
+                        postDatesSet: dataStore.postDates,
+                        onMonthChanged: { newMonth in
+                            Task {
+                                await dataStore.ensureMonthLoaded(newMonth)
                             }
-                        )
-                        .padding(.bottom, 20)
-                    }
+                        },
+                        onDateTapped: { date in
+                            handleDateTap(date)
+                        }
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 30)
 
-                    // 배너 광고 (프리미엄/consent 미완 시 자동 숨김)
-                    // ⭐ LazyVStack 밖 + eager VStack 안 → 절대 release되지 않음
-                    AdContainer(unitID: Config.AdMob.homeBannerUnitID)
-                        .padding(.top, 8)
-                        .padding(.bottom, 20)
+                    // Recent Posts 섹션
+                    RecentPostsSection(
+                        posts: dataStore.recentPosts(for: currentMonth, limit: 3),
+                        currentMonth: currentMonth,  // 월 레이블 표시용
+                        onWriteDiary: isFutureMonth ? nil : {
+                            showWriteDiaryDatePicker = true
+                        }
+                    )
+                    .padding(.bottom, 20)
                 }
-                .frame(maxWidth: .infinity)
             }
             .refreshable {
                 // 오프라인 체크
@@ -164,8 +151,16 @@ struct HomeView: View {
                         .environmentObject(navigationCoordinator)
                 }
             }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 20)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                // ⭐ 배너 광고 — ScrollView 밖에 고정 배치.
+                // LazyVStack의 lazy release/recreate 영향 없음 → HomeView
+                // 생애 동안 1번만 생성되어 BannerView도 1번만 로드된다.
+                // (프리미엄/consent 미완 시 AdContainer가 EmptyView를 렌더)
+                VStack(spacing: 0) {
+                    AdContainer(unitID: Config.AdMob.homeBannerUnitID)
+                        .padding(.top, 8)
+                    Color.clear.frame(height: 20)
+                }
             }
             .infoModal(
                 isPresented: $showFutureDateInfo,

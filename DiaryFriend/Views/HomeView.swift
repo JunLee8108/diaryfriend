@@ -50,50 +50,58 @@ struct HomeView: View {
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
             ScrollView {
-                LazyVStack(spacing: 0) {
-                    // 🎯 NEW: Intro Section
-                    IntroGreetingSection()
-                        .padding(.horizontal, 20)
-                        .padding(.top, 30)
-                        .padding(.bottom, 16)
+                // ⭐ 외부 VStack (eager) — AdContainer를 LazyVStack 밖에 두어
+                // lazy release/recreate 사이클로 인한 BannerView 재생성을 막는다.
+                // .frame(maxWidth: .infinity)로 내부 LazyVStack이 full width
+                // proposal을 받도록 보장해 기존 레이아웃을 그대로 유지한다.
+                VStack(spacing: 0) {
+                    LazyVStack(spacing: 0) {
+                        // 🎯 NEW: Intro Section
+                        IntroGreetingSection()
+                            .padding(.horizontal, 20)
+                            .padding(.top, 30)
+                            .padding(.bottom, 16)
 
-                    // 오늘 날짜 표시
-                    TodayDateLabel()
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 14)
+                        // 오늘 날짜 표시
+                        TodayDateLabel()
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 14)
 
-                    // 슬라이드 캘린더
-                    SlideCalendarView(
-                        currentMonth: $currentMonth,
-                        selectedDate: $selectedDate,
-                        postDatesSet: dataStore.postDates,
-                        onMonthChanged: { newMonth in
-                            Task {
-                                await dataStore.ensureMonthLoaded(newMonth)
+                        // 슬라이드 캘린더
+                        SlideCalendarView(
+                            currentMonth: $currentMonth,
+                            selectedDate: $selectedDate,
+                            postDatesSet: dataStore.postDates,
+                            onMonthChanged: { newMonth in
+                                Task {
+                                    await dataStore.ensureMonthLoaded(newMonth)
+                                }
+                            },
+                            onDateTapped: { date in
+                                handleDateTap(date)
                             }
-                        },
-                        onDateTapped: { date in
-                            handleDateTap(date)
-                        }
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 30)
+                        )
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 30)
 
-                    // Recent Posts 섹션
-                    RecentPostsSection(
-                        posts: dataStore.recentPosts(for: currentMonth, limit: 3),
-                        currentMonth: currentMonth,  // 월 레이블 표시용
-                        onWriteDiary: isFutureMonth ? nil : {
-                            showWriteDiaryDatePicker = true
-                        }
-                    )
-                    .padding(.bottom, 20)
+                        // Recent Posts 섹션
+                        RecentPostsSection(
+                            posts: dataStore.recentPosts(for: currentMonth, limit: 3),
+                            currentMonth: currentMonth,  // 월 레이블 표시용
+                            onWriteDiary: isFutureMonth ? nil : {
+                                showWriteDiaryDatePicker = true
+                            }
+                        )
+                        .padding(.bottom, 20)
+                    }
 
                     // 배너 광고 (프리미엄/consent 미완 시 자동 숨김)
+                    // ⭐ LazyVStack 밖 + eager VStack 안 → 절대 release되지 않음
                     AdContainer(unitID: Config.AdMob.homeBannerUnitID)
                         .padding(.top, 8)
                         .padding(.bottom, 20)
                 }
+                .frame(maxWidth: .infinity)
             }
             .refreshable {
                 // 오프라인 체크

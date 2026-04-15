@@ -88,14 +88,12 @@ struct HomeView: View {
                         }
                     )
                     .padding(.bottom, 20)
-                }
 
-                // 배너 광고 (프리미엄/consent 미완 시 자동 숨김)
-                // ⭐ LazyVStack 밖 — ScrollView는 non-lazy라 자식을 release/재생성하지 않아
-                // BannerView가 HomeView 생애주기 동안 단 한 번만 생성된다 (OOM 방지).
-                AdContainer(unitID: Config.AdMob.homeBannerUnitID)
-                    .padding(.top, 8)
-                    .padding(.bottom, 20)
+                    // 배너 광고 (프리미엄/consent 미완 시 자동 숨김)
+                    AdContainer(unitID: Config.AdMob.homeBannerUnitID)
+                        .padding(.top, 8)
+                        .padding(.bottom, 20)
+                }
             }
             .refreshable {
                 // 오프라인 체크

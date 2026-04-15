@@ -21,12 +21,12 @@ struct BannerAdView: UIViewRepresentable {
     // LazyVStack이 AdContainer를 release/recreate해도 BannerView 인스턴스는
     // 앱 세션 동안 하나만 존재 → 광고 크리에이티브 누적으로 인한 OOM 방지.
     func makeUIView(context: Context) -> BannerView {
-        AdManager.shared.bannerView(for: unitID, width: clampedWidth)
+        AdManager.shared.bannerView(for: unitID, width: width)
     }
 
     func updateUIView(_ uiView: BannerView, context: Context) {
         // 회전/사이즈 변경 시 갱신 (대부분 no-op)
-        let expected = currentOrientationAnchoredAdaptiveBanner(width: clampedWidth)
+        let expected = currentOrientationAnchoredAdaptiveBanner(width: width)
         if uiView.adSize.size != expected.size {
             uiView.adSize = expected
             uiView.load(Request())
@@ -38,12 +38,5 @@ struct BannerAdView: UIViewRepresentable {
     // 문제없이 add될 수 있도록 superview만 정리한다.
     static func dismantleUIView(_ uiView: BannerView, coordinator: ()) {
         uiView.removeFromSuperview()
-    }
-
-    // MARK: - Helpers
-
-    private var clampedWidth: CGFloat {
-        // Config.swift 기준 앱 최대 폭 500 (iPad 등에서 제한)
-        min(width, 500)
     }
 }

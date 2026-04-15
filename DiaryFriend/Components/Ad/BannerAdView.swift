@@ -12,17 +12,21 @@ import UIKit
 
 struct BannerAdView: UIViewRepresentable {
     let unitID: String
+    /// 실제 렌더되는 컨테이너 width. AdContainer가 GeometryReader로 측정해서
+    /// 주입한다. UIScreen.main에 의존하지 않아 Scene/기기별 편차로 인한
+    /// overflow를 원천 차단한다.
+    let width: CGFloat
 
     // ⭐ AdManager의 싱글톤 캐시에서 공유 BannerView를 가져와서 재사용한다.
     // LazyVStack이 AdContainer를 release/recreate해도 BannerView 인스턴스는
     // 앱 세션 동안 하나만 존재 → 광고 크리에이티브 누적으로 인한 OOM 방지.
     func makeUIView(context: Context) -> BannerView {
-        AdManager.shared.bannerView(for: unitID, width: availableWidth())
+        AdManager.shared.bannerView(for: unitID, width: clampedWidth)
     }
 
     func updateUIView(_ uiView: BannerView, context: Context) {
-        // 회전 등으로 사이즈가 바뀌면 갱신 (대부분 no-op)
-        let expected = currentOrientationAnchoredAdaptiveBanner(width: availableWidth())
+        // 회전/사이즈 변경 시 갱신 (대부분 no-op)
+        let expected = currentOrientationAnchoredAdaptiveBanner(width: clampedWidth)
         if uiView.adSize.size != expected.size {
             uiView.adSize = expected
             uiView.load(Request())
@@ -38,9 +42,8 @@ struct BannerAdView: UIViewRepresentable {
 
     // MARK: - Helpers
 
-    private func availableWidth() -> CGFloat {
-        let screenWidth = UIScreen.main.bounds.width
+    private var clampedWidth: CGFloat {
         // Config.swift 기준 앱 최대 폭 500 (iPad 등에서 제한)
-        return min(screenWidth, 500)
+        min(width, 500)
     }
 }

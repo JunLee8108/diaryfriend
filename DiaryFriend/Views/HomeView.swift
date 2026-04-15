@@ -39,6 +39,13 @@ struct HomeView: View {
 
     // 빈 월에서 일기 작성하기 - 날짜 선택 모달
     @State private var showWriteDiaryDatePicker = false
+
+    private var isFutureMonth: Bool {
+        let calendar = Calendar.current
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: currentMonth)) ?? currentMonth
+        let currentMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: Date())) ?? Date()
+        return monthStart > currentMonthStart
+    }
     
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
@@ -76,7 +83,7 @@ struct HomeView: View {
                     RecentPostsSection(
                         posts: dataStore.recentPosts(for: currentMonth, limit: 3),
                         currentMonth: currentMonth,  // 월 레이블 표시용
-                        onWriteDiary: {
+                        onWriteDiary: isFutureMonth ? nil : {
                             showWriteDiaryDatePicker = true
                         }
                     )

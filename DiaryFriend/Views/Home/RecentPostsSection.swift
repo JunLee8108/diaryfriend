@@ -116,23 +116,25 @@ struct RecentPostsSection: View {
     // ⭐ 별도 View로 분리 - Empty ↔ Posts 애니메이션
     @ViewBuilder
     private var contentView: some View {
-        if displayItems.isEmpty {
-            // Empty State
-            EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
-                .padding(.horizontal, 20)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
-        } else {
-            // Posts List
-            LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(displayItems, id: \.id) { item in
-                    RecentPostItemView(item: item)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 16)
+        Group {
+            if displayItems.isEmpty {
+                // Empty State
+                EmptyRecentView(currentMonth: currentMonth, onWriteDiary: onWriteDiary)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .transition(.opacity)
+            } else {
+                // Posts List
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(displayItems, id: \.id) { item in
+                        RecentPostItemView(item: item)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 16)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .transition(.opacity)
             }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: displayItems.isEmpty)
     }
@@ -222,7 +224,9 @@ struct EmptyRecentView: View {
     let onWriteDiary: (() -> Void)?
 
     @Localized(.recent_no_posts) var noPostsTemplate
-    @Localized(.recent_write_diary) var writeDiaryText
+    private var writeDiaryText: String {
+        NSLocalizedString("recent_posts.write_diary", comment: "")
+    }
 
     private var noPostsMessage: String {
         let formatter = DateFormatter()

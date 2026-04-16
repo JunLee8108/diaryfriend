@@ -59,12 +59,9 @@ struct HomeView: View {
                             .padding(.top, 30)
                             .padding(.bottom, 16)
 
-                        TodayDateLabel(showListView: $showListView)
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 14)
-
                         DiaryListView(
                             currentMonth: $currentMonth,
+                            showListView: $showListView,
                             onMonthChanged: { newMonth in
                                 Task {
                                     await dataStore.ensureMonthLoaded(newMonth)

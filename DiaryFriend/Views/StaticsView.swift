@@ -42,7 +42,7 @@ struct StaticsView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 30)
                 .padding(.bottom, 40)
             }
             .background(Color.modernBackground)

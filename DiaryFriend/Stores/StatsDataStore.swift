@@ -18,8 +18,9 @@ class StatsDataStore: ObservableObject {
     @Published private(set) var loadingMonth: String?
     @Published private(set) var errorMessage: String?
     
+    private let dataStore = DataStore.shared
     private let postService = PostService()
-    private let realmManager = RealmManager.shared  // ⭐ 추가
+    private let realmManager = RealmManager.shared
     
     // ⭐ Combine Cancellables
     private var cancellables = Set<AnyCancellable>()
@@ -159,69 +160,76 @@ class StatsDataStore: ObservableObject {
     
     // MARK: - Private Methods
     
-    /// 특정 월 데이터 로드 (Realm 우선 → 서버 폴백)
+    /// 특정 월 데이터 로드 (DataStore 캐시 → Realm → 서버 폴백)
     private func loadMonth(for date: Date, silent: Bool = false) async -> [Post] {
         let monthKey = DateUtility.shared.monthKey(from: date)
-        
+
         if !silent {
             loadingMonth = monthKey
         }
-        
+
         defer {
             if !silent {
                 loadingMonth = nil
             }
         }
-        
-        // ⭐ STEP 1: Realm 캐시 우선 확인
+
+        // ⭐ STEP 1: DataStore 메모리 캐시 확인 (비용 0)
+        if let dataStorePosts = dataStore.cachedPosts(for: monthKey) {
+            cachedMonths[monthKey] = dataStorePosts
+            if !silent {
+                print("📊 StatsDataStore: DataStore 캐시 히트 - \(monthKey) (\(dataStorePosts.count)개)")
+            } else {
+                print("   📊 \(monthKey) - \(dataStorePosts.count)개 (DataStore, 백그라운드)")
+            }
+            return dataStorePosts
+        }
+
+        // ⭐ STEP 2: Realm 캐시 확인
         let realmPosts = await realmManager.getPostsForMonth(monthKey)
         if !realmPosts.isEmpty {
             cachedMonths[monthKey] = realmPosts
-            
+
             if !silent {
                 print("💾 StatsDataStore: Realm 캐시 히트 - \(monthKey) (\(realmPosts.count)개)")
             } else {
                 print("   💾 \(monthKey) - \(realmPosts.count)개 (Realm, 백그라운드)")
             }
-            
+
             return realmPosts
         }
-        
-        // ⭐ STEP 2: Realm에 없으면 서버 호출 (폴백)
+
+        // ⭐ STEP 3: 서버 fallback
         do {
             guard let startOfMonth = DateUtility.shared.startOfMonth(for: date),
                   let endOfMonth = DateUtility.shared.endOfMonth(for: date) else {
                 print("❌ StatsDataStore: 날짜 계산 실패 - \(monthKey)")
                 return []
             }
-            
+
             if !silent {
                 print("🌐 StatsDataStore: 서버에서 로딩 - \(monthKey)")
             }
-            
+
             let posts = try await postService.fetchPostsForDateRange(
                 from: startOfMonth,
                 to: endOfMonth
             )
-            
+
             cachedMonths[monthKey] = posts
-            
+
             if !silent {
                 print("✅ StatsDataStore: 서버 로딩 완료 - \(monthKey) (\(posts.count)개)")
             } else {
                 print("   ✅ \(monthKey) - \(posts.count)개 (서버, 백그라운드)")
             }
-            
-            // ⭐ 참고: DataStore가 이미 Realm에 저장하므로 여기서는 생략
+
             return posts
-            
+
         } catch {
             errorMessage = error.localizedDescription
             print("❌ StatsDataStore: 로딩 실패 - \(monthKey)")
             print("   에러: \(error.localizedDescription)")
-            
-            // ⭐ STEP 3: 오프라인 상태 (Realm 없음 + 서버 실패)
-            // 빈 배열 반환 = 진짜 데이터 없음
             return []
         }
     }

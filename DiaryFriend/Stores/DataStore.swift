@@ -151,6 +151,13 @@ class DataStore: ObservableObject {
     var postDates: Set<String> {
         Set(posts.map { $0.entry_date })
     }
+
+    /// 특정 월의 캐시된 포스트 반환 (외부 Store용)
+    func cachedPosts(for monthKey: String) -> [Post]? {
+        guard loadedMonths.contains(monthKey) else { return nil }
+        let monthPosts = posts.filter { $0.entry_date.hasPrefix(monthKey) }
+        return monthPosts.isEmpty ? nil : monthPosts
+    }
     
     /// 현재 월의 포스트 개수
     var currentMonthPostCount: Int {
@@ -328,8 +335,12 @@ class DataStore: ObservableObject {
         
         guard !missingMonths.isEmpty else { return }
         
-        for month in missingMonths {
-            await loadMonth(for: month, silent: true)
+        await withTaskGroup(of: Void.self) { group in
+            for month in missingMonths {
+                group.addTask {
+                    await self.loadMonth(for: month, silent: true)
+                }
+            }
         }
     }
     

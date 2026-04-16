@@ -56,7 +56,7 @@ struct HomeView: View {
                     VStack(spacing: 0) {
                         IntroGreetingSection()
                             .padding(.horizontal, 20)
-                            .padding(.top, 30)
+                            .padding(.top, 16)
                             .padding(.bottom, 16)
 
                         DiaryListView(
@@ -78,7 +78,7 @@ struct HomeView: View {
                         LazyVStack(spacing: 0) {
                             IntroGreetingSection()
                                 .padding(.horizontal, 20)
-                                .padding(.top, 30)
+                                .padding(.top, 16)
                                 .padding(.bottom, 16)
 
                             TodayDateLabel(showListView: $showListView)

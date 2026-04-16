@@ -64,7 +64,7 @@ final class AdManager: ObservableObject {
     }
 
     /// 배너의 최대 높이. AdContainer.maxBannerHeight와 동기화.
-    static let maxBannerHeight: CGFloat = 120
+    static let maxBannerHeight: CGFloat = 50
 
     private static func rootViewController() -> UIViewController? {
         UIApplication.shared.connectedScenes

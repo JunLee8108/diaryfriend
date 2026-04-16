@@ -59,7 +59,7 @@ struct HomeView: View {
                             .padding(.top, 30)
                             .padding(.bottom, 16)
 
-                        TodayDateLabel()
+                        TodayDateLabel(showListView: $showListView)
                             .padding(.horizontal, 24)
                             .padding(.bottom, 14)
 
@@ -84,7 +84,7 @@ struct HomeView: View {
                                 .padding(.top, 30)
                                 .padding(.bottom, 16)
 
-                            TodayDateLabel()
+                            TodayDateLabel(showListView: $showListView)
                                 .padding(.horizontal, 24)
                                 .padding(.bottom, 14)
 
@@ -125,19 +125,6 @@ struct HomeView: View {
                             syncErrorMessage = error
                         }
                     }
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            showListView.toggle()
-                        }
-                    } label: {
-                        Image(systemName: showListView ? "calendar" : "list.bullet")
-                            .font(.system(size: 16, weight: .medium))
-                    }
-                    .tint(nil)
                 }
             }
             .smoothLoading(dataStore.isLoading)

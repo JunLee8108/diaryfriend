@@ -43,7 +43,8 @@ struct PostAISelectView: View {
                             characters: characterStore.followingCharacters,
                             charactersWithSession: charactersWithSession,
                             showWarning: permission?.deletedCount == 1,
-                            onSelect: handleCharacterSelection
+                            onSelect: handleCharacterSelection,
+                            onFindMore: { showCharacterSelection = true }
                         )
                     }
                 }
@@ -272,9 +273,11 @@ private struct CharacterListView: View {
     let charactersWithSession: Set<Int>
     let showWarning: Bool  // 🎯 NEW
     let onSelect: (CharacterWithAffinity) -> Void
-    
+    var onFindMore: (() -> Void)? = nil
+
     @Localized(.ai_select_title) var aiSelectTitle
     @Localized(.ai_select_last_chance) var aiSelectLastChance
+    @Localized(.ai_select_find_more) var findMoreText
     
     var body: some View {
         ScrollView {
@@ -312,7 +315,19 @@ private struct CharacterListView: View {
                 }
                 .padding(.horizontal, 24)
                 
-                Spacer(minLength: 40)
+                if let onFindMore {
+                    Button(action: onFindMore) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus.circle")
+                            Text(findMoreText)
+                        }
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 12)
+                }
+
+                Spacer(minLength: 24)
             }
         }
         .scrollIndicators(.hidden)

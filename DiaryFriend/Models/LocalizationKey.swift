@@ -224,7 +224,8 @@ enum LocalizationKey: String {
     case ai_select_no_friends = "ai_select.no_friends"
     case ai_select_follow_friends = "ai_select.follow_friends"
     case ai_select_find_friends = "ai_select.find_friends"
-    
+    case ai_select_find_more = "ai_select.find_more"
+
     // MARK: - PostDetailView
     case post_detail_processing = "post_detail.processing"
     case post_detail_wait = "post_detail.wait"
@@ -659,7 +660,9 @@ enum LocalizationKey: String {
             return "Follow AI Characters to start chatting"
         case .ai_select_find_friends:
             return "Find Characters"
-            
+        case .ai_select_find_more:
+            return "Looking for someone else?"
+
             // PostDetailView
         case .post_detail_processing:
             return "Your AI friends are writing comments..."

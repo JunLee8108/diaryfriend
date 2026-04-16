@@ -14,8 +14,22 @@ struct DiaryListView: View {
     let onMonthChanged: (Date) -> Void
     let onWriteDiary: (() -> Void)?
 
+    @State private var showMonthPicker = false
+
     @Localized(.home_list_empty_title) var emptyTitle
     @Localized(.home_list_empty_message) var emptyMessage
+
+    private var monthYearString: String {
+        let formatter = DateFormatter()
+        let languageCode = LocalizationManager.shared.currentLanguage.code
+        formatter.locale = Locale(identifier: languageCode)
+        if LocalizationManager.shared.currentLanguage == .korean {
+            formatter.dateFormat = "yyyy년 M월"
+        } else {
+            formatter.dateFormat = "MMMM yyyy"
+        }
+        return formatter.string(from: currentMonth)
+    }
 
     private var monthPosts: [Post] {
         let calendar = Calendar.current
@@ -37,15 +51,26 @@ struct DiaryListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // 월 선택 + 캘린더 토글 (한 줄)
+            // 월 선택 (좌측) + 캘린더 토글 (우측)
             HStack {
-                MonthSelectorHeader(
-                    selectedMonth: $currentMonth,
-                    isLoading: .constant(false),
-                    onMonthChanged: { newMonth in
-                        onMonthChanged(newMonth)
+                Button(action: { showMonthPicker = true }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+
+                        Text(monthYearString)
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.primary)
+
+                        Image(systemName: showMonthPicker ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Color(hex: "00C896"))
+                            .animation(.easeInOut(duration: 0.2), value: showMonthPicker)
                     }
-                )
+                }
+
+                Spacer()
 
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -71,7 +96,6 @@ struct DiaryListView: View {
                 )
             } else {
                 ScrollView {
-                    // 하나의 큰 카드 컨테이너
                     VStack(spacing: 0) {
                         ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
                             NavigationLink(destination: PostDetailView(postId: item.postId)) {
@@ -81,10 +105,12 @@ struct DiaryListView: View {
 
                             if index < displayItems.count - 1 {
                                 Divider()
-                                    .padding(.horizontal, 16)
+                                    .padding(.leading, 76)
+                                    .padding(.trailing, 16)
                             }
                         }
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.modernSurfacePrimary)
@@ -96,44 +122,65 @@ struct DiaryListView: View {
                 .scrollIndicators(.hidden)
             }
         }
+        .sheet(isPresented: $showMonthPicker) {
+            CustomMonthPickerSheet(
+                selectedMonth: $currentMonth,
+                onMonthSelected: { newDate in
+                    Task {
+                        await onMonthChanged(newDate)
+                    }
+                }
+            )
+            .presentationDetents([.height(480)])
+            .presentationDragIndicator(.visible)
+        }
     }
 }
 
-// MARK: - 컴팩트 포스트 행 (카드 내부용)
+// MARK: - 컴팩트 포스트 행 (카드 내부용, 좌측 무드 바 포함)
 private struct CompactPostRow: View {
     let item: PostDisplayItem
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            // 날짜
-            VStack(spacing: 2) {
-                Text(item.dayNumber)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
+        HStack(spacing: 0) {
+            // 무드 컬러 좌측 바
+            RoundedRectangle(cornerRadius: 1.5)
+                .fill(item.moodColor.opacity(0.5))
+                .frame(width: 3)
+                .padding(.vertical, 8)
 
-                Text(item.weekday)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
+            HStack(alignment: .top, spacing: 14) {
+                // 날짜
+                VStack(spacing: 2) {
+                    Text(item.dayNumber)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+
+                    Text(item.weekday)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+                .frame(width: 38)
+
+                // 무드 + 내용
+                VStack(alignment: .leading, spacing: 6) {
+                    Image(systemName: item.moodIcon)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(item.moodColor)
+
+                    Text(item.contentPreview)
+                        .font(.system(size: 14))
+                        .foregroundColor(.primary.opacity(0.85))
+                        .lineLimit(2)
+                        .lineSpacing(3)
+                        .multilineTextAlignment(.leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(width: 38)
-
-            // 무드 + 내용
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: item.moodIcon)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(item.moodColor)
-
-                Text(item.contentPreview)
-                    .font(.system(size: 14))
-                    .foregroundColor(.primary.opacity(0.85))
-                    .lineLimit(2)
-                    .lineSpacing(3)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 14)
+            .padding(.trailing, 18)
+            .padding(.vertical, 16)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
         .contentShape(Rectangle())
     }
 }

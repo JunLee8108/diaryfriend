@@ -349,7 +349,18 @@ class PostService {
         
         print("✅ 포스트 삭제 완료 (ID: \(id))")
     }
-    
+
+    /// 댓글 삭제
+    func deleteComment(id: Int) async throws {
+        try await supabase
+            .from("Comment")
+            .delete()
+            .eq("id", value: id)
+            .execute()
+
+        print("✅ 댓글 삭제 완료 (ID: \(id))")
+    }
+
     // MARK: - Hashtag Operations (Private)
     
     /// 해시태그 생성 또는 기존 ID 가져오기

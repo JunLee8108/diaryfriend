@@ -424,6 +424,22 @@ actor RealmManager {
         print("🗑️ RealmManager: 포스트 \(id) 삭제 완료")
     }
 
+    /// 특정 댓글 삭제 (PostObject 내 EmbeddedObject)
+    func deleteComment(commentId: Int, postId: Int) async throws {
+        guard let realm = realm else {
+            throw RealmError.notInitialized
+        }
+
+        try await realm.asyncWrite {
+            if let post = realm.objects(PostObject.self).filter("id == %@", postId).first,
+               let index = post.comments.firstIndex(where: { $0.id == commentId }) {
+                post.comments.remove(at: index)
+            }
+        }
+
+        print("🗑️ RealmManager: 댓글 \(commentId) 삭제 완료 (Post \(postId))")
+    }
+
     /// 여러 포스트 일괄 삭제 (성능 최적화)
     func deletePosts(ids: [Int]) async throws {
         guard let realm = realm else {

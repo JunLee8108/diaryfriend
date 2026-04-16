@@ -10,6 +10,7 @@ import SwiftUI
 struct DiaryListView: View {
     @EnvironmentObject var dataStore: DataStore
     @Binding var currentMonth: Date
+    @Binding var showListView: Bool
     let onMonthChanged: (Date) -> Void
     let onWriteDiary: (() -> Void)?
 
@@ -36,16 +37,32 @@ struct DiaryListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            MonthSelectorHeader(
-                selectedMonth: $currentMonth,
-                isLoading: .constant(false),
-                onMonthChanged: { newMonth in
-                    onMonthChanged(newMonth)
-                }
-            )
-            .padding(.top, 4)
-            .padding(.bottom, 8)
+            // 월 선택 + 캘린더 토글 (한 줄)
+            HStack {
+                MonthSelectorHeader(
+                    selectedMonth: $currentMonth,
+                    isLoading: .constant(false),
+                    onMonthChanged: { newMonth in
+                        onMonthChanged(newMonth)
+                    }
+                )
 
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showListView = false
+                    }
+                } label: {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 12)
+
+            // 포스트 리스트 또는 빈 상태
             if displayItems.isEmpty {
                 EmptyMonthListView(
                     title: emptyTitle,
@@ -54,18 +71,70 @@ struct DiaryListView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(displayItems, id: \.id) { item in
-                            RecentPostItemView(item: item)
+                    // 하나의 큰 카드 컨테이너
+                    VStack(spacing: 0) {
+                        ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
+                            NavigationLink(destination: PostDetailView(postId: item.postId)) {
+                                CompactPostRow(item: item)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            if index < displayItems.count - 1 {
+                                Divider()
+                                    .padding(.horizontal, 16)
+                            }
                         }
                     }
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.modernSurfacePrimary)
+                            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    )
                     .padding(.horizontal, 20)
-                    .padding(.top, 12)
                     .padding(.bottom, 20)
                 }
                 .scrollIndicators(.hidden)
             }
         }
+    }
+}
+
+// MARK: - 컴팩트 포스트 행 (카드 내부용)
+private struct CompactPostRow: View {
+    let item: PostDisplayItem
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            // 날짜
+            VStack(spacing: 2) {
+                Text(item.dayNumber)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+
+                Text(item.weekday)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .frame(width: 38)
+
+            // 무드 + 내용
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: item.moodIcon)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(item.moodColor)
+
+                Text(item.contentPreview)
+                    .font(.system(size: 14))
+                    .foregroundColor(.primary.opacity(0.85))
+                    .lineLimit(2)
+                    .lineSpacing(3)
+                    .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .contentShape(Rectangle())
     }
 }
 

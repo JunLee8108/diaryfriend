@@ -305,6 +305,16 @@ struct SlideCalendarView: View {
                 currentMonth = newMonth
                 onMonthChanged(newMonth)
             }
+            .onAppear {
+                let nowComponents = calendar.dateComponents([.year, .month], from: Date())
+                let targetComponents = calendar.dateComponents([.year, .month], from: currentMonth)
+                let yearDiff = (targetComponents.year ?? 0) - (nowComponents.year ?? 0)
+                let monthDiff = (targetComponents.month ?? 0) - (nowComponents.month ?? 0)
+                let targetIndex = centerIndex + yearDiff * 12 + monthDiff
+                if targetIndex >= 0 && targetIndex < 24 && targetIndex != tabSelection {
+                    tabSelection = targetIndex
+                }
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: 20)

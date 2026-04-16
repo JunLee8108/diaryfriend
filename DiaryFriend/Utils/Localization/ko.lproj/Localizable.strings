@@ -134,6 +134,10 @@
 "mood.sad" = "슬픔";
 "mood.neutral" = "평범";
 
+/* Quick Entry */
+"quick_entry.prompt" = "오늘 하루는 어떠셨나요?";
+"quick_entry.placeholder" = "한 줄로 남겨보세요...";
+
 /* Greetings */
 "greeting.morning" = "좋은 아침이에요";
 "greeting.afternoon" = "좋은 오후에요";

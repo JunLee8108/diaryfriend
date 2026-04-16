@@ -913,9 +913,23 @@ class DataStore: ObservableObject {
             throw error
         }
     }
-    
+
+    /// AI 댓글 삭제
+    func deleteComment(commentId: Int, postId: Int) async throws {
+        try await postService.deleteComment(id: commentId)
+
+        // NSCache 무효화 (PostDetail에 댓글 포함)
+        let cacheKey = NSNumber(value: postId)
+        postDetailCache.removeObject(forKey: cacheKey)
+
+        // Realm에서 삭제
+        try? await realmManager.deleteComment(commentId: commentId, postId: postId)
+
+        print("✅ Comment \(commentId) 삭제 완료 (Post \(postId))")
+    }
+
     // MARK: - Private Methods
-    
+
     /// 특정 월 데이터 로드 (3단계 캐싱)
     private func loadMonth(for date: Date, forceRefresh: Bool = false, silent: Bool = false) async {
         let monthKey = DateUtility.shared.monthKey(from: date)

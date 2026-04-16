@@ -16,11 +16,16 @@ struct PostDetailView: View {
     @State private var showDeleteConfirmation = false
     @State private var deleteError: String?
     @State private var showDeleteError = false
-    
+
+    @State private var commentToDelete: EnrichedComment?
+    @State private var showDeleteCommentConfirmation = false
+
     @Environment(\.dismiss) private var dismiss
-    
+
     @Localized(.post_detail_delete_title) var deleteTitle: String
     @Localized(.post_detail_delete_message) var deleteMessage: String
+    @Localized(.comment_delete_title) var commentDeleteTitle: String
+    @Localized(.comment_delete_message) var commentDeleteMessage: String
     @Localized(.common_cancel) var cancelText
     @Localized(.common_delete) var deleteText
     
@@ -34,7 +39,11 @@ struct PostDetailView: View {
                 PostContentView(
                     detail: detail,
                     enrichedComments: enrichedComments,
-                    isWaitingForAI: isWaitingForAI
+                    isWaitingForAI: isWaitingForAI,
+                    onDeleteComment: { comment in
+                        commentToDelete = comment
+                        showDeleteCommentConfirmation = true
+                    }
                 )
             } else {
                 Text("포스트를 불러올 수 없습니다")
@@ -69,6 +78,18 @@ struct PostDetailView: View {
             isDestructive: true,
             onConfirm: {
                 await performDelete()
+            }
+        )
+        .confirmationModal(
+            isPresented: $showDeleteCommentConfirmation,
+            title: commentDeleteTitle,
+            message: commentDeleteMessage,
+            icon: "trash",
+            confirmText: deleteText,
+            cancelText: cancelText,
+            isDestructive: true,
+            onConfirm: {
+                await performDeleteComment()
             }
         )
         .alert("Delete Failed", isPresented: $showDeleteError) {
@@ -162,7 +183,21 @@ struct PostDetailView: View {
             showDeleteError = true
         }
     }
-    
+
+    private func performDeleteComment() async {
+        guard let comment = commentToDelete else { return }
+        do {
+            try await dataStore.deleteComment(commentId: comment.comment.id, postId: postId)
+            withAnimation(.easeInOut(duration: 0.3)) {
+                enrichedComments.removeAll { $0.id == comment.comment.id }
+            }
+            commentToDelete = nil
+        } catch {
+            deleteError = error.localizedDescription
+            showDeleteError = true
+        }
+    }
+
     private func enrichComments(_ comments: [Comment]) async -> [EnrichedComment] {
         var enriched: [EnrichedComment] = []
         let characterIds = Array(Set(comments.map { $0.character_id }))
@@ -210,6 +245,7 @@ struct PostContentView: View {
     let detail: PostDetail
     let enrichedComments: [EnrichedComment]
     let isWaitingForAI: Bool
+    var onDeleteComment: ((EnrichedComment) -> Void)? = nil
 
     @State private var selectedCharacter: CharacterWithAffinity?
     @State private var showChatHistory = false
@@ -340,7 +376,10 @@ struct PostContentView: View {
                                 enrichedComment: enrichedComment,
                                 onCharacterTap: {
                                     selectedCharacter = enrichedComment.character
-                                }
+                                },
+                                onDelete: onDeleteComment != nil ? {
+                                    onDeleteComment?(enrichedComment)
+                                } : nil
                             )
                         }
                     }
@@ -404,20 +443,23 @@ struct IdentifiableString: Identifiable {
 // MARK: - Comment Row
 struct CommentRowView: View {
     @EnvironmentObject var localizationManager: LocalizationManager
-    
+
     let enrichedComment: EnrichedComment
     let onCharacterTap: () -> Void
-    
+    var onDelete: (() -> Void)? = nil
+
+    @Localized(.common_delete) var deleteText: String
+
     // ✅ 언어 체크
     private var isKorean: Bool {
         localizationManager.currentLanguage == .korean
     }
-    
+
     // ✅ 다국어 이름
     private var displayName: String {
         enrichedComment.localizedName(isKorean: isKorean)
     }
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Button(action: onCharacterTap) {
@@ -428,18 +470,30 @@ struct CommentRowView: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
-                
+
                 Text(enrichedComment.comment.message)
                     .font(.system(size: 14))
                     .foregroundColor(.primary.opacity(0.9))
                     .lineSpacing(4)
             }
-            
+
             Spacer()
+
+            if let onDelete {
+                Menu {
+                    Button(deleteText, systemImage: "trash", role: .destructive, action: onDelete)
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .frame(width: 30, height: 30)
+                        .contentShape(Rectangle())
+                }
+            }
         }
     }
 }

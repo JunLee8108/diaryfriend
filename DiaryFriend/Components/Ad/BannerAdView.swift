@@ -25,8 +25,9 @@ struct BannerAdView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: BannerView, context: Context) {
-        // 회전/사이즈 변경 시 갱신 (대부분 no-op)
-        let expected = currentOrientationAnchoredAdaptiveBanner(width: width)
+        // 회전/사이즈 변경 시 갱신 (대부분 no-op). AdManager와 동일한 inline
+        // adaptive API를 사용해 size 일관성을 유지한다.
+        let expected = inlineAdaptiveBanner(width: width, maxHeight: AdManager.maxBannerHeight)
         if uiView.adSize.size != expected.size {
             uiView.adSize = expected
             uiView.load(Request())

@@ -55,16 +55,12 @@ struct DiaryListView: View {
             HStack {
                 Button(action: { showMonthPicker = true }) {
                     HStack(spacing: 8) {
-                        Image(systemName: "calendar")
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-
                         Text(monthYearString)
-                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(.primary)
 
                         Image(systemName: showMonthPicker ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(Color(hex: "00C896"))
                             .animation(.easeInOut(duration: 0.2), value: showMonthPicker)
                     }
@@ -126,9 +122,7 @@ struct DiaryListView: View {
             CustomMonthPickerSheet(
                 selectedMonth: $currentMonth,
                 onMonthSelected: { newDate in
-                    Task {
-                        await onMonthChanged(newDate)
-                    }
+                    onMonthChanged(newDate)
                 }
             )
             .presentationDetents([.height(480)])

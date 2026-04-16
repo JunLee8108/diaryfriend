@@ -493,6 +493,7 @@ struct CommentRowView: View {
                         .frame(width: 30, height: 30)
                         .contentShape(Rectangle())
                 }
+                .tint(nil)
             }
         }
     }

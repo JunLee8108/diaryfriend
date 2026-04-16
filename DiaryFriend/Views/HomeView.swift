@@ -159,7 +159,7 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     AdContainer(unitID: Config.AdMob.homeBannerUnitID)
                         .padding(.top, 8)
-                    Color.clear.frame(height: 20)
+                    // Color.clear.frame(height: 20)
                 }
             }
             .infoModal(

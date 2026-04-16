@@ -14,7 +14,8 @@ struct HomeView: View {
     @State private var selectedDate = Date()
     @StateObject private var navigationCoordinator = NavigationCoordinator()
     @State private var currentMonth = Date()
-    
+    @State private var showListView = false
+
     // Info modal state
     @State private var showFutureDateInfo = false
     
@@ -49,61 +50,94 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    // 🎯 NEW: Intro Section
-                    IntroGreetingSection()
-                        .padding(.horizontal, 20)
-                        .padding(.top, 30)
-                        .padding(.bottom, 16)
+            Group {
+                if showListView {
+                    // 리스트 모드: 월별 일기 스크롤 뷰
+                    VStack(spacing: 0) {
+                        IntroGreetingSection()
+                            .padding(.horizontal, 20)
+                            .padding(.top, 30)
+                            .padding(.bottom, 16)
 
-                    // 오늘 날짜 표시
-                    TodayDateLabel()
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 14)
+                        TodayDateLabel()
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 14)
 
-                    // 슬라이드 캘린더
-                    SlideCalendarView(
-                        currentMonth: $currentMonth,
-                        selectedDate: $selectedDate,
-                        postDatesSet: dataStore.postDates,
-                        onMonthChanged: { newMonth in
-                            Task {
-                                await dataStore.ensureMonthLoaded(newMonth)
+                        DiaryListView(
+                            currentMonth: $currentMonth,
+                            onMonthChanged: { newMonth in
+                                Task {
+                                    await dataStore.ensureMonthLoaded(newMonth)
+                                }
+                            },
+                            onWriteDiary: {
+                                showWriteDiaryDatePicker = true
                             }
-                        },
-                        onDateTapped: { date in
-                            handleDateTap(date)
-                        }
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 30)
+                        )
+                    }
+                } else {
+                    // 캘린더 모드 (기본)
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            IntroGreetingSection()
+                                .padding(.horizontal, 20)
+                                .padding(.top, 30)
+                                .padding(.bottom, 16)
 
-                    // Recent Posts 섹션
-                    RecentPostsSection(
-                        posts: dataStore.recentPosts(for: currentMonth, limit: 3),
-                        currentMonth: currentMonth,  // 월 레이블 표시용
-                        onWriteDiary: isFutureMonth ? nil : {
-                            showWriteDiaryDatePicker = true
+                            TodayDateLabel()
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 14)
+
+                            SlideCalendarView(
+                                currentMonth: $currentMonth,
+                                selectedDate: $selectedDate,
+                                postDatesSet: dataStore.postDates,
+                                onMonthChanged: { newMonth in
+                                    Task {
+                                        await dataStore.ensureMonthLoaded(newMonth)
+                                    }
+                                },
+                                onDateTapped: { date in
+                                    handleDateTap(date)
+                                }
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 30)
+
+                            RecentPostsSection(
+                                posts: dataStore.recentPosts(for: currentMonth, limit: 3),
+                                currentMonth: currentMonth,
+                                onWriteDiary: isFutureMonth ? nil : {
+                                    showWriteDiaryDatePicker = true
+                                }
+                            )
+                            .padding(.bottom, 20)
                         }
-                    )
-                    .padding(.bottom, 20)
+                    }
+                    .refreshable {
+                        guard networkMonitor.isConnected else {
+                            showOfflineAlert = true
+                            return
+                        }
+                        await dataStore.refresh(centerDate: currentMonth)
+                        if let error = dataStore.errorMessage {
+                            showSyncError = true
+                            syncErrorMessage = error
+                        }
+                    }
                 }
             }
-            .refreshable {
-                // 오프라인 체크
-                guard networkMonitor.isConnected else {
-                    showOfflineAlert = true
-                    return
-                }
-                
-                // ⭐ Diff 기반 새로고침
-                await dataStore.refresh(centerDate: currentMonth)
-                
-                // ⭐ 에러 체크
-                if let error = dataStore.errorMessage {
-                    showSyncError = true
-                    syncErrorMessage = error
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showListView.toggle()
+                        }
+                    } label: {
+                        Image(systemName: showListView ? "calendar" : "list.bullet")
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                    .tint(nil)
                 }
             }
             .smoothLoading(dataStore.isLoading)

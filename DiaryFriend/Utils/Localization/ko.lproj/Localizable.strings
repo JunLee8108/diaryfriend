@@ -156,6 +156,9 @@
 "home.future_date_message" = "미래 날짜에는 일기를 작성할 수 없습니다.";
 "home.no_internet_title" = "인터넷 없음";
 "home.no_internet_message" = "인터넷 연결을 확인해주세요.";
+"home.list_empty_title" = "이번 달 일기가 없습니다";
+"home.list_empty_message" = "첫 번째 일기를 작성해보세요";
+"home.list_write_diary" = "일기 쓰기";
 
 /* Post Method Choice */
 "post_method.choice_title" = "오늘은 어떻게 일기를 쓸까요?";

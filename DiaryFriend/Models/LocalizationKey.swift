@@ -163,7 +163,10 @@ enum LocalizationKey: String {
     case home_future_date_message = "home.future_date_message"
     case home_no_internet_title = "home.no_internet_title"
     case home_no_internet_message = "home.no_internet_message"
-    
+    case home_list_empty_title = "home.list_empty_title"
+    case home_list_empty_message = "home.list_empty_message"
+    case home_list_write_diary = "home.list_write_diary"
+
     // MARK: - Post Method Choice
     case post_method_choice_title = "post_method.choice_title"
     case post_method_ai_title = "post_method.ai_title"
@@ -556,7 +559,13 @@ enum LocalizationKey: String {
             return "No Internet"
         case .home_no_internet_message:
             return "Please check your internet connection."
-            
+        case .home_list_empty_title:
+            return "No entries this month"
+        case .home_list_empty_message:
+            return "Start writing your first diary entry"
+        case .home_list_write_diary:
+            return "Write Diary"
+
             // Post Method Choice
         case .post_method_choice_title:
             return "How would you like to write today?"

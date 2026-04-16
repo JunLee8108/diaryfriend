@@ -163,6 +163,9 @@
 "home.future_date_message" = "You cannot create entries for future dates.";
 "home.no_internet_title" = "No Internet";
 "home.no_internet_message" = "Please check your internet connection.";
+"home.list_empty_title" = "No entries this month";
+"home.list_empty_message" = "Start writing your first diary entry";
+"home.list_write_diary" = "Write Diary";
 
 /* Post Method Choice */
 "post_method.choice_title" = "How would you like to write today?";

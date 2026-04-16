@@ -141,6 +141,10 @@
 "mood.sad" = "Sad";
 "mood.neutral" = "Neutral";
 
+/* Quick Entry */
+"quick_entry.prompt" = "How was your day?";
+"quick_entry.placeholder" = "Write in one line...";
+
 /* Greetings */
 "greeting.morning" = "Good morning";
 "greeting.afternoon" = "Good afternoon";

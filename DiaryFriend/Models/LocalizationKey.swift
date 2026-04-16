@@ -140,7 +140,11 @@ enum LocalizationKey: String {
     case mood_happy = "mood.happy"
     case mood_sad = "mood.sad"
     case mood_neutral = "mood.neutral"
-    
+
+    // MARK: - Quick Entry
+    case quick_entry_prompt = "quick_entry.prompt"
+    case quick_entry_placeholder = "quick_entry.placeholder"
+
     // MARK: - Greetings
     case greeting_morning = "greeting.morning"
     case greeting_afternoon = "greeting.afternoon"
@@ -519,7 +523,13 @@ enum LocalizationKey: String {
             return "Sad"
         case .mood_neutral:
             return "Neutral"
-            
+
+            // Quick Entry
+        case .quick_entry_prompt:
+            return "How was your day?"
+        case .quick_entry_placeholder:
+            return "Write in one line..."
+
             // Greetings
         case .greeting_morning:
             return "Good morning"

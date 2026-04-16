@@ -16,30 +16,40 @@ struct AdContainer: View {
     @ObservedObject private var adManager = AdManager.shared
     @ObservedObject private var profileStore = UserProfileStore.shared
 
+    /// BannerViewDelegate 콜백으로 받은 실제 서빙된 광고 크기.
+    /// 광고 로드 전/실패 시에는 .zero → fallback height 사용.
+    @State private var actualAdSize: CGSize = .zero
+
     var body: some View {
         Group {
             if adManager.shouldShowAds {
-                // ⭐ Inline Adaptive Banner (maxHeight AdManager.maxBannerHeight) 사용.
-                // Anchored 와 달리 광고 크리에이티브 크기에 맞춰 height가 가변이라
-                // 큰 광고도 잘리지 않고 완전히 표시된다.
+                // ⭐ Google 공식 패턴: UIView wrapper + clipsToBounds + BannerViewDelegate
+                // wrapper가 UIKit 레벨에서 overflow를 차단하고, delegate로 받은
+                // 실제 ad size로 container를 정확히 맞춘다.
                 GeometryReader { geo in
-                    let adSize = inlineAdaptiveBanner(width: geo.size.width, maxHeight: AdManager.maxBannerHeight)
-                    BannerAdView(unitID: unitID, width: geo.size.width)
-                        .frame(width: geo.size.width, height: adSize.size.height)
-                        .clipped()  // 최후 안전망: frame 밖 픽셀이 새어 나오지 않도록
+                    BannerAdView(
+                        unitID: unitID,
+                        width: geo.size.width,
+                        onAdSizeChanged: { size in
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                actualAdSize = size
+                            }
+                        }
+                    )
+                    .frame(width: geo.size.width, height: containerHeight(for: geo.size.width))
                 }
-                .frame(height: fallbackBannerHeight)
+                .frame(height: containerHeight(for: UIScreen.main.bounds.width))
             } else {
                 EmptyView()
             }
         }
     }
 
-    /// GeometryReader가 layout 전에 container 높이를 reserve해야 하므로
-    /// UIScreen 기반 fallback으로 approximate height를 계산.
-    /// 실제 렌더 시에는 GeometryReader 안의 adSize.size.height가 사용된다.
-    private var fallbackBannerHeight: CGFloat {
-        let width = UIScreen.main.bounds.width
+    /// 광고가 로드됐으면 실제 서빙 높이, 아니면 inline adaptive fallback.
+    private func containerHeight(for width: CGFloat) -> CGFloat {
+        if actualAdSize.height > 0 {
+            return actualAdSize.height
+        }
         return inlineAdaptiveBanner(width: width, maxHeight: AdManager.maxBannerHeight).size.height
     }
 }

@@ -224,6 +224,7 @@
 "ai_select.no_friends" = "No AI Friends Yet";
 "ai_select.follow_friends" = "Follow AI Characters to start chatting";
 "ai_select.find_friends" = "Find Characters";
+"ai_select.find_more" = "Looking for someone else?";
 
 /* PostDetailView */
 "post_detail.processing" = "Your AI friends are writing comments...";

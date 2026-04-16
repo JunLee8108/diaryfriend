@@ -35,7 +35,7 @@ struct ProfileView: View {
     // Character 관련 State
     @State private var selectedCharacter: CharacterWithAffinity?
     @State private var isExpanded = false
-    @State private var isClassicExpanded = false
+    @State private var isClassicExpanded = true
 
     // 처음 표시할 캐릭터 수
     private let initialDisplayCount = 6

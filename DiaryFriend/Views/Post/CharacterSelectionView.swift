@@ -13,7 +13,7 @@ struct CharacterSelectionView: View {
 
     @State private var searchText = ""
     @State private var selectedCharacter: CharacterWithAffinity?
-    @State private var isClassicExpanded = false
+    @State private var isClassicExpanded = true
 
     @Localized(.ai_insights_find_characters) var findCharactersText
     @Localized(.common_done) var doneText

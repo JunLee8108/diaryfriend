@@ -788,7 +788,13 @@ class DataStore: ObservableObject {
                 postId: newPost.id,
                 date: newPost.entry_date
             )
-            
+
+            // 첫 게시물 작성 시 리뷰 요청 플래그
+            if !UserDefaults.standard.bool(forKey: "has_created_first_post") {
+                UserDefaults.standard.set(true, forKey: "has_created_first_post")
+                UserDefaults.standard.set(true, forKey: "should_request_review")
+            }
+
             print("➕ DataStore: 새 포스트 추가됨 (ID: \(newPost.id))")
             return newPost
             

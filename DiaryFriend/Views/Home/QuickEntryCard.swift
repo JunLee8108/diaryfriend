@@ -110,6 +110,11 @@ struct QuickEntryCard: View {
                     allowAIComments: !CharacterStore.shared.followingCharacters.isEmpty
                 )
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
+                await MainActor.run {
+                    text = ""
+                    isSaving = false
+                    selectedMood = .happy
+                }
             } catch {
                 isSaving = false
             }

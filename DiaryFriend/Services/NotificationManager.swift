@@ -73,6 +73,11 @@ class NotificationManager {
         return settings.authorizationStatus == .authorized
     }
 
+    func authorizationStatus() async -> UNAuthorizationStatus {
+        let settings = await center.notificationSettings()
+        return settings.authorizationStatus
+    }
+
     // MARK: - Schedule
 
     func scheduleDailyReminder(hour: Int, minute: Int) {

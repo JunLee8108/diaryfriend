@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct HomeView: View {
     @EnvironmentObject var dataStore: DataStore
@@ -15,6 +16,7 @@ struct HomeView: View {
     @StateObject private var navigationCoordinator = NavigationCoordinator()
     @State private var currentMonth = Date()
     @State private var showListView = false
+    @Environment(\.requestReview) private var requestReview
 
     // Info modal state
     @State private var showFutureDateInfo = false
@@ -219,7 +221,17 @@ struct HomeView: View {
                 iconColor: Color(hex: "FF6961")
             )
             .background(Color.modernBackground)
-            
+            .onChange(of: dataStore.posts.count) { _, _ in
+                checkAndRequestReview()
+            }
+        }
+    }
+
+    private func checkAndRequestReview() {
+        guard UserDefaults.standard.bool(forKey: "should_request_review") else { return }
+        UserDefaults.standard.set(false, forKey: "should_request_review")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            requestReview()
         }
     }
     

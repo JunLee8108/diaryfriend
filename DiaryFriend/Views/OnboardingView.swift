@@ -198,7 +198,7 @@ struct OnboardingView: View {
                     )
                     .padding(.horizontal, 30)
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 60)
             }
             .scrollIndicators(.hidden)
 
@@ -483,8 +483,8 @@ struct OnboardingTexts {
         languageLabel: "Language",
         nextButton: "Next",
         getStartedButton: "Get Started",
-        characterTitle: "Your AI Diary Companions",
-        characterSubtitle: "They'll read your diary and leave thoughtful comments",
+        characterTitle: "Follow Your AI Friends!",
+        characterSubtitle: "Chat to write your diary, or they'll leave kind comments.",
         backButton: "Back",
         nameEmptyError: "Name cannot be empty",
         nameTooLongError: "Name must be 30 characters or less",
@@ -499,8 +499,8 @@ struct OnboardingTexts {
         languageLabel: "언어",
         nextButton: "다음",
         getStartedButton: "시작하기",
-        characterTitle: "나만의 AI 일기 친구들",
-        characterSubtitle: "일기를 읽고 따뜻한 댓글을 남겨줘요",
+        characterTitle: "AI 친구들을 팔로우하세요",
+        characterSubtitle: "대화를 통해 일기를 작성하거나 일기를 읽고 따뜻한 댓글을 남겨줘요",
         backButton: "뒤로",
         nameEmptyError: "이름은 비워둘 수 없습니다",
         nameTooLongError: "이름은 30자 이하여야 합니다",

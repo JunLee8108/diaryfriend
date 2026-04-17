@@ -155,6 +155,18 @@ struct RootView: View {
             print("✅ RootView: User data setup complete")
             print("  - Posts: \(dataStore.posts.count)")
             print("  - Characters: \(characterStore.allCharacters.count)")
+
+            // 기존 유저 중 알림 권한 미요청자에게 한 번만 요청
+            if !NotificationManager.shared.hasRequestedPermission {
+                NotificationManager.shared.hasRequestedPermission = true
+                let granted = await NotificationManager.shared.requestPermission()
+                if granted {
+                    NotificationManager.shared.scheduleDailyReminder(
+                        hour: NotificationManager.shared.reminderHour,
+                        minute: NotificationManager.shared.reminderMinute
+                    )
+                }
+            }
         } else {
             // 신규 유저: 캐릭터만 로드
             await characterStore.loadAllCharacters()

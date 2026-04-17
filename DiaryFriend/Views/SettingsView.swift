@@ -109,17 +109,31 @@ struct SettingsView: View {
                 .onChange(of: isReminderEnabled) { _, newValue in
                     if newValue {
                         Task {
-                            let status = await NotificationManager.shared.checkPermission()
-                            if status {
-                                let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
-                                NotificationManager.shared.scheduleDailyReminder(
-                                    hour: components.hour ?? 21,
-                                    minute: components.minute ?? 0
-                                )
-                                isNotificationDenied = false
-                            } else {
-                                isReminderEnabled = false
-                                showNotificationDeniedAlert = true
+                            let status = await NotificationManager.shared.authorizationStatus()
+                            await MainActor.run {
+                                switch status {
+                                case .notDetermined:
+                                    Task {
+                                        let granted = await NotificationManager.shared.requestPermission()
+                                        await MainActor.run {
+                                            if granted {
+                                                scheduleReminder()
+                                                isNotificationDenied = false
+                                            } else {
+                                                isReminderEnabled = false
+                                                isNotificationDenied = true
+                                            }
+                                        }
+                                    }
+                                case .denied:
+                                    isReminderEnabled = false
+                                    showNotificationDeniedAlert = true
+                                case .authorized, .provisional, .ephemeral:
+                                    scheduleReminder()
+                                    isNotificationDenied = false
+                                @unknown default:
+                                    isReminderEnabled = false
+                                }
                             }
                         }
                     } else {
@@ -135,15 +149,11 @@ struct SettingsView: View {
                         Label(reminderTimeLabel, systemImage: "clock")
                     }
                     .onChange(of: reminderTime) { _, newValue in
-                        let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                        NotificationManager.shared.scheduleDailyReminder(
-                            hour: components.hour ?? 21,
-                            minute: components.minute ?? 0
-                        )
+                        scheduleReminder()
                     }
                 }
 
-                if isNotificationDenied {
+                if isNotificationDenied && !isReminderEnabled {
                     Button {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
@@ -211,20 +221,10 @@ struct SettingsView: View {
                 }
             }
         }
+        .onAppear { checkSystemNotificationStatus() }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                Task {
-                    let permitted = await NotificationManager.shared.checkPermission()
-                    await MainActor.run {
-                        if !permitted && NotificationManager.shared.isEnabled {
-                            NotificationManager.shared.cancelAll()
-                            isReminderEnabled = false
-                            isNotificationDenied = true
-                        } else {
-                            isNotificationDenied = false
-                        }
-                    }
-                }
+                checkSystemNotificationStatus()
             }
         }
         .alert(deniedAlertTitle, isPresented: $showNotificationDeniedAlert) {
@@ -304,6 +304,33 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - Notification Helpers
+
+    private func checkSystemNotificationStatus() {
+        Task {
+            let status = await NotificationManager.shared.authorizationStatus()
+            await MainActor.run {
+                if status == .denied || status == .notDetermined {
+                    if NotificationManager.shared.isEnabled {
+                        NotificationManager.shared.cancelAll()
+                        isReminderEnabled = false
+                    }
+                    isNotificationDenied = true
+                } else {
+                    isNotificationDenied = false
+                }
+            }
+        }
+    }
+
+    private func scheduleReminder() {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+        NotificationManager.shared.scheduleDailyReminder(
+            hour: components.hour ?? 21,
+            minute: components.minute ?? 0
+        )
+    }
+
     // MARK: - Delete Account Logic
     
     private func deleteAccount() async {

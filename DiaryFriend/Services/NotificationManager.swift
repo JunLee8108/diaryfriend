@@ -17,10 +17,16 @@ class NotificationManager {
     private let enabledKey = "notification_enabled"
     private let hourKey = "notification_hour"
     private let minuteKey = "notification_minute"
+    private let permissionRequestedKey = "notification_permission_requested"
 
     var isEnabled: Bool {
         get { defaults.bool(forKey: enabledKey) }
         set { defaults.set(newValue, forKey: enabledKey) }
+    }
+
+    var hasRequestedPermission: Bool {
+        get { defaults.bool(forKey: permissionRequestedKey) }
+        set { defaults.set(newValue, forKey: permissionRequestedKey) }
     }
 
     var reminderHour: Int {

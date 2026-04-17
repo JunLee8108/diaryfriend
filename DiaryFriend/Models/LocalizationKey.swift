@@ -26,6 +26,10 @@ enum LocalizationKey: String {
     case settings_delete_account = "settings.delete_account"
     case settings_reminder = "settings.reminder"
     case settings_reminder_time = "settings.reminder_time"
+    case notification_denied_banner = "notification.denied_banner"
+    case notification_denied_open_settings = "notification.denied_open_settings"
+    case notification_denied_alert_title = "notification.denied_alert_title"
+    case notification_denied_alert_message = "notification.denied_alert_message"
 
     // MARK: - Language Selection ✅
     case language_select_title = "language.select_title"
@@ -343,6 +347,14 @@ enum LocalizationKey: String {
             return "Daily Reminder"
         case .settings_reminder_time:
             return "Reminder Time"
+        case .notification_denied_banner:
+            return "Notifications are turned off in Settings."
+        case .notification_denied_open_settings:
+            return "Open Settings"
+        case .notification_denied_alert_title:
+            return "Notifications Disabled"
+        case .notification_denied_alert_message:
+            return "Notifications are turned off in system settings. Would you like to open Settings to enable them?"
 
             // Language Selection
         case .language_select_title:

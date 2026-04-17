@@ -109,11 +109,11 @@ class NotificationManager {
         let isKorean = LocalizationManager.shared.currentLanguage == .korean
         let bodies = isKorean
             ? ["오늘 하루는 어떠셨나요? 잠깐 기록해보세요.",
-               "오늘의 순간을 놓치지 마세요.",
-               "일기장이 기다리고 있어요."]
+               "오늘의 좋았던 순간을 놓치지 마세요.",
+               "딱 3초! 오늘의 기분을 기록해보세요."]
             : ["How was your day? Take a moment to write.",
-               "Don't forget to capture today's moments.",
-               "Your diary is waiting for you."]
+               "Don't let today's good moments slip away.",
+               "Just tap your mood — 3 seconds is enough."]
         return bodies.randomElement() ?? bodies[0]
     }
 

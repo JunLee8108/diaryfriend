@@ -52,30 +52,33 @@ struct HomeView: View {
         NavigationStack(path: $navigationCoordinator.path) {
             Group {
                 if showListView {
-                    // 리스트 모드: 월별 일기 스크롤 뷰
-                    VStack(spacing: 0) {
-                        IntroGreetingSection()
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
-                            .padding(.bottom, 16)
+                    // 리스트 모드: 전체 단일 ScrollView
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            IntroGreetingSection()
+                                .padding(.horizontal, 20)
+                                .padding(.top, 16)
+                                .padding(.bottom, 16)
 
-                        QuickEntryCard()
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 16)
+                            QuickEntryCard()
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 16)
 
-                        DiaryListView(
-                            currentMonth: $currentMonth,
-                            showListView: $showListView,
-                            onMonthChanged: { newMonth in
-                                Task {
-                                    await dataStore.ensureMonthLoaded(newMonth)
+                            DiaryListView(
+                                currentMonth: $currentMonth,
+                                showListView: $showListView,
+                                onMonthChanged: { newMonth in
+                                    Task {
+                                        await dataStore.ensureMonthLoaded(newMonth)
+                                    }
+                                },
+                                onWriteDiary: {
+                                    showWriteDiaryDatePicker = true
                                 }
-                            },
-                            onWriteDiary: {
-                                showWriteDiaryDatePicker = true
-                            }
-                        )
+                            )
+                        }
                     }
+                    .scrollIndicators(.hidden)
                     .onTapGesture {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }

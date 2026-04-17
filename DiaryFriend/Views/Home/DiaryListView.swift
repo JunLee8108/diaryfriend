@@ -83,7 +83,7 @@ struct DiaryListView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 12)
 
-            // 포스트 리스트 또는 빈 상태
+            // 포스트 리스트 또는 빈 상태 (부모 ScrollView 안에서 인라인 렌더링)
             if displayItems.isEmpty {
                 EmptyMonthListView(
                     title: emptyTitle,
@@ -91,31 +91,28 @@ struct DiaryListView: View {
                     onWriteDiary: isFutureMonth ? nil : onWriteDiary
                 )
             } else {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
-                            NavigationLink(destination: PostDetailView(postId: item.postId)) {
-                                CompactPostRow(item: item)
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                VStack(spacing: 0) {
+                    ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
+                        NavigationLink(destination: PostDetailView(postId: item.postId)) {
+                            CompactPostRow(item: item)
+                        }
+                        .buttonStyle(PlainButtonStyle())
 
-                            if index < displayItems.count - 1 {
-                                Divider()
-                                    .padding(.leading, 76)
-                                    .padding(.trailing, 16)
-                            }
+                        if index < displayItems.count - 1 {
+                            Divider()
+                                .padding(.leading, 76)
+                                .padding(.trailing, 16)
                         }
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.modernSurfacePrimary)
-                            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
                 }
-                .scrollIndicators(.hidden)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.modernSurfacePrimary)
+                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
         .sheet(isPresented: $showMonthPicker) {
@@ -189,19 +186,17 @@ private struct EmptyMonthListView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Spacer()
-
             Image(systemName: "book.closed")
-                .font(.system(size: 48, weight: .light))
+                .font(.system(size: 40, weight: .light))
                 .foregroundColor(.secondary.opacity(0.4))
 
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Text(title)
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
 
                 Text(message)
-                    .font(.system(size: 14, design: .rounded))
+                    .font(.system(size: 13, design: .rounded))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -212,22 +207,20 @@ private struct EmptyMonthListView: View {
                         Image(systemName: "pencil")
                         Text(writeDiaryText)
                     }
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 9)
                     .background(
-                        RoundedRectangle(cornerRadius: 20)
+                        RoundedRectangle(cornerRadius: 18)
                             .fill(Color(hex: "00C896"))
                     )
                 }
-                .padding(.top, 8)
+                .padding(.top, 4)
             }
-
-            Spacer()
-            Spacer()
         }
         .padding(.horizontal, 40)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 40)
+        .frame(maxWidth: .infinity)
     }
 }

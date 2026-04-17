@@ -131,11 +131,15 @@ struct OnboardingView: View {
                             .font(.system(size: 15, weight: .medium, design: .rounded))
                     }
                     .foregroundColor(Color(hex: "00C896"))
+                    .padding(.vertical, 8)
+                    .padding(.trailing, 16)
+                    .contentShape(Rectangle())
                 }
                 Spacer()
             }
             .padding(.horizontal, 30)
             .padding(.top, 16)
+            .padding(.bottom, 8)
 
             ScrollView {
                 VStack(spacing: 24) {
@@ -222,6 +226,7 @@ struct OnboardingView: View {
                 }
                 .disabled(isSubmitting)
                 .padding(.horizontal, 30)
+                .padding(.top, 12)
                 .padding(.bottom, 16)
             }
             .background(

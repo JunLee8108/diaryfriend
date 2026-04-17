@@ -107,7 +107,7 @@ struct QuickEntryCard: View {
                     content: trimmed,
                     mood: selectedMood.rawValue,
                     entryDate: Date(),
-                    allowAIComments: true
+                    allowAIComments: !CharacterStore.shared.followingCharacters.isEmpty
                 )
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             } catch {

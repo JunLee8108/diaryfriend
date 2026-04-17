@@ -224,6 +224,9 @@ struct HomeView: View {
             .onChange(of: dataStore.posts.count) { _, _ in
                 checkAndRequestReview()
             }
+            .onAppear {
+                cacheTodayEntryIfNeeded()
+            }
         }
     }
 
@@ -234,7 +237,14 @@ struct HomeView: View {
             requestReview()
         }
     }
-    
+
+    private func cacheTodayEntryIfNeeded() {
+        let today = DateUtility.shared.dateString(from: Date())
+        if !dataStore.posts(for: today).isEmpty {
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "last_entry_date")
+        }
+    }
+
     private func handleDateTap(_ date: Date) {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: Date())

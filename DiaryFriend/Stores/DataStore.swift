@@ -795,6 +795,11 @@ class DataStore: ObservableObject {
                 UserDefaults.standard.set(true, forKey: "should_request_review")
             }
 
+            // 오늘 작성 시 캐시 (Quick Entry 표시 판단용)
+            if newPost.entry_date == DateUtility.shared.dateString(from: Date()) {
+                UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "last_entry_date")
+            }
+
             print("➕ DataStore: 새 포스트 추가됨 (ID: \(newPost.id))")
             return newPost
             

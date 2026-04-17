@@ -22,7 +22,13 @@ struct QuickEntryCard: View {
 
     private var hasTodayEntry: Bool {
         let today = DateUtility.shared.dateString(from: Date())
-        return !dataStore.posts(for: today).isEmpty
+        if !dataStore.posts(for: today).isEmpty { return true }
+
+        let lastDate = UserDefaults.standard.double(forKey: "last_entry_date")
+        if lastDate > 0 {
+            return DateUtility.shared.dateString(from: Date(timeIntervalSince1970: lastDate)) == today
+        }
+        return false
     }
 
     private func moodLabel(for mood: Mood) -> String {

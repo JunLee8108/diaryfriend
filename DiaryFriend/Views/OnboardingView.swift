@@ -283,7 +283,14 @@ struct OnboardingView: View {
             await MainActor.run {
                 authService.isNewUser = false
             }
-            
+
+            // 온보딩 직후 알림 권한 요청
+            NotificationManager.shared.hasRequestedPermission = true
+            let granted = await NotificationManager.shared.requestPermission()
+            if granted {
+                NotificationManager.shared.scheduleDailyReminder(hour: 21, minute: 0)
+            }
+
             print("🎉 Onboarding flow completed successfully")
             
         } catch {

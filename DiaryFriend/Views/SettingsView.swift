@@ -38,6 +38,15 @@ struct SettingsView: View {
     // 알림 State
     @State private var isReminderEnabled = NotificationManager.shared.isEnabled
     @State private var reminderTime = NotificationManager.shared.reminderTime
+    @State private var isNotificationDenied = false
+    @State private var showNotificationDeniedAlert = false
+
+    @Environment(\.scenePhase) private var scenePhase
+
+    @Localized(.notification_denied_banner) var deniedBannerText
+    @Localized(.notification_denied_open_settings) var openSettingsText
+    @Localized(.notification_denied_alert_title) var deniedAlertTitle
+    @Localized(.notification_denied_alert_message) var deniedAlertMessage
     
     // Error State
     @State private var showErrorAlert = false
@@ -100,15 +109,17 @@ struct SettingsView: View {
                 .onChange(of: isReminderEnabled) { _, newValue in
                     if newValue {
                         Task {
-                            let granted = await NotificationManager.shared.requestPermission()
-                            if granted {
+                            let status = await NotificationManager.shared.checkPermission()
+                            if status {
                                 let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
                                 NotificationManager.shared.scheduleDailyReminder(
                                     hour: components.hour ?? 21,
                                     minute: components.minute ?? 0
                                 )
+                                isNotificationDenied = false
                             } else {
                                 isReminderEnabled = false
+                                showNotificationDeniedAlert = true
                             }
                         }
                     } else {
@@ -129,6 +140,32 @@ struct SettingsView: View {
                             hour: components.hour ?? 21,
                             minute: components.minute ?? 0
                         )
+                    }
+                }
+
+                if isNotificationDenied {
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .font(.system(size: 13))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(deniedBannerText)
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                                Text(openSettingsText)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(Color(hex: "00C896"))
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
 
@@ -173,6 +210,32 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity)
                 }
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task {
+                    let permitted = await NotificationManager.shared.checkPermission()
+                    await MainActor.run {
+                        if !permitted && NotificationManager.shared.isEnabled {
+                            NotificationManager.shared.cancelAll()
+                            isReminderEnabled = false
+                            isNotificationDenied = true
+                        } else {
+                            isNotificationDenied = false
+                        }
+                    }
+                }
+            }
+        }
+        .alert(deniedAlertTitle, isPresented: $showNotificationDeniedAlert) {
+            Button(openSettingsText) {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button(okButton, role: .cancel) { }
+        } message: {
+            Text(deniedAlertMessage)
         }
         // ⭐ 언어 변경 로딩 overlay (전체 화면)
         .overlay {

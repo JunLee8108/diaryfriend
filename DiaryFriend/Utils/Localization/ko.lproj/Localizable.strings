@@ -18,6 +18,10 @@
 "settings.delete_account" = "계정 삭제";
 "settings.reminder" = "매일 알림";
 "settings.reminder_time" = "알림 시간";
+"notification.denied_banner" = "시스템 설정에서 알림이 꺼져 있습니다.";
+"notification.denied_open_settings" = "설정으로 이동";
+"notification.denied_alert_title" = "알림이 꺼져 있습니다";
+"notification.denied_alert_message" = "시스템 설정에서 알림이 꺼져 있습니다. 설정에서 알림을 켜시겠습니까?";
 
 /* Language Selection ✅ */
 "language.select_title" = "언어 선택";

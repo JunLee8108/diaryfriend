@@ -25,6 +25,10 @@
 "settings.delete_account" = "Delete Account";
 "settings.reminder" = "Daily Reminder";
 "settings.reminder_time" = "Reminder Time";
+"notification.denied_banner" = "Notifications are turned off in Settings.";
+"notification.denied_open_settings" = "Open Settings";
+"notification.denied_alert_title" = "Notifications Disabled";
+"notification.denied_alert_message" = "Notifications are turned off in system settings. Would you like to open Settings to enable them?";
 
 /* Language Selection ✅ */
 "language.select_title" = "Select Language";

@@ -251,6 +251,12 @@ class DataStore: ObservableObject {
         isInitialized = true
         print("✅ DataStore: 우선 로드 완료 (총 \(posts.count)개 포스트)")
 
+        // 오늘 포스트 캐싱 (Quick Entry 표시 판단용)
+        let today = DateUtility.shared.dateString(from: Date())
+        if !posts.filter({ $0.entry_date == today }).isEmpty {
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "last_entry_date")
+        }
+
         // 나머지 3개월은 백그라운드에서 로드
         Task.detached { [weak self] in
             await self?.loadRemainingMonths(centerDate: now)

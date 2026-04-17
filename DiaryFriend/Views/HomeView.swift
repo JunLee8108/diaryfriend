@@ -224,9 +224,6 @@ struct HomeView: View {
             .onChange(of: dataStore.posts.count) { _, _ in
                 checkAndRequestReview()
             }
-            .onAppear {
-                cacheTodayEntryIfNeeded()
-            }
         }
     }
 
@@ -235,13 +232,6 @@ struct HomeView: View {
         UserDefaults.standard.set(false, forKey: "should_request_review")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             requestReview()
-        }
-    }
-
-    private func cacheTodayEntryIfNeeded() {
-        let today = DateUtility.shared.dateString(from: Date())
-        if !dataStore.posts(for: today).isEmpty {
-            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "last_entry_date")
         }
     }
 

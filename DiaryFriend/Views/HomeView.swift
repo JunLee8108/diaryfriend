@@ -16,6 +16,7 @@ struct HomeView: View {
     @StateObject private var navigationCoordinator = NavigationCoordinator()
     @State private var currentMonth = Date()
     @State private var showListView = false
+    @State private var hasTodayEntry = false
     @Environment(\.requestReview) private var requestReview
 
     // Info modal state
@@ -62,7 +63,7 @@ struct HomeView: View {
                                 .padding(.top, 16)
                                 .padding(.bottom, 16)
 
-                            QuickEntryCard()
+                            QuickEntryCard(hasTodayEntry: hasTodayEntry)
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 16)
 
@@ -93,7 +94,7 @@ struct HomeView: View {
                                 .padding(.top, 16)
                                 .padding(.bottom, 16)
 
-                            QuickEntryCard()
+                            QuickEntryCard(hasTodayEntry: hasTodayEntry)
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 16)
 
@@ -221,9 +222,26 @@ struct HomeView: View {
                 iconColor: Color(hex: "FF6961")
             )
             .background(Color.modernBackground)
-            .onChange(of: dataStore.posts.count) { _, _ in
+            .onAppear { updateTodayEntryState() }
+            .onReceive(NotificationCenter.default.publisher(for: .postDidChange)) { _ in
+                updateTodayEntryState()
                 checkAndRequestReview()
             }
+        }
+    }
+
+    private func updateTodayEntryState() {
+        let today = DateUtility.shared.dateString(from: Date())
+        let inMemory = !dataStore.posts(for: today).isEmpty
+        if inMemory {
+            hasTodayEntry = true
+            return
+        }
+        let lastDate = UserDefaults.standard.double(forKey: "last_entry_date")
+        if lastDate > 0 {
+            hasTodayEntry = DateUtility.shared.dateString(from: Date(timeIntervalSince1970: lastDate)) == today
+        } else {
+            hasTodayEntry = false
         }
     }
 

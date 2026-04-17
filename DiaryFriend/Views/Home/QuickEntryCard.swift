@@ -9,6 +9,7 @@ import SwiftUI
 
 struct QuickEntryCard: View {
     @EnvironmentObject var dataStore: DataStore
+    let hasTodayEntry: Bool
     @State private var selectedMood: Mood = .happy
     @State private var text: String = ""
     @State private var isSaving = false
@@ -19,17 +20,6 @@ struct QuickEntryCard: View {
     @Localized(.mood_happy) var happyText
     @Localized(.mood_neutral) var neutralText
     @Localized(.mood_sad) var sadText
-
-    private var hasTodayEntry: Bool {
-        let today = DateUtility.shared.dateString(from: Date())
-        if !dataStore.posts(for: today).isEmpty { return true }
-
-        let lastDate = UserDefaults.standard.double(forKey: "last_entry_date")
-        if lastDate > 0 {
-            return DateUtility.shared.dateString(from: Date(timeIntervalSince1970: lastDate)) == today
-        }
-        return false
-    }
 
     private func moodLabel(for mood: Mood) -> String {
         switch mood {

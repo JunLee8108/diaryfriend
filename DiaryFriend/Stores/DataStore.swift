@@ -922,7 +922,13 @@ class DataStore: ObservableObject {
                 postId: id,
                 date: dateString
             )
-            
+
+            // 오늘 포스트 삭제 시 Quick Entry 캐시 초기화
+            let today = DateUtility.shared.dateString(from: Date())
+            if dateString == today && posts.filter({ $0.entry_date == today }).isEmpty {
+                UserDefaults.standard.removeObject(forKey: "last_entry_date")
+            }
+
             print("✅ Post \(id) 삭제 완료")
             
         } catch {

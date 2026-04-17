@@ -21,17 +21,23 @@ struct SettingsView: View {
     @Localized(.settings_version) var versionLabel
     @Localized(.settings_developer) var developerLabel
     @Localized(.settings_delete_account) var deleteAccountLabel
+    @Localized(.settings_reminder) var reminderLabel
+    @Localized(.settings_reminder_time) var reminderTimeLabel
     @Localized(.error_title) var errorTitle
     @Localized(.common_ok) var okButton
-    
+
     // Sheet 표시 State
     @State private var showEditName = false
     @State private var showLanguageSelection = false
     @State private var showHelp = false
     @State private var showDeleteAccount = false
-    
+
     // ⭐ 언어 변경 로딩 상태
     @State private var isLanguageLoading = false
+
+    // 알림 State
+    @State private var isReminderEnabled = NotificationManager.shared.isEnabled
+    @State private var reminderTime = NotificationManager.shared.reminderTime
     
     // Error State
     @State private var showErrorAlert = false
@@ -86,6 +92,57 @@ struct SettingsView: View {
                 .onTapGesture {
                     showHelp = true
                 }
+
+                Toggle(isOn: $isReminderEnabled) {
+                    Label(reminderLabel, systemImage: "bell")
+                }
+                .tint(Color(hex: "00C896"))
+                .onChange(of: isReminderEnabled) { _, newValue in
+                    if newValue {
+                        Task {
+                            let granted = await NotificationManager.shared.requestPermission()
+                            if granted {
+                                let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+                                NotificationManager.shared.scheduleDailyReminder(
+                                    hour: components.hour ?? 21,
+                                    minute: components.minute ?? 0
+                                )
+                            } else {
+                                isReminderEnabled = false
+                            }
+                        }
+                    } else {
+                        NotificationManager.shared.cancelAll()
+                    }
+                }
+
+                if isReminderEnabled {
+                    DatePicker(
+                        selection: $reminderTime,
+                        displayedComponents: .hourAndMinute
+                    ) {
+                        Label(reminderTimeLabel, systemImage: "clock")
+                    }
+                    .onChange(of: reminderTime) { _, newValue in
+                        let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                        NotificationManager.shared.scheduleDailyReminder(
+                            hour: components.hour ?? 21,
+                            minute: components.minute ?? 0
+                        )
+                    }
+                }
+
+                #if DEBUG
+                Button("🔔 Send Test Notification (5s)") {
+                    Task {
+                        let granted = await NotificationManager.shared.requestPermission()
+                        if granted {
+                            NotificationManager.shared.sendTestNotification()
+                        }
+                    }
+                }
+                .foregroundColor(Color(hex: "00C896"))
+                #endif
             }
             
             // About Section

@@ -24,7 +24,9 @@ enum LocalizationKey: String {
     case settings_version = "settings.version"
     case settings_developer = "settings.developer"
     case settings_delete_account = "settings.delete_account"
-    
+    case settings_reminder = "settings.reminder"
+    case settings_reminder_time = "settings.reminder_time"
+
     // MARK: - Language Selection ✅
     case language_select_title = "language.select_title"
     case language_english_desc = "language.english_description"
@@ -337,7 +339,11 @@ enum LocalizationKey: String {
             return "Developer"
         case .settings_delete_account:
             return "Delete Account"
-            
+        case .settings_reminder:
+            return "Daily Reminder"
+        case .settings_reminder_time:
+            return "Reminder Time"
+
             // Language Selection
         case .language_select_title:
             return "Select Language"

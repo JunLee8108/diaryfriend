@@ -86,6 +86,8 @@ struct OnboardingView: View {
                 // "Next" 버튼
                 Button(action: {
                     isNameFieldFocused = false
+                    let appLanguage: AppLanguage = (selectedLanguage == .korean) ? .korean : .english
+                    localizationManager.setLanguage(appLanguage)
                     withAnimation {
                         currentStep = 2
                     }
@@ -115,6 +117,26 @@ struct OnboardingView: View {
 
     private var step2CharacterPick: some View {
         VStack(spacing: 0) {
+            // 뒤로가기 버튼
+            HStack {
+                Button(action: {
+                    withAnimation {
+                        currentStep = 1
+                    }
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .medium))
+                        Text(step2Texts.backButton)
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                    }
+                    .foregroundColor(Color(hex: "00C896"))
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 30)
+            .padding(.top, 16)
+
             ScrollView {
                 VStack(spacing: 24) {
                     // 헤더
@@ -410,12 +432,6 @@ struct OnboardingView: View {
             print("✅ Onboarding marked complete")
 
             await MainActor.run {
-                let appLanguage: AppLanguage = (selectedLanguage == .korean) ? .korean : .english
-                localizationManager.setLanguage(appLanguage)
-            }
-            print("✅ Language synchronized")
-
-            await MainActor.run {
                 authService.isNewUser = false
             }
 
@@ -449,6 +465,7 @@ struct OnboardingTexts {
     let getStartedButton: String
     let characterTitle: String
     let characterSubtitle: String
+    let backButton: String
     let nameEmptyError: String
     let nameTooLongError: String
     let errorTitle: String
@@ -463,6 +480,7 @@ struct OnboardingTexts {
         getStartedButton: "Get Started",
         characterTitle: "Your AI Diary Companions",
         characterSubtitle: "They'll read your diary and leave thoughtful comments",
+        backButton: "Back",
         nameEmptyError: "Name cannot be empty",
         nameTooLongError: "Name must be 30 characters or less",
         errorTitle: "Error",
@@ -478,6 +496,7 @@ struct OnboardingTexts {
         getStartedButton: "시작하기",
         characterTitle: "나만의 AI 일기 친구들",
         characterSubtitle: "일기를 읽고 따뜻한 댓글을 남겨줘요",
+        backButton: "뒤로",
         nameEmptyError: "이름은 비워둘 수 없습니다",
         nameTooLongError: "이름은 30자 이하여야 합니다",
         errorTitle: "오류",

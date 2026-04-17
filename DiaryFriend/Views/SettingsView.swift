@@ -106,36 +106,10 @@ struct SettingsView: View {
                     Label(reminderLabel, systemImage: "bell")
                 }
                 .tint(Color(hex: "00C896"))
+                .disabled(isNotificationDenied)
                 .onChange(of: isReminderEnabled) { _, newValue in
                     if newValue {
-                        Task {
-                            let status = await NotificationManager.shared.authorizationStatus()
-                            await MainActor.run {
-                                switch status {
-                                case .notDetermined:
-                                    Task {
-                                        let granted = await NotificationManager.shared.requestPermission()
-                                        await MainActor.run {
-                                            if granted {
-                                                scheduleReminder()
-                                                isNotificationDenied = false
-                                            } else {
-                                                isReminderEnabled = false
-                                                isNotificationDenied = true
-                                            }
-                                        }
-                                    }
-                                case .denied:
-                                    isReminderEnabled = false
-                                    showNotificationDeniedAlert = true
-                                case .authorized, .provisional, .ephemeral:
-                                    scheduleReminder()
-                                    isNotificationDenied = false
-                                @unknown default:
-                                    isReminderEnabled = false
-                                }
-                            }
-                        }
+                        scheduleReminder()
                     } else {
                         NotificationManager.shared.cancelAll()
                     }
@@ -153,10 +127,24 @@ struct SettingsView: View {
                     }
                 }
 
-                if isNotificationDenied && !isReminderEnabled {
+                if isNotificationDenied {
                     Button {
-                        if let url = URL(string: UIApplication.openSettingsURLString) {
-                            UIApplication.shared.open(url)
+                        Task {
+                            let status = await NotificationManager.shared.authorizationStatus()
+                            if status == .notDetermined {
+                                let granted = await NotificationManager.shared.requestPermission()
+                                await MainActor.run {
+                                    if granted {
+                                        isNotificationDenied = false
+                                        isReminderEnabled = true
+                                        scheduleReminder()
+                                    }
+                                }
+                            } else {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    await UIApplication.shared.open(url)
+                                }
+                            }
                         }
                     } label: {
                         HStack(spacing: 8) {
@@ -226,16 +214,6 @@ struct SettingsView: View {
             if newPhase == .active {
                 checkSystemNotificationStatus()
             }
-        }
-        .alert(deniedAlertTitle, isPresented: $showNotificationDeniedAlert) {
-            Button(openSettingsText) {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
-            }
-            Button(okButton, role: .cancel) { }
-        } message: {
-            Text(deniedAlertMessage)
         }
         // ⭐ 언어 변경 로딩 overlay (전체 화면)
         .overlay {

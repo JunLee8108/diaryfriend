@@ -19,6 +19,7 @@ struct OnboardingView: View {
 
     // Step 관리
     @State private var currentStep = 1
+    @State private var selectedCharacter: CharacterWithAffinity?
 
     @StateObject private var characterStore = CharacterStore.shared
 
@@ -30,6 +31,14 @@ struct OnboardingView: View {
 
     private var localizedTexts: OnboardingTexts {
         systemLanguage == "ko" ? .korean : .english
+    }
+
+    private var step2Texts: OnboardingTexts {
+        selectedLanguage == .korean ? .korean : .english
+    }
+
+    private var isKoreanSelected: Bool {
+        selectedLanguage == .korean
     }
 
     var body: some View {
@@ -109,17 +118,31 @@ struct OnboardingView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     // 헤더
-                    VStack(spacing: 8) {
-                        Text(localizedTexts.characterTitle)
-                            .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    VStack(spacing: 12) {
+                        Text(step2Texts.characterTitle)
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
                             .multilineTextAlignment(.center)
 
-                        Text(localizedTexts.characterSubtitle)
+                        // 악센트 도트 구분선
+                        HStack(spacing: 8) {
+                            Rectangle()
+                                .fill(Color(hex: "00C896").opacity(0.3))
+                                .frame(width: 24, height: 1.5)
+                            Circle()
+                                .fill(Color(hex: "00C896"))
+                                .frame(width: 5, height: 5)
+                            Rectangle()
+                                .fill(Color(hex: "00C896").opacity(0.3))
+                                .frame(width: 24, height: 1.5)
+                        }
+
+                        Text(step2Texts.characterSubtitle)
                             .font(.system(size: 14, design: .rounded))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, 40)
+                    .padding(.horizontal, 30)
 
                     // 캐릭터 리스트
                     VStack(spacing: 0) {
@@ -131,6 +154,10 @@ struct OnboardingView: View {
                                 },
                                 index: index
                             )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedCharacter = character
+                            }
 
                             if index < characterStore.allCharacters.count - 1 {
                                 Divider()
@@ -143,7 +170,7 @@ struct OnboardingView: View {
                             .fill(Color.modernSurfacePrimary)
                             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                     )
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 30)
                 }
                 .padding(.bottom, 100)
             }
@@ -161,7 +188,7 @@ struct OnboardingView: View {
                             ProgressView()
                                 .tint(.white)
                         } else {
-                            Text(localizedTexts.getStartedButton)
+                            Text(step2Texts.getStartedButton)
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
@@ -178,6 +205,17 @@ struct OnboardingView: View {
             .background(
                 Color.modernBackground
                     .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: -4)
+            )
+        }
+        .sheet(item: $selectedCharacter) { character in
+            CharacterDetailSheet(
+                character: character,
+                onFollowToggle: {
+                    await characterStore.toggleFollowing(characterId: character.id)
+                    if let updated = characterStore.allCharacters.first(where: { $0.id == character.id }) {
+                        selectedCharacter = updated
+                    }
+                }
             )
         }
         .task {
@@ -423,8 +461,8 @@ struct OnboardingTexts {
         languageLabel: "Language",
         nextButton: "Next",
         getStartedButton: "Get Started",
-        characterTitle: "Meet your AI friends!",
-        characterSubtitle: "Follow characters to get personalized comments on your diary",
+        characterTitle: "Your AI Diary Companions",
+        characterSubtitle: "They'll read your diary and leave thoughtful comments",
         nameEmptyError: "Name cannot be empty",
         nameTooLongError: "Name must be 30 characters or less",
         errorTitle: "Error",
@@ -438,8 +476,8 @@ struct OnboardingTexts {
         languageLabel: "언어",
         nextButton: "다음",
         getStartedButton: "시작하기",
-        characterTitle: "AI 친구를 만나보세요!",
-        characterSubtitle: "캐릭터를 팔로우하면 일기에 맞춤 댓글을 남겨줘요",
+        characterTitle: "나만의 AI 일기 친구들",
+        characterSubtitle: "일기를 읽고 따뜻한 댓글을 남겨줘요",
         nameEmptyError: "이름은 비워둘 수 없습니다",
         nameTooLongError: "이름은 30자 이하여야 합니다",
         errorTitle: "오류",

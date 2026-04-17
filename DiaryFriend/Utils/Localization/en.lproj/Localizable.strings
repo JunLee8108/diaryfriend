@@ -23,6 +23,8 @@
 "settings.version" = "Version";
 "settings.developer" = "Developer";
 "settings.delete_account" = "Delete Account";
+"settings.reminder" = "Daily Reminder";
+"settings.reminder_time" = "Reminder Time";
 
 /* Language Selection ✅ */
 "language.select_title" = "Select Language";

@@ -24,6 +24,14 @@ struct DiaryFriendApp: App {
         Task { @MainActor in
             await AdManager.shared.bootstrap()
         }
+
+        // 알림 스케줄 복원
+        if NotificationManager.shared.isEnabled {
+            NotificationManager.shared.scheduleDailyReminder(
+                hour: NotificationManager.shared.reminderHour,
+                minute: NotificationManager.shared.reminderMinute
+            )
+        }
     }
 
     var body: some Scene {

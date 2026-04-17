@@ -16,6 +16,8 @@
 "settings.version" = "버전";
 "settings.developer" = "개발자";
 "settings.delete_account" = "계정 삭제";
+"settings.reminder" = "매일 알림";
+"settings.reminder_time" = "알림 시간";
 
 /* Language Selection ✅ */
 "language.select_title" = "언어 선택";

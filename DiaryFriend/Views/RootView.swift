@@ -284,6 +284,18 @@ struct RootView: View {
                     ImageCache.shared.prefetch(urls: Array(urls))
                 }
             }
+
+            // 로그인 후 기존 유저에게 알림 권한 요청 (한 번만)
+            if !NotificationManager.shared.hasRequestedPermission {
+                NotificationManager.shared.hasRequestedPermission = true
+                let granted = await NotificationManager.shared.requestPermission()
+                if granted {
+                    NotificationManager.shared.scheduleDailyReminder(
+                        hour: NotificationManager.shared.reminderHour,
+                        minute: NotificationManager.shared.reminderMinute
+                    )
+                }
+            }
         } else {
             await characterStore.loadAllCharacters()
         }

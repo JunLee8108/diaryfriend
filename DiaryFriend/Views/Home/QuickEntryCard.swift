@@ -83,6 +83,7 @@ struct QuickEntryCard: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.systemGray6))
                 )
+                .onTapGesture { isFocused = true }
                 .animation(.easeInOut(duration: 0.2), value: text.isEmpty)
             }
             .padding(.horizontal, 16)

@@ -76,6 +76,9 @@ struct HomeView: View {
                             }
                         )
                     }
+                    .onTapGesture {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 } else {
                     // 캘린더 모드 (기본)
                     ScrollView {
@@ -129,6 +132,9 @@ struct HomeView: View {
                             showSyncError = true
                             syncErrorMessage = error
                         }
+                    }
+                    .onTapGesture {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 }
             }

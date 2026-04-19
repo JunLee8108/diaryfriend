@@ -87,7 +87,7 @@ struct QuickEntryCard: View {
                     .fill(Color.modernSurfacePrimary)
                     .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
             )
-            .transition(.opacity.combined(with: .move(edge: .top)))
+            .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
         }
     }
 

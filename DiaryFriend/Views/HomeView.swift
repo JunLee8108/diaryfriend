@@ -234,14 +234,20 @@ struct HomeView: View {
         let today = DateUtility.shared.dateString(from: Date())
         let inMemory = !dataStore.posts(for: today).isEmpty
         if inMemory {
-            hasTodayEntry = true
+            withAnimation(.easeInOut(duration: 0.35)) {
+                hasTodayEntry = true
+            }
             return
         }
         let lastDate = UserDefaults.standard.double(forKey: "last_entry_date")
+        let newValue: Bool
         if lastDate > 0 {
-            hasTodayEntry = DateUtility.shared.dateString(from: Date(timeIntervalSince1970: lastDate)) == today
+            newValue = DateUtility.shared.dateString(from: Date(timeIntervalSince1970: lastDate)) == today
         } else {
-            hasTodayEntry = false
+            newValue = false
+        }
+        withAnimation(.easeInOut(duration: 0.35)) {
+            hasTodayEntry = newValue
         }
     }
 

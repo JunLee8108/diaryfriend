@@ -97,22 +97,17 @@ struct QuickEntryCard: View {
                     }
                     .disabled(isSaving)
 
-                    // Send 버튼
-                    Button(action: saveIfValid) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(Color(hex: "00C896"))
+                    // Send 버튼 — 텍스트 있고 녹음 중 아닐 때만 표시
+                    if !text.trimmingCharacters(in: .whitespaces).isEmpty
+                        && !speechService.isRecording {
+                        Button(action: saveIfValid) {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(Color(hex: "00C896"))
+                        }
+                        .disabled(isSaving)
+                        .transition(.scale(scale: 0.6).combined(with: .opacity))
                     }
-                    .disabled(
-                        isSaving
-                        || speechService.isRecording
-                        || text.trimmingCharacters(in: .whitespaces).isEmpty
-                    )
-                    .opacity(text.trimmingCharacters(in: .whitespaces).isEmpty ? 0 : 1)
-                    .allowsHitTesting(
-                        !speechService.isRecording
-                        && !text.trimmingCharacters(in: .whitespaces).isEmpty
-                    )
                 }
                 .frame(height: 24)
                 .padding(.horizontal, 14)

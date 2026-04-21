@@ -6,16 +6,20 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct QuickEntryCard: View {
     @EnvironmentObject var dataStore: DataStore
     @StateObject private var characterStore = CharacterStore.shared
+    @StateObject private var speechService = SpeechRecognitionService()
     let hasTodayEntry: Bool
     @State private var selectedMood: Mood = .happy
     @State private var text: String = ""
     @State private var isSaving = false
     @State private var isAICommentEnabled: Bool = false
     @State private var showCharacterSelection: Bool = false
+    @State private var showMicPermissionAlert: Bool = false
+    @State private var micPulse: Bool = false
     @FocusState private var isFocused: Bool
 
     @Localized(.quick_entry_prompt) var promptText
@@ -23,6 +27,11 @@ struct QuickEntryCard: View {
     @Localized(.quick_entry_ai_toggle_label) var aiToggleLabel
     @Localized(.quick_entry_no_following_label) var noFollowingLabel
     @Localized(.quick_entry_follow_action) var followActionLabel
+    @Localized(.quick_entry_mic_listening) var micListeningText
+    @Localized(.quick_entry_mic_permission_title) var micPermissionTitle
+    @Localized(.quick_entry_mic_permission_message) var micPermissionMessage
+    @Localized(.quick_entry_mic_permission_settings) var micPermissionSettings
+    @Localized(.common_cancel) var cancelText
     @Localized(.mood_happy) var happyText
     @Localized(.mood_neutral) var neutralText
     @Localized(.mood_sad) var sadText
@@ -63,22 +72,47 @@ struct QuickEntryCard: View {
                     }
                 }
 
-                // 텍스트 입력 + 전송
+                // 텍스트 입력 + 마이크 + 전송
                 HStack(spacing: 10) {
-                    TextField(placeholderText, text: $text)
+                    TextField(
+                        speechService.isRecording ? micListeningText : placeholderText,
+                        text: $text
+                    )
                         .font(.system(size: 14, design: .rounded))
                         .focused($isFocused)
                         .submitLabel(.done)
                         .onSubmit { saveIfValid() }
+                        .disabled(speechService.isRecording)
 
+                    // Mic 버튼
+                    Button(action: handleMicTap) {
+                        Image(systemName: speechService.isRecording ? "mic.fill" : "mic")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(
+                                speechService.isRecording
+                                    ? Color(hex: "FF6B6B")
+                                    : .secondary
+                            )
+                            .scaleEffect(speechService.isRecording && micPulse ? 1.18 : 1.0)
+                    }
+                    .disabled(isSaving)
+
+                    // Send 버튼
                     Button(action: saveIfValid) {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 22))
                             .foregroundColor(Color(hex: "00C896"))
                     }
-                    .disabled(isSaving || text.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(
+                        isSaving
+                        || speechService.isRecording
+                        || text.trimmingCharacters(in: .whitespaces).isEmpty
+                    )
                     .opacity(text.trimmingCharacters(in: .whitespaces).isEmpty ? 0 : 1)
-                    .allowsHitTesting(!text.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .allowsHitTesting(
+                        !speechService.isRecording
+                        && !text.trimmingCharacters(in: .whitespaces).isEmpty
+                    )
                 }
                 .frame(height: 24)
                 .padding(.horizontal, 14)
@@ -88,8 +122,13 @@ struct QuickEntryCard: View {
                         .fill(Color(.systemGray6))
                 )
                 .contentShape(RoundedRectangle(cornerRadius: 12))
-                .onTapGesture { isFocused = true }
+                .onTapGesture {
+                    if !speechService.isRecording {
+                        isFocused = true
+                    }
+                }
                 .animation(.easeInOut(duration: 0.2), value: text.isEmpty)
+                .animation(.easeInOut(duration: 0.2), value: speechService.isRecording)
 
                 // AI 댓글 허용 토글 (compact inline)
                 aiToggleRow
@@ -123,6 +162,79 @@ struct QuickEntryCard: View {
                     isAICommentEnabled = false
                 }
             }
+            // Speech: transcribed text를 입력 필드에 반영
+            .onChange(of: speechService.transcribedText) { _, newValue in
+                if speechService.isRecording && !newValue.isEmpty {
+                    text = newValue
+                }
+            }
+            // Speech: 녹음 상태 변화 → pulse 애니메이션 + 음성 종료 후 focus
+            .onChange(of: speechService.isRecording) { _, recording in
+                if recording {
+                    withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
+                        micPulse = true
+                    }
+                } else {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        micPulse = false
+                    }
+                }
+            }
+            // 카드 사라지거나 앱 백그라운드 진입 시 녹음 정지
+            .onDisappear {
+                speechService.stopRecording()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+                speechService.stopRecording()
+            }
+            .alert(micPermissionTitle, isPresented: $showMicPermissionAlert) {
+                Button(micPermissionSettings) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button(cancelText, role: .cancel) {}
+            } message: {
+                Text(micPermissionMessage)
+            }
+        }
+    }
+
+    // MARK: - Mic Flow
+
+    private func handleMicTap() {
+        if speechService.isRecording {
+            speechService.stopRecording()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            return
+        }
+
+        // 이미 권한 있으면 바로 녹음
+        if speechService.isAuthorized {
+            startDictation()
+            return
+        }
+
+        // 권한 요청
+        Task {
+            let granted = await speechService.requestAuthorization()
+            if granted {
+                await MainActor.run { startDictation() }
+            } else {
+                await MainActor.run { showMicPermissionAlert = true }
+            }
+        }
+    }
+
+    private func startDictation() {
+        let isKorean = LocalizationManager.shared.currentLanguage == .korean
+        let locale = Locale(identifier: isKorean ? "ko_KR" : "en_US")
+        do {
+            isFocused = false
+            try speechService.startRecording(locale: locale)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        } catch {
+            print("❌ Speech start failed: \(error.localizedDescription)")
         }
     }
 

@@ -155,6 +155,10 @@
 "quick_entry.ai_toggle_label" = "Allow AI Comments";
 "quick_entry.no_following_label" = "No AI friends yet";
 "quick_entry.follow_action" = "Follow";
+"quick_entry.mic_listening" = "Listening...";
+"quick_entry.mic_permission_title" = "Microphone Access";
+"quick_entry.mic_permission_message" = "Enable microphone and speech recognition in Settings to dictate your entries.";
+"quick_entry.mic_permission_settings" = "Open Settings";
 
 /* Greetings */
 "greeting.morning" = "Good morning";

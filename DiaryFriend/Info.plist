@@ -74,6 +74,10 @@
 	<false/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photos to attach them to your diary entries.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We use the microphone to let you dictate diary entries.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>We use speech recognition to turn your voice into diary text.</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
 	<key>SUPABASE_URL</key>

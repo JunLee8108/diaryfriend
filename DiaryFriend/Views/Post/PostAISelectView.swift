@@ -173,45 +173,60 @@ private struct LoadingStateView: View {
 private struct PermissionDeniedView: View {
     let permission: DailyPermission
     let selectedDate: Date
-    
+
+    @Localized(.ai_select_already_written) private var alreadyWrittenText
+    @Localized(.ai_select_all_chances_used) private var allChancesUsedText
+    @Localized(.ai_select_all_attempts_used) private var allAttemptsUsedText
+    @Localized(.ai_select_back_to_calendar) private var backToCalendarText
+
     private var dateString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return formatter.string(from: selectedDate)
+        DateUtility.shared.monthDay(from: selectedDate)
     }
-    
+
     private var remainingAttempts: Int {
         2 - permission.deletedCount
     }
-    
+
+    /// 서버가 내려준 reason 은 영어 고정이라 무시하고, deletedCount 로 파생
+    private var reasonText: String {
+        permission.deletedCount >= 2 ? allChancesUsedText : alreadyWrittenText
+    }
+
+    private var rewriteRemainingText: String {
+        String(
+            format: LocalizationManager.shared.localized(.ai_select_rewrite_remaining),
+            remainingAttempts
+        )
+    }
+
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
-            
+
             // Main Message
             VStack(spacing: 8) {
                 Text(dateString)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
-                
-                Text(permission.reason ?? "Diary already written")
+
+                Text(reasonText)
                     .font(.system(size: 16, design: .rounded))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
             }
-            
+
             // Deletion Count Info
             if permission.deletedCount > 0 && permission.deletedCount < 2 {
                 VStack(spacing: 12) {
                     Divider()
                         .frame(width: 60)
-                    
+
                     HStack(spacing: 8) {
                         Image(systemName: "arrow.counterclockwise")
                             .font(.system(size: 14))
-                        
-                        Text("Rewrite attempts remaining: \(remainingAttempts)")
+
+                        Text(rewriteRemainingText)
                             .font(.system(size: 14, weight: .medium, design: .rounded))
                     }
                     .foregroundColor(.orange)
@@ -223,14 +238,14 @@ private struct PermissionDeniedView: View {
                     )
                 }
             }
-            
+
             // All Attempts Used
             if permission.deletedCount >= 2 {
                 HStack(spacing: 8) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14))
-                    
-                    Text("All rewrite attempts used")
+
+                    Text(allAttemptsUsedText)
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                 }
                 .foregroundColor(Color(hex: "FF6B6B"))
@@ -241,18 +256,18 @@ private struct PermissionDeniedView: View {
                         .fill(Color(hex: "FF6B6B").opacity(0.1))
                 )
             }
-            
+
             // 날짜 변경 안내
             VStack(spacing: 16) {
                 Divider()
                     .frame(width: 100)
                     .padding(.top, 20)
-                
+
                 HStack(spacing: 6) {
                     Image(systemName: "info.circle")
                         .font(.system(size: 12))
-                    
-                    Text("To select a different date, please go back to the calendar")
+
+                    Text(backToCalendarText)
                         .font(.system(size: 12, design: .rounded))
                 }
                 .foregroundColor(.secondary)

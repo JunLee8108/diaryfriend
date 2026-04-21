@@ -236,6 +236,11 @@
 "ai_select.follow_friends" = "AI 캐릭터를 팔로우하고 대화를 시작해보세요";
 "ai_select.find_friends" = "캐릭터 찾기";
 "ai_select.find_more" = "원하는 캐릭터가 없나요?";
+"ai_select.already_written" = "이 날짜에는 이미 일기를 작성했어요.";
+"ai_select.all_chances_used" = "이 날짜의 일기 작성 기회를 모두 사용했어요.";
+"ai_select.rewrite_remaining" = "남은 재작성 기회: %d";
+"ai_select.all_attempts_used" = "재작성 기회를 모두 사용했어요";
+"ai_select.back_to_calendar" = "다른 날짜를 선택하려면 캘린더로 돌아가세요";
 
 /* PostDetailView */
 "post_detail.processing" = "AI 친구들이 댓글을 작성 중입니다...";

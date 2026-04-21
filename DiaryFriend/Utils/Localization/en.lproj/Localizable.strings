@@ -243,6 +243,11 @@
 "ai_select.follow_friends" = "Follow AI Characters to start chatting";
 "ai_select.find_friends" = "Find Characters";
 "ai_select.find_more" = "Looking for someone else?";
+"ai_select.already_written" = "You've already written a diary for this date.";
+"ai_select.all_chances_used" = "You've used all available chances to write a diary for this date.";
+"ai_select.rewrite_remaining" = "Rewrite attempts remaining: %d";
+"ai_select.all_attempts_used" = "All rewrite attempts used";
+"ai_select.back_to_calendar" = "To select a different date, please go back to the calendar";
 
 /* PostDetailView */
 "post_detail.processing" = "Your AI friends are writing comments...";

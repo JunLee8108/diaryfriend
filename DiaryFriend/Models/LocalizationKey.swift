@@ -243,6 +243,11 @@ enum LocalizationKey: String {
     case ai_select_follow_friends = "ai_select.follow_friends"
     case ai_select_find_friends = "ai_select.find_friends"
     case ai_select_find_more = "ai_select.find_more"
+    case ai_select_already_written = "ai_select.already_written"
+    case ai_select_all_chances_used = "ai_select.all_chances_used"
+    case ai_select_rewrite_remaining = "ai_select.rewrite_remaining"
+    case ai_select_all_attempts_used = "ai_select.all_attempts_used"
+    case ai_select_back_to_calendar = "ai_select.back_to_calendar"
 
     // MARK: - PostDetailView
     case post_detail_processing = "post_detail.processing"
@@ -714,6 +719,16 @@ enum LocalizationKey: String {
             return "Find Characters"
         case .ai_select_find_more:
             return "Looking for someone else?"
+        case .ai_select_already_written:
+            return "You've already written a diary for this date."
+        case .ai_select_all_chances_used:
+            return "You've used all available chances to write a diary for this date."
+        case .ai_select_rewrite_remaining:
+            return "Rewrite attempts remaining: %d"
+        case .ai_select_all_attempts_used:
+            return "All rewrite attempts used"
+        case .ai_select_back_to_calendar:
+            return "To select a different date, please go back to the calendar"
 
             // PostDetailView
         case .post_detail_processing:

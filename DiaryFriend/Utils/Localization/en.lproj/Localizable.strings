@@ -88,6 +88,8 @@
 "character.about" = "About";
 "character.affinity_how_title" = "How to Raise Affinity";
 "character.affinity_how_body" = "Affinity has a chance to increase when you write a diary through a conversation with this character, or when this character leaves a comment on your diary.";
+"character.image_locked" = "Locked";
+"character.image_unlock_hint" = "Unlock at affinity %d";
 
 /* Profile View */
 "profile.sign_out" = "Sign Out";

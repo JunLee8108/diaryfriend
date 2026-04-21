@@ -36,7 +36,9 @@ class CharacterObject: Object {
     @Persisted var userCharacterId: Int?
     @Persisted var isFollowing: Bool = false
     @Persisted var affinity: Int = 0
-    
+    @Persisted var lastSeenAffinity: Int = 0       // 🆕 마지막으로 해금 애니메이션 재생한 친밀도
+    @Persisted var needsServerSync: Bool = false   // 🆕 서버 sync 대기중 (eventual consistency)
+
     // Metadata
     @Persisted var lastSynced: Date = Date()
     @Persisted var userId: String = ""  // 현재 사용자 ID (멀티 유저 대비)
@@ -48,7 +50,7 @@ class CharacterObject: Object {
     
     // Indexed Properties (검색 성능 향상)
     override static func indexedProperties() -> [String] {
-        return ["name", "koreanName", "isFollowing", "userId"]
+        return ["name", "koreanName", "isFollowing", "userId", "needsServerSync"]
     }
 }
 
@@ -73,7 +75,8 @@ extension CharacterObject {
                 return [UserCharacterRelation(
                     id: ucId,
                     is_following: isFollowing,
-                    affinity: affinity
+                    affinity: affinity,
+                    last_seen_affinity: lastSeenAffinity
                 )]
             }
             return nil
@@ -136,6 +139,9 @@ extension CharacterWithAffinity {
             realmObject.userCharacterId = userCharacter.id
             realmObject.isFollowing = userCharacter.is_following
             realmObject.affinity = userCharacter.affinity
+            // NOTE: lastSeenAffinity 와 needsServerSync 는 기존 Realm row 의 dirty 상태를
+            // 고려해서 병합해야 하므로 여기서 설정하지 않음. RealmManager.saveCharacters 에서
+            // 별도 merge 로직으로 처리한다.
         }
         
         // Metadata

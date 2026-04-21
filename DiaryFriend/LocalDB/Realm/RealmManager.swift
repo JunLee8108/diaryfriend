@@ -76,29 +76,32 @@ actor RealmManager {
         guard let realm = realm else {
             throw RealmError.notInitialized
         }
-        
+
         let userId = SupabaseManager.shared.currentUser?.id.uuidString ?? ""
-        
+
         try await realm.asyncWrite {
             for character in characters {
                 let realmObject = character.toRealmObject(userId: userId)
+                // lastSeenAffinity / needsServerSync 병합
+                applyLastSeenMerge(for: character, into: realmObject, realm: realm)
                 realm.add(realmObject, update: .modified)
             }
         }
-        
+
         print("💾 RealmManager: \(characters.count)개 캐릭터 저장 완료")
     }
-    
+
     /// 단일 캐릭터 저장/업데이트
     func saveCharacter(_ character: CharacterWithAffinity) async throws {
         guard let realm = realm else {
             throw RealmError.notInitialized
         }
-        
+
         let userId = SupabaseManager.shared.currentUser?.id.uuidString ?? ""
-        
+
         try await realm.asyncWrite {
             let realmObject = character.toRealmObject(userId: userId)
+            applyLastSeenMerge(for: character, into: realmObject, realm: realm)
             realm.add(realmObject, update: .modified)
         }
         
@@ -615,8 +618,78 @@ actor RealmManager {
                 .filter("userId == %@", userId)
             realm.delete(allCharacters)
         }
-        
+
         print("🗑️ RealmManager: 모든 캐릭터 캐시 삭제 완료")
+    }
+
+    // MARK: - Character Image Unlock Sync (lastSeenAffinity + needsServerSync)
+
+    /// 서버 fetch 결과를 Realm 에 적용할 때 호출되는 병합 헬퍼.
+    /// 기존 row 가 dirty(needsServerSync == true) 상태면 local 값을 보존,
+    /// 아니면 server 값을 수용한다.
+    ///
+    /// MUST 을 realm.asyncWrite 블록 안에서만 호출할 것.
+    private func applyLastSeenMerge(
+        for character: CharacterWithAffinity,
+        into realmObject: CharacterObject,
+        realm: Realm
+    ) {
+        let serverValue = character.User_Character?.first?.last_seen_affinity ?? 0
+
+        if let existing = realm.object(ofType: CharacterObject.self, forPrimaryKey: character.id),
+           existing.needsServerSync {
+            // Dirty: 로컬 변경사항 보존
+            realmObject.lastSeenAffinity = existing.lastSeenAffinity
+            realmObject.needsServerSync = true
+        } else {
+            // Clean: 서버 값 수용
+            realmObject.lastSeenAffinity = serverValue
+            realmObject.needsServerSync = false
+        }
+    }
+
+    /// 해금 애니메이션 후 last_seen_affinity 업데이트 (3-tier write 의 Realm 단계)
+    func updateLastSeenAffinity(
+        characterId: Int,
+        affinity: Int,
+        needsSync: Bool
+    ) async throws {
+        guard let realm = realm else { throw RealmError.notInitialized }
+        try await realm.asyncWrite {
+            if let obj = realm.object(ofType: CharacterObject.self, forPrimaryKey: characterId) {
+                obj.lastSeenAffinity = affinity
+                obj.needsServerSync = needsSync
+                obj.lastSynced = Date()
+            }
+        }
+    }
+
+    /// 서버 sync 성공 후 dirty flag 해제
+    func clearSyncFlag(characterId: Int) async throws {
+        guard let realm = realm else { throw RealmError.notInitialized }
+        try await realm.asyncWrite {
+            if let obj = realm.object(ofType: CharacterObject.self, forPrimaryKey: characterId) {
+                obj.needsServerSync = false
+            }
+        }
+    }
+
+    /// 서버와 sync 안 된 row 들 조회 (flush 대상)
+    struct PendingAcknowledgment {
+        let characterId: Int
+        let lastSeenAffinity: Int
+    }
+
+    func getDirtyAcknowledgments() async -> [PendingAcknowledgment] {
+        guard let realm = realm else { return [] }
+        let objects = realm.objects(CharacterObject.self)
+            .filter("needsServerSync == true")
+        return objects.map {
+            PendingAcknowledgment(
+                characterId: $0.id,
+                lastSeenAffinity: $0.lastSeenAffinity
+            )
+        }
     }
 }
 

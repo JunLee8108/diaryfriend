@@ -88,6 +88,8 @@ enum LocalizationKey: String {
     case character_about = "character.about"
     case character_affinity_how_title = "character.affinity_how_title"
     case character_affinity_how_body = "character.affinity_how_body"
+    case character_image_locked = "character.image_locked"
+    case character_image_unlock_hint = "character.image_unlock_hint"
     
     // MARK: - Profile View ✅
     case profile_sign_out = "profile.sign_out"
@@ -465,6 +467,10 @@ enum LocalizationKey: String {
             return "How to Raise Affinity"
         case .character_affinity_how_body:
             return "Affinity has a chance to increase when you write a diary through a conversation with this character, or when this character leaves a comment on your diary."
+        case .character_image_locked:
+            return "Locked"
+        case .character_image_unlock_hint:
+            return "Unlock at affinity %d"
             
             // Profile View
         case .profile_sign_out:

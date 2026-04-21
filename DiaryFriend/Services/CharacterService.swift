@@ -41,6 +41,11 @@ struct CharacterWithAffinity: Codable {
     var userCharacterId: Int? {
         User_Character?.first?.id
     }
+
+    /// 유저가 이 캐릭터에 대해 마지막으로 확인(해금 애니메이션 재생)한 친밀도
+    var lastSeenAffinity: Int {
+        User_Character?.first?.last_seen_affinity ?? 0
+    }
     
     // 한국어 인사말 가져오기
     var koreanGreetings: [String] {
@@ -101,6 +106,16 @@ struct UserCharacterRelation: Codable {
     let id: Int
     var is_following: Bool
     var affinity: Int
+    var last_seen_affinity: Int?
+}
+
+// MARK: - Character Image (친밀도별 해금 이미지)
+struct CharacterImage: Codable, Identifiable {
+    let id: Int
+    let character_id: Int
+    let image_url: String
+    let display_order: Int
+    let unlock_affinity: Int
 }
 
 // Follow 토글 결과
@@ -303,6 +318,35 @@ class CharacterService {
                 action: .created
             )
         }
+    }
+
+    // MARK: - Character Images (친밀도별 해금 이미지)
+
+    /// 캐릭터별 해금 가능 이미지 목록 조회 (display_order 오름차순)
+    func fetchCharacterImages(characterId: Int) async throws -> [CharacterImage] {
+        let images: [CharacterImage] = try await supabase
+            .from("Character_Image")
+            .select("id, character_id, image_url, display_order, unlock_affinity")
+            .eq("character_id", value: characterId)
+            .order("display_order", ascending: true)
+            .execute()
+            .value
+
+        return images
+    }
+
+    /// 유저가 마지막으로 확인한 친밀도 값을 서버에 기록
+    func updateLastSeenAffinity(characterId: Int, affinity: Int) async throws {
+        guard let userId = currentUserId else {
+            throw CharacterError.notAuthenticated
+        }
+
+        try await supabase
+            .from("User_Character")
+            .update(["last_seen_affinity": affinity])
+            .eq("character_id", value: characterId)
+            .eq("user_id", value: userId.uuidString)
+            .execute()
     }
 }
 

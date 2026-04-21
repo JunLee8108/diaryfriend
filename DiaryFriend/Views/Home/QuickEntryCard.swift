@@ -73,14 +73,14 @@ struct QuickEntryCard: View {
 
                     Button(action: saveIfValid) {
                         Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 26))
+                            .font(.system(size: 22))
                             .foregroundColor(Color(hex: "00C896"))
                     }
                     .disabled(isSaving || text.trimmingCharacters(in: .whitespaces).isEmpty)
                     .opacity(text.trimmingCharacters(in: .whitespaces).isEmpty ? 0 : 1)
                     .allowsHitTesting(!text.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
-                .frame(height: 28)
+                .frame(height: 24)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(

@@ -71,22 +71,23 @@ struct QuickEntryCard: View {
                         .submitLabel(.done)
                         .onSubmit { saveIfValid() }
 
-                    if !text.trimmingCharacters(in: .whitespaces).isEmpty {
-                        Button(action: saveIfValid) {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.system(size: 26))
-                                .foregroundColor(Color(hex: "00C896"))
-                        }
-                        .disabled(isSaving)
-                        .transition(.scale.combined(with: .opacity))
+                    Button(action: saveIfValid) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 26))
+                            .foregroundColor(Color(hex: "00C896"))
                     }
+                    .disabled(isSaving || text.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .opacity(text.trimmingCharacters(in: .whitespaces).isEmpty ? 0 : 1)
+                    .allowsHitTesting(!text.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
+                .frame(height: 28)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.systemGray6))
                 )
+                .contentShape(RoundedRectangle(cornerRadius: 12))
                 .onTapGesture { isFocused = true }
                 .animation(.easeInOut(duration: 0.2), value: text.isEmpty)
 

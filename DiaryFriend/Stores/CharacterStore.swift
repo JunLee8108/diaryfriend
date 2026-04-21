@@ -8,21 +8,38 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class CharacterStore: ObservableObject {
     static let shared = CharacterStore()
-    private init() {}
-    
+
     // MARK: - Published Properties
     @Published private(set) var allCharacters: [CharacterWithAffinity] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
-    
+
+    /// 캐릭터별 해금 이미지 메모리 캐시 (character_id → images)
+    @Published private(set) var characterImages: [Int: [CharacterImage]] = [:]
+
     // MARK: - Private Properties
     private var characterCache: [Int: CharacterWithAffinity] = [:]
     private let service = CharacterService()
     private let realmManager = RealmManager.shared
+    private var networkCancellable: AnyCancellable?
+
+    private init() {
+        // 네트워크 복귀 시 dirty row flush
+        networkCancellable = NetworkMonitor.shared.$isConnected
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] connected in
+                guard connected else { return }
+                Task { [weak self] in
+                    await self?.flushPendingAcknowledgments()
+                }
+            }
+    }
     
     // MARK: - Computed Properties
     
@@ -98,9 +115,12 @@ class CharacterStore: ObservableObject {
             
             // Realm에 저장
             try await realmManager.saveCharacters(characters)
-            
+
             print("✅ CharacterStore: 서버에서 \(characters.count)개 로드 및 캐시 완료")
-            
+
+            // 네트워크 OK 상태이니 dirty row 들도 flush 시도
+            await flushPendingAcknowledgments()
+
         } catch {
             self.errorMessage = error.localizedDescription
             print("❌ CharacterStore 로드 실패: \(error)")
@@ -271,7 +291,8 @@ class CharacterStore: ObservableObject {
                     let newRelation = UserCharacterRelation(
                         id: result.userCharacterId,
                         is_following: result.isFollowing,
-                        affinity: 0
+                        affinity: 0,
+                        last_seen_affinity: 0
                     )
                     allCharacters[index].User_Character = [newRelation]
                     
@@ -345,14 +366,96 @@ class CharacterStore: ObservableObject {
         (following: followingCharacters.count, total: allCharacters.count)
     }
     
+    // MARK: - Character Images (친밀도별 해금)
+
+    /// 캐릭터별 해금 이미지 로드 (메모리 캐시 우선, 없으면 서버 fetch)
+    @discardableResult
+    func loadImages(for characterId: Int) async -> [CharacterImage] {
+        if let cached = characterImages[characterId] {
+            return cached
+        }
+        guard NetworkMonitor.shared.isConnected else {
+            return []   // 오프라인이면 비워둠 — avatar_url fallback
+        }
+        do {
+            let images = try await service.fetchCharacterImages(characterId: characterId)
+            characterImages[characterId] = images
+            return images
+        } catch {
+            print("⚠️ Character images fetch 실패: \(error)")
+            return []
+        }
+    }
+
+    // MARK: - Unlock Acknowledgment (3-tier write)
+
+    /// 신규 해금된 이미지를 "봤음" 으로 처리 — 메모리 → Realm → 서버 순차 업데이트.
+    /// 서버 단계가 실패해도 Realm 의 needsServerSync = true 로 남아 다음 flush 에서 재시도.
+    func acknowledgeUnlockedImages(characterId: Int, currentAffinity: Int) async {
+        // 1. Memory 업데이트
+        if let idx = allCharacters.firstIndex(where: { $0.id == characterId }),
+           let existing = allCharacters[idx].User_Character?.first {
+            let updated = UserCharacterRelation(
+                id: existing.id,
+                is_following: existing.is_following,
+                affinity: existing.affinity,
+                last_seen_affinity: currentAffinity
+            )
+            allCharacters[idx].User_Character = [updated]
+            characterCache[characterId] = allCharacters[idx]
+        }
+
+        // 2. Realm 업데이트 (dirty = true 로 시작)
+        try? await realmManager.updateLastSeenAffinity(
+            characterId: characterId,
+            affinity: currentAffinity,
+            needsSync: true
+        )
+
+        // 3. Server 업데이트. 성공하면 dirty 해제, 실패해도 dirty 로 남아 flush 대기.
+        do {
+            try await service.updateLastSeenAffinity(
+                characterId: characterId,
+                affinity: currentAffinity
+            )
+            try? await realmManager.clearSyncFlag(characterId: characterId)
+        } catch {
+            print("⚠️ last_seen_affinity 서버 write 실패 — 다음 flush 에서 재시도. \(error)")
+        }
+    }
+
+    /// Dirty flag 걸린 모든 row 의 last_seen_affinity 를 서버로 flush.
+    /// 실패한 row 는 다음 기회로 미룬다.
+    func flushPendingAcknowledgments() async {
+        guard NetworkMonitor.shared.isConnected else { return }
+
+        let dirty = await realmManager.getDirtyAcknowledgments()
+        guard !dirty.isEmpty else { return }
+
+        print("🔁 CharacterStore: \(dirty.count)개 dirty 해금 상태 flush 시도")
+
+        for row in dirty {
+            do {
+                try await service.updateLastSeenAffinity(
+                    characterId: row.characterId,
+                    affinity: row.lastSeenAffinity
+                )
+                try? await realmManager.clearSyncFlag(characterId: row.characterId)
+            } catch {
+                print("⚠️ flush 실패 (character \(row.characterId)): \(error)")
+            }
+        }
+    }
+
     // MARK: - Cache Management
-    
+
     /// 캐시 정리
     func clearAllData() async {  // clearCache → clearAllData로 통일
         allCharacters.removeAll()
         characterCache.removeAll()
+        characterImages.removeAll()
         errorMessage = nil
-        
+
         do {
             try await realmManager.clearAllCharacters()
             print("🧹 CharacterStore: 모든 데이터 초기화 완료")

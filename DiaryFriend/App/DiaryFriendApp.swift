@@ -9,7 +9,8 @@ import SwiftData
 @main
 struct DiaryFriendApp: App {
     @StateObject private var localizationManager = LocalizationManager.shared
-    
+    @Environment(\.scenePhase) private var scenePhase
+
     init() {
         LocalizationManager.shared.loadSavedLanguage()
 
@@ -40,6 +41,14 @@ struct DiaryFriendApp: App {
                 .environmentObject(localizationManager)
                 .frame(maxWidth: 500)
                 .frame(maxWidth: .infinity)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                // Foreground 복귀 시 pending 동기화 시도
+                Task { @MainActor in
+                    await CharacterStore.shared.flushPendingAcknowledgments()
+                }
+            }
         }
     }
     

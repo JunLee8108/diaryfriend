@@ -48,6 +48,11 @@ struct CharacterDetailSheet: View {
     @State private var animationTimer: Timer?
     @State private var scrollOffset: CGFloat = 0
     @State private var showAffinityHelp: Bool = false
+
+    // Character image gallery
+    @State private var galleryImages: [CharacterImage] = []
+    @State private var currentImageIndex: Int = 0
+    @State private var animatingSlideIndex: Int? = nil   // 해금 애니메이션 중인 슬라이드 tag
     
     // ✅ 언어별 표시 텍스트 계산
     private var isKorean: Bool {
@@ -67,6 +72,17 @@ struct CharacterDetailSheet: View {
     @Localized(.character_about) var aboutLabel
     @Localized(.character_affinity_how_title) var affinityHowTitle
     @Localized(.character_affinity_how_body) var affinityHowBody
+
+    // 전체 슬라이드 수: avatar_url 1장 + Character_Image N장
+    private var totalSlideCount: Int { 1 + galleryImages.count }
+
+    // 특정 슬라이드 인덱스의 해금 여부 (슬라이드 0 = avatar 는 항상 해금)
+    private func isSlideUnlocked(at index: Int) -> Bool {
+        if index == 0 { return true }
+        let imageIdx = index - 1
+        guard imageIdx < galleryImages.count else { return false }
+        return character.affinity >= galleryImages[imageIdx].unlock_affinity
+    }
     
     // Pastel tone color palette
     func getAffinityColor(for value: Int) -> Color {
@@ -142,19 +158,23 @@ struct CharacterDetailSheet: View {
                         // Hero Image with Gradient
                         VStack(spacing: 0) {
                             ZStack(alignment: .bottom) {
-                                // Character Image
-                                CachedAsyncImage(url: character.avatar_url) {
-                                    Rectangle()
-                                        .fill(LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color.gray.opacity(0.3),
-                                                Color.gray.opacity(0.1)
-                                            ]),
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        ))
-                                        .overlay(ProgressView().tint(.white))
+                                // Character Image Gallery (TabView)
+                                TabView(selection: $currentImageIndex) {
+                                    // 슬라이드 0 = 기본 avatar (항상 해금)
+                                    AvatarHeroSlide(url: character.avatar_url)
+                                        .tag(0)
+
+                                    // 슬라이드 1~N = Character_Image
+                                    ForEach(Array(galleryImages.enumerated()), id: \.element.id) { idx, img in
+                                        GalleryImageSlide(
+                                            image: img,
+                                            isUnlocked: character.affinity >= img.unlock_affinity,
+                                            isAnimatingUnlock: animatingSlideIndex == idx + 1
+                                        )
+                                        .tag(idx + 1)
+                                    }
                                 }
+                                .tabViewStyle(.page(indexDisplayMode: .never))
                                 .frame(maxWidth: min(geometry.size.width, 700))
                                 .frame(height: max(500, geometry.size.height * 0.6))
                                 .clipped()
@@ -179,13 +199,26 @@ struct CharacterDetailSheet: View {
                                 
                                 // Main Info Overlay
                                 VStack(alignment: .leading, spacing: 16) {
+                                    // Custom Page Indicator (이미지 2장 이상일 때만)
+                                    if totalSlideCount > 1 {
+                                        HStack {
+                                            Spacer()
+                                            GalleryPageIndicator(
+                                                count: totalSlideCount,
+                                                currentIndex: currentImageIndex,
+                                                unlockedFlags: (0..<totalSlideCount).map { isSlideUnlocked(at: $0) }
+                                            )
+                                            Spacer()
+                                        }
+                                    }
+
                                     // Name
                                     Text(displayName)
                                         .font(.system(size: 25, weight: .bold, design: .rounded))
                                         .foregroundColor(.white)
                                         .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 2)
                                         .fixedSize(horizontal: false, vertical: true)
-                                    
+
                                     // Short Description
                                     if let description = displayDescription {
                                         Text(description)
@@ -467,8 +500,57 @@ struct CharacterDetailSheet: View {
             animationTimer?.invalidate()
             animationTimer = nil
         }
+        .task(id: character.id) {
+            await loadGalleryAndDetectUnlocks()
+        }
         .preferredColorScheme(nil)
         .statusBarHidden(false)
+    }
+
+    // MARK: - Gallery Load & Unlock Detection
+
+    private func loadGalleryAndDetectUnlocks() async {
+        // 1. 이미지 fetch (메모리 캐시 우선)
+        galleryImages = await CharacterStore.shared.loadImages(for: character.id)
+        guard !galleryImages.isEmpty else { return }
+
+        // 2. 신규 해금 감지
+        let lastSeen = character.lastSeenAffinity
+        let newlyUnlocked = galleryImages
+            .filter { $0.unlock_affinity > lastSeen && $0.unlock_affinity <= character.affinity }
+            .sorted { $0.unlock_affinity > $1.unlock_affinity }   // 내림차순
+
+        // 3. 최초 설치/로그인 직후 "폭탄" 방지: lastSeen == 0 이고 affinity 이미 ≥ 10 이면
+        // 애니메이션 건너뛰고 조용히 acknowledge 만 한다.
+        let isFreshUser = lastSeen == 0 && character.affinity >= 10
+
+        if let latestUnlocked = newlyUnlocked.first,
+           !isFreshUser,
+           let imgIdx = galleryImages.firstIndex(where: { $0.id == latestUnlocked.id }) {
+
+            let targetSlideIndex = imgIdx + 1  // avatar 슬롯 0 고려
+
+            // 해당 슬라이드로 부드럽게 스크롤
+            withAnimation(.easeInOut(duration: 0.5)) {
+                currentImageIndex = targetSlideIndex
+            }
+
+            // 스크롤 완료 대기
+            try? await Task.sleep(nanoseconds: 600_000_000)
+
+            // 애니메이션 트리거
+            animatingSlideIndex = targetSlideIndex
+
+            // 애니메이션 완주 대기 (blur→clear ~1.4초)
+            try? await Task.sleep(nanoseconds: 1_800_000_000)
+            animatingSlideIndex = nil
+        }
+
+        // 4. 3-tier write (memory + Realm + server)
+        await CharacterStore.shared.acknowledgeUnlockedImages(
+            characterId: character.id,
+            currentAffinity: character.affinity
+        )
     }
 }
 
@@ -478,6 +560,163 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+// MARK: - Avatar Hero Slide (슬라이드 0 — 항상 해금)
+private struct AvatarHeroSlide: View {
+    let url: String?
+
+    var body: some View {
+        CachedAsyncImage(url: url) {
+            Rectangle()
+                .fill(LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.gray.opacity(0.3),
+                        Color.gray.opacity(0.1)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                ))
+                .overlay(ProgressView().tint(.white))
+        }
+    }
+}
+
+// MARK: - Gallery Image Slide (해금 이미지 슬라이드)
+private struct GalleryImageSlide: View {
+    let image: CharacterImage
+    let isUnlocked: Bool
+    let isAnimatingUnlock: Bool
+
+    @Localized(.character_image_unlock_hint) private var unlockHintFormat
+
+    @State private var blurRadius: CGFloat = 0
+    @State private var lockOpacity: Double = 0
+    @State private var flashOpacity: Double = 0
+
+    var body: some View {
+        ZStack {
+            CachedAsyncImage(url: image.image_url) {
+                Rectangle()
+                    .fill(LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.gray.opacity(0.3),
+                            Color.gray.opacity(0.1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ))
+                    .overlay(ProgressView().tint(.white))
+            }
+            .blur(radius: blurRadius)
+
+            // Dark overlay (잠긴 상태에서만 부분적으로)
+            Color.black
+                .opacity(isUnlocked ? 0 : 0.35 * lockOpacity)
+
+            // Flash (해금 순간 번쩍)
+            Color.white
+                .opacity(flashOpacity)
+
+            // Lock badge
+            if lockOpacity > 0.01 {
+                VStack(spacing: 10) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundColor(.white)
+
+                    Text(String(format: unlockHintFormat, image.unlock_affinity))
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                .opacity(lockOpacity)
+                .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 2)
+            }
+        }
+        .onAppear {
+            syncToCurrentState(animated: false)
+        }
+        .onChange(of: isUnlocked) { _, _ in
+            if !isAnimatingUnlock {
+                syncToCurrentState(animated: true)
+            }
+        }
+        .onChange(of: isAnimatingUnlock) { _, animating in
+            if animating {
+                performUnlockAnimation()
+            }
+        }
+    }
+
+    private func syncToCurrentState(animated: Bool) {
+        let targetBlur: CGFloat = isUnlocked ? 0 : 24
+        let targetLock: Double = isUnlocked ? 0 : 1.0
+        if animated {
+            withAnimation(.easeInOut(duration: 0.35)) {
+                blurRadius = targetBlur
+                lockOpacity = targetLock
+            }
+        } else {
+            blurRadius = targetBlur
+            lockOpacity = targetLock
+        }
+    }
+
+    private func performUnlockAnimation() {
+        // 잠긴 상태에서 시작
+        blurRadius = 24
+        lockOpacity = 1.0
+        flashOpacity = 0
+
+        // 0.3초 pause → flash 번쩍 → blur/lock 동시 해제
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.easeOut(duration: 0.25)) {
+                flashOpacity = 0.55
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                withAnimation(.easeOut(duration: 0.4)) {
+                    flashOpacity = 0
+                }
+                withAnimation(.easeOut(duration: 0.8)) {
+                    blurRadius = 0
+                    lockOpacity = 0
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Gallery Page Indicator
+private struct GalleryPageIndicator: View {
+    let count: Int
+    let currentIndex: Int
+    let unlockedFlags: [Bool]
+
+    var body: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<count, id: \.self) { idx in
+                let isUnlocked = idx < unlockedFlags.count ? unlockedFlags[idx] : false
+                let isCurrent = idx == currentIndex
+
+                Circle()
+                    .fill(isUnlocked ? Color.white : Color.clear)
+                    .frame(
+                        width: isCurrent ? 10 : 8,
+                        height: isCurrent ? 10 : 8
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                Color.white.opacity(isUnlocked ? 0 : 0.6),
+                                lineWidth: 1
+                            )
+                    )
+                    .opacity(isCurrent ? 1.0 : 0.65)
+                    .animation(.easeInOut(duration: 0.2), value: currentIndex)
+                    .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 1)
+            }
+        }
     }
 }
 

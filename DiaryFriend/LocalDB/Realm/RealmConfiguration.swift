@@ -15,10 +15,10 @@ class RealmConfiguration {
     private init() {}
     
     // 현재 스키마 버전
-    private let schemaVersion: UInt64 = 1
-    
+    private let schemaVersion: UInt64 = 2
+
     // MARK: - User-specific Configuration
-    
+
     /// 사용자별 Realm Configuration 생성
     func configurationForUser(_ userId: String?) -> Realm.Configuration {
         var config = Realm.Configuration(
@@ -28,6 +28,8 @@ class RealmConfiguration {
                 if oldSchemaVersion < 1 {
                     // v0 → v1 마이그레이션
                 }
+                // v1 → v2: CharacterObject 에 lastSeenAffinity, needsServerSync 추가.
+                // Additive schema change 라 Realm 이 기본값(0, false)을 자동 주입 — 코드 불필요.
             },
             deleteRealmIfMigrationNeeded: false  // 프로덕션에서는 절대 false
         )

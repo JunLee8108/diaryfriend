@@ -81,6 +81,8 @@
 "character.about" = "소개";
 "character.affinity_how_title" = "친밀도 올리는 법";
 "character.affinity_how_body" = "해당 캐릭터와 대화하며 일기를 작성하거나, 캐릭터가 일기에 댓글을 달면 랜덤 확률로 친밀도가 올라가요.";
+"character.image_locked" = "잠김";
+"character.image_unlock_hint" = "친밀도 %d에 해금";
 
 /* Profile View */
 "profile.sign_out" = "로그아웃";

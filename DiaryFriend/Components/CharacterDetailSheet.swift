@@ -196,6 +196,7 @@ struct CharacterDetailSheet: View {
                                 )
                                 .frame(maxWidth: min(geometry.size.width, 700))
                                 .frame(height: 450)
+                                .allowsHitTesting(false)
                                 
                                 // Main Info Overlay
                                 VStack(alignment: .leading, spacing: 16) {
@@ -210,6 +211,7 @@ struct CharacterDetailSheet: View {
                                             )
                                             Spacer()
                                         }
+                                        .allowsHitTesting(false)
                                     }
 
                                     // Name
@@ -218,6 +220,7 @@ struct CharacterDetailSheet: View {
                                         .foregroundColor(.white)
                                         .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 2)
                                         .fixedSize(horizontal: false, vertical: true)
+                                        .allowsHitTesting(false)
 
                                     // Short Description
                                     if let description = displayDescription {
@@ -227,6 +230,7 @@ struct CharacterDetailSheet: View {
                                             .lineLimit(2)
                                             .lineSpacing(3)
                                             .fixedSize(horizontal: false, vertical: true)
+                                            .allowsHitTesting(false)
                                     }
                                     
                                     // Follow Button

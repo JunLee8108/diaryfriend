@@ -143,6 +143,9 @@
 /* Quick Entry */
 "quick_entry.prompt" = "오늘 하루는 어떠셨나요?";
 "quick_entry.placeholder" = "한 줄로 남겨보세요...";
+"quick_entry.ai_toggle_label" = "AI 댓글 허용";
+"quick_entry.no_following_label" = "팔로우하는 캐릭터가 없어요";
+"quick_entry.follow_action" = "팔로우하기";
 
 /* Greetings */
 "greeting.morning" = "좋은 아침이에요";

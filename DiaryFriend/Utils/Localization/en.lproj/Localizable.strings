@@ -150,6 +150,9 @@
 /* Quick Entry */
 "quick_entry.prompt" = "How was your day?";
 "quick_entry.placeholder" = "Write in one line...";
+"quick_entry.ai_toggle_label" = "Allow AI Comments";
+"quick_entry.no_following_label" = "No AI friends yet";
+"quick_entry.follow_action" = "Follow";
 
 /* Greetings */
 "greeting.morning" = "Good morning";

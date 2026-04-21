@@ -303,7 +303,7 @@ struct CharacterDetailSheet: View {
                                                 .foregroundColor(.secondary)
                                         }
                                         .buttonStyle(PlainButtonStyle())
-                                        .popover(isPresented: $showAffinityHelp, arrowEdge: .top) {
+                                        .popover(isPresented: $showAffinityHelp) {
                                             AffinityHelpPopover(
                                                 title: affinityHowTitle,
                                                 message: affinityHowBody

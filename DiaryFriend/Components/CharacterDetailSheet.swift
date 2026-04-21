@@ -47,6 +47,7 @@ struct CharacterDetailSheet: View {
     @State private var onlineStatus: OnlineStatus = .random
     @State private var animationTimer: Timer?
     @State private var scrollOffset: CGFloat = 0
+    @State private var showAffinityHelp: Bool = false
     
     // ✅ 언어별 표시 텍스트 계산
     private var isKorean: Bool {
@@ -64,6 +65,8 @@ struct CharacterDetailSheet: View {
     @Localized(.character_personality) var personalityLabel
     @Localized(.character_affinity_level) var affinityLabel
     @Localized(.character_about) var aboutLabel
+    @Localized(.character_affinity_how_title) var affinityHowTitle
+    @Localized(.character_affinity_how_body) var affinityHowBody
     
     // Pastel tone color palette
     func getAffinityColor(for value: Int) -> Color {
@@ -291,6 +294,22 @@ struct CharacterDetailSheet: View {
                                             .foregroundColor(Color(hex: "FF6B6B"))
                                         Text(affinityLabel)
                                             .font(.system(size: 16, weight: .semibold))
+
+                                        Button {
+                                            showAffinityHelp.toggle()
+                                        } label: {
+                                            Image(systemName: "questionmark.circle")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                        .popover(isPresented: $showAffinityHelp, arrowEdge: .top) {
+                                            AffinityHelpPopover(
+                                                title: affinityHowTitle,
+                                                message: affinityHowBody
+                                            )
+                                            .presentationCompactAdaptation(.popover)
+                                        }
                                     }
                                     .foregroundColor(.primary)
                                     
@@ -450,8 +469,35 @@ struct CharacterDetailSheet: View {
 // Scroll Offset Preference Key
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
-    
+
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+// MARK: - Affinity Help Popover
+private struct AffinityHelpPopover: View {
+    let title: String
+    let message: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(hex: "FF6B6B"))
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primary)
+            }
+
+            Text(message)
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .lineSpacing(3)
+        }
+        .padding(14)
+        .frame(width: 260)
     }
 }

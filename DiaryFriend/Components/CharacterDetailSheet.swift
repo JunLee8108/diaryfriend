@@ -221,18 +221,24 @@ struct CharacterDetailSheet: View {
                                             .background(
                                                 Capsule()
                                                     .fill(
-                                                        character.isFollowing ?
-                                                        Color(hex:"00A077") :                    // Following = 진한 초록
-                                                        Color.secondary.opacity(0.5)         // Follow + = 50% 초록 (secondary 느낌)
+                                                        character.isFollowing
+                                                            ? Color.white.opacity(0.18)   // Following = 유리 느낌
+                                                            : Color(hex: "00C896")        // Follow = 밝은 브랜드 그린 CTA
                                                     )
                                                     .overlay(
                                                         Capsule()
                                                             .stroke(
-                                                                character.isFollowing ?
-                                                                Color.clear :                     // Following = 테두리 없음
-                                                                Color.secondary.opacity(0.6), // Follow + = 초록 테두리
-                                                                lineWidth: 1
+                                                                character.isFollowing
+                                                                    ? Color.white.opacity(0.7)  // Following = 흰 테두리
+                                                                    : Color.clear,              // Follow = 테두리 없음
+                                                                lineWidth: character.isFollowing ? 1.5 : 0
                                                             )
+                                                    )
+                                                    .shadow(
+                                                        color: character.isFollowing ? .clear : .black.opacity(0.15),
+                                                        radius: character.isFollowing ? 0 : 4,
+                                                        x: 0,
+                                                        y: character.isFollowing ? 0 : 2
                                                     )
                                             )
                                         }

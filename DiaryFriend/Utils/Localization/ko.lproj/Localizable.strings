@@ -148,6 +148,10 @@
 "quick_entry.ai_toggle_label" = "AI 댓글 허용";
 "quick_entry.no_following_label" = "팔로우하는 캐릭터가 없어요";
 "quick_entry.follow_action" = "팔로우하기";
+"quick_entry.mic_listening" = "듣고 있어요...";
+"quick_entry.mic_permission_title" = "마이크 접근";
+"quick_entry.mic_permission_message" = "받아쓰기를 사용하려면 설정에서 마이크와 음성 인식을 허용해주세요.";
+"quick_entry.mic_permission_settings" = "설정 열기";
 
 /* Greetings */
 "greeting.morning" = "좋은 아침이에요";

@@ -155,6 +155,10 @@ enum LocalizationKey: String {
     case quick_entry_ai_toggle_label = "quick_entry.ai_toggle_label"
     case quick_entry_no_following_label = "quick_entry.no_following_label"
     case quick_entry_follow_action = "quick_entry.follow_action"
+    case quick_entry_mic_listening = "quick_entry.mic_listening"
+    case quick_entry_mic_permission_title = "quick_entry.mic_permission_title"
+    case quick_entry_mic_permission_message = "quick_entry.mic_permission_message"
+    case quick_entry_mic_permission_settings = "quick_entry.mic_permission_settings"
 
     // MARK: - Greetings
     case greeting_morning = "greeting.morning"
@@ -567,6 +571,14 @@ enum LocalizationKey: String {
             return "No AI friends yet"
         case .quick_entry_follow_action:
             return "Follow"
+        case .quick_entry_mic_listening:
+            return "Listening..."
+        case .quick_entry_mic_permission_title:
+            return "Microphone Access"
+        case .quick_entry_mic_permission_message:
+            return "Enable microphone and speech recognition in Settings to dictate your entries."
+        case .quick_entry_mic_permission_settings:
+            return "Open Settings"
 
             // Greetings
         case .greeting_morning:

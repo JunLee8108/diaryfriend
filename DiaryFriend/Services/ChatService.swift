@@ -452,9 +452,10 @@ class ChatService: ObservableObject {
             ).execute()
             
             // Update cache
+            // NOTE: reason 은 표시 시점에 deletedCount 로 클라이언트에서 파생되므로 nil 로 둠
             permissionCache[dateString] = DailyPermission(
                 canChat: false,
-                reason: "You’ve already written a diary entry for this date.",
+                reason: nil,
                 postCount: 1,
                 deletedCount: 0
             )

@@ -161,28 +161,34 @@ struct CharacterDetailSheet: View {
                                 // Character Image Gallery
                                 // galleryImages 가 비어있으면 단일 이미지로 렌더 (TabView child 수 동적 변경 회피 → flash 방지).
                                 // 로드 완료 후에만 TabView 로 전환해 avatar + gallery 슬라이드 전체를 한번에 구성.
-                                Group {
-                                    if galleryImages.isEmpty {
-                                        AvatarHeroSlide(url: character.avatar_url)
-                                    } else {
-                                        TabView(selection: $currentImageIndex) {
-                                            // 슬라이드 0 = 기본 avatar (항상 해금)
-                                            AvatarHeroSlide(url: character.avatar_url)
-                                                .tag(0)
+                                // + Color.black baseline 으로 전환 중 시스템 기본 배경이 드러나는 flash 차단.
+                                ZStack {
+                                    Color.black   // sheet 배경이 전환 순간 비치는 flash 방지용 baseline
 
-                                            // 슬라이드 1~N = Character_Image
-                                            ForEach(Array(galleryImages.enumerated()), id: \.element.id) { idx, img in
-                                                GalleryImageSlide(
-                                                    image: img,
-                                                    isUnlocked: character.affinity >= img.unlock_affinity,
-                                                    isAnimatingUnlock: animatingSlideIndex == idx + 1
-                                                )
-                                                .tag(idx + 1)
+                                    Group {
+                                        if galleryImages.isEmpty {
+                                            AvatarHeroSlide(url: character.avatar_url)
+                                        } else {
+                                            TabView(selection: $currentImageIndex) {
+                                                // 슬라이드 0 = 기본 avatar (항상 해금)
+                                                AvatarHeroSlide(url: character.avatar_url)
+                                                    .tag(0)
+
+                                                // 슬라이드 1~N = Character_Image
+                                                ForEach(Array(galleryImages.enumerated()), id: \.element.id) { idx, img in
+                                                    GalleryImageSlide(
+                                                        image: img,
+                                                        isUnlocked: character.affinity >= img.unlock_affinity,
+                                                        isAnimatingUnlock: animatingSlideIndex == idx + 1
+                                                    )
+                                                    .tag(idx + 1)
+                                                }
                                             }
+                                            .tabViewStyle(.page(indexDisplayMode: .never))
                                         }
-                                        .tabViewStyle(.page(indexDisplayMode: .never))
                                     }
                                 }
+                                .transaction { $0.animation = nil }  // 구조 변경 시 모든 암시적 애니메이션 suppress
                                 .frame(maxWidth: min(geometry.size.width, 700))
                                 .frame(height: max(500, geometry.size.height * 0.6))
                                 .clipped()

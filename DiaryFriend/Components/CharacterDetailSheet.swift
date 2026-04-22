@@ -51,7 +51,7 @@ struct CharacterDetailSheet: View {
 
     // Character image gallery
     @State private var galleryImages: [CharacterImage] = []
-    @State private var currentImageIndex: Int = 0
+    @State private var currentImageIndex: Int? = 0       // ScrollView scrollPosition(id:) 용 Optional
     @State private var animatingSlideIndex: Int? = nil   // 해금 애니메이션 중인 슬라이드 tag
     
     // ✅ 언어별 표시 텍스트 계산
@@ -159,36 +159,35 @@ struct CharacterDetailSheet: View {
                         VStack(spacing: 0) {
                             ZStack(alignment: .bottom) {
                                 // Character Image Gallery
-                                // galleryImages 가 비어있으면 단일 이미지로 렌더 (TabView child 수 동적 변경 회피 → flash 방지).
-                                // 로드 완료 후에만 TabView 로 전환해 avatar + gallery 슬라이드 전체를 한번에 구성.
-                                // + Color.black baseline 으로 전환 중 시스템 기본 배경이 드러나는 flash 차단.
+                                // 네이티브 ScrollView paging (iOS 17+) 사용 — TabView(.page) 의 UIPageViewController
+                                // 초기 mount flash 를 원천 차단. Color.black 은 baseline 보험.
                                 ZStack {
-                                    Color.black   // sheet 배경이 전환 순간 비치는 flash 방지용 baseline
+                                    Color.black
 
-                                    Group {
-                                        if galleryImages.isEmpty {
+                                    ScrollView(.horizontal) {
+                                        HStack(spacing: 0) {
+                                            // 슬라이드 0 = 기본 avatar (항상 해금)
                                             AvatarHeroSlide(url: character.avatar_url)
-                                        } else {
-                                            TabView(selection: $currentImageIndex) {
-                                                // 슬라이드 0 = 기본 avatar (항상 해금)
-                                                AvatarHeroSlide(url: character.avatar_url)
-                                                    .tag(0)
+                                                .containerRelativeFrame([.horizontal, .vertical])
+                                                .id(0)
 
-                                                // 슬라이드 1~N = Character_Image
-                                                ForEach(Array(galleryImages.enumerated()), id: \.element.id) { idx, img in
-                                                    GalleryImageSlide(
-                                                        image: img,
-                                                        isUnlocked: character.affinity >= img.unlock_affinity,
-                                                        isAnimatingUnlock: animatingSlideIndex == idx + 1
-                                                    )
-                                                    .tag(idx + 1)
-                                                }
+                                            // 슬라이드 1~N = Character_Image
+                                            ForEach(Array(galleryImages.enumerated()), id: \.element.id) { idx, img in
+                                                GalleryImageSlide(
+                                                    image: img,
+                                                    isUnlocked: character.affinity >= img.unlock_affinity,
+                                                    isAnimatingUnlock: animatingSlideIndex == idx + 1
+                                                )
+                                                .containerRelativeFrame([.horizontal, .vertical])
+                                                .id(idx + 1)
                                             }
-                                            .tabViewStyle(.page(indexDisplayMode: .never))
                                         }
+                                        .scrollTargetLayout()
                                     }
+                                    .scrollTargetBehavior(.paging)
+                                    .scrollPosition(id: $currentImageIndex)
+                                    .scrollIndicators(.hidden)
                                 }
-                                .transaction { $0.animation = nil }  // 구조 변경 시 모든 암시적 애니메이션 suppress
                                 .frame(maxWidth: min(geometry.size.width, 700))
                                 .frame(height: max(500, geometry.size.height * 0.6))
                                 .clipped()
@@ -220,7 +219,7 @@ struct CharacterDetailSheet: View {
                                             Spacer()
                                             GalleryPageIndicator(
                                                 count: totalSlideCount,
-                                                currentIndex: currentImageIndex,
+                                                currentIndex: currentImageIndex ?? 0,
                                                 unlockedFlags: (0..<totalSlideCount).map { isSlideUnlocked(at: $0) }
                                             )
                                             Spacer()
@@ -529,16 +528,7 @@ struct CharacterDetailSheet: View {
 
     private func loadGalleryAndDetectUnlocks() async {
         // 1. 이미지 fetch (메모리 캐시 우선)
-        let fetched = await CharacterStore.shared.loadImages(for: character.id)
-
-        // 단일-이미지 → TabView 전환 시 UIPageViewController 의 implicit transition 을
-        // 억제해 배경 flash 를 막는다.
-        var txn = Transaction()
-        txn.disablesAnimations = true
-        withTransaction(txn) {
-            galleryImages = fetched
-        }
-
+        galleryImages = await CharacterStore.shared.loadImages(for: character.id)
         guard !galleryImages.isEmpty else { return }
 
         // 2. 신규 해금 감지

@@ -158,23 +158,31 @@ struct CharacterDetailSheet: View {
                         // Hero Image with Gradient
                         VStack(spacing: 0) {
                             ZStack(alignment: .bottom) {
-                                // Character Image Gallery (TabView)
-                                TabView(selection: $currentImageIndex) {
-                                    // 슬라이드 0 = 기본 avatar (항상 해금)
-                                    AvatarHeroSlide(url: character.avatar_url)
-                                        .tag(0)
+                                // Character Image Gallery
+                                // galleryImages 가 비어있으면 단일 이미지로 렌더 (TabView child 수 동적 변경 회피 → flash 방지).
+                                // 로드 완료 후에만 TabView 로 전환해 avatar + gallery 슬라이드 전체를 한번에 구성.
+                                Group {
+                                    if galleryImages.isEmpty {
+                                        AvatarHeroSlide(url: character.avatar_url)
+                                    } else {
+                                        TabView(selection: $currentImageIndex) {
+                                            // 슬라이드 0 = 기본 avatar (항상 해금)
+                                            AvatarHeroSlide(url: character.avatar_url)
+                                                .tag(0)
 
-                                    // 슬라이드 1~N = Character_Image
-                                    ForEach(Array(galleryImages.enumerated()), id: \.element.id) { idx, img in
-                                        GalleryImageSlide(
-                                            image: img,
-                                            isUnlocked: character.affinity >= img.unlock_affinity,
-                                            isAnimatingUnlock: animatingSlideIndex == idx + 1
-                                        )
-                                        .tag(idx + 1)
+                                            // 슬라이드 1~N = Character_Image
+                                            ForEach(Array(galleryImages.enumerated()), id: \.element.id) { idx, img in
+                                                GalleryImageSlide(
+                                                    image: img,
+                                                    isUnlocked: character.affinity >= img.unlock_affinity,
+                                                    isAnimatingUnlock: animatingSlideIndex == idx + 1
+                                                )
+                                                .tag(idx + 1)
+                                            }
+                                        }
+                                        .tabViewStyle(.page(indexDisplayMode: .never))
                                     }
                                 }
-                                .tabViewStyle(.page(indexDisplayMode: .never))
                                 .frame(maxWidth: min(geometry.size.width, 700))
                                 .frame(height: max(500, geometry.size.height * 0.6))
                                 .clipped()
@@ -515,7 +523,16 @@ struct CharacterDetailSheet: View {
 
     private func loadGalleryAndDetectUnlocks() async {
         // 1. 이미지 fetch (메모리 캐시 우선)
-        galleryImages = await CharacterStore.shared.loadImages(for: character.id)
+        let fetched = await CharacterStore.shared.loadImages(for: character.id)
+
+        // 단일-이미지 → TabView 전환 시 UIPageViewController 의 implicit transition 을
+        // 억제해 배경 flash 를 막는다.
+        var txn = Transaction()
+        txn.disablesAnimations = true
+        withTransaction(txn) {
+            galleryImages = fetched
+        }
+
         guard !galleryImages.isEmpty else { return }
 
         // 2. 신규 해금 감지

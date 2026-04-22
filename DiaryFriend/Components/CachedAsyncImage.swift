@@ -11,34 +11,39 @@ import SwiftUI
 struct CachedAsyncImage<Placeholder: View>: View {
     let urlString: String?
     let contentMode: ContentMode
+    let animateAppearance: Bool
     let placeholder: () -> Placeholder
-    
+
     @State private var image: UIImage?
     @State private var isLoading = false
     @State private var loadTaskId = UUID()
-    
+
     init(
         url: String?,
         contentMode: ContentMode = .fill,
+        animateAppearance: Bool = true,
         @ViewBuilder placeholder: @escaping () -> Placeholder
     ) {
         self.urlString = url
         self.contentMode = contentMode
+        self.animateAppearance = animateAppearance
         self.placeholder = placeholder
     }
-    
+
     var body: some View {
         ZStack {
             if let image = image {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: contentMode)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    .transition(animateAppearance
+                        ? .opacity.combined(with: .scale(scale: 0.95))
+                        : .identity)
             } else {
                 placeholder()
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: image != nil)
+        .animation(animateAppearance ? .easeInOut(duration: 0.2) : nil, value: image != nil)
         .task(id: urlString) {
             await loadImage()
         }
@@ -53,29 +58,33 @@ struct CachedAsyncImage<Placeholder: View>: View {
             }
         }
     }
-    
+
     private func loadImage() async {
         // URL 유효성 검사
         guard let urlString = urlString, !urlString.isEmpty else {
             image = nil
             return
         }
-        
+
         // 이미 로딩 중이면 스킵
         guard !isLoading else { return }
-        
+
         // 새로운 로드 작업 시작
         isLoading = true
         let taskId = UUID()
         loadTaskId = taskId
-        
+
         // 이미지 로드
         let loadedImage = await ImageCache.shared.image(for: urlString)
-        
+
         // 현재 태스크가 최신인지 확인 (URL 변경 대응)
         if taskId == loadTaskId {
             await MainActor.run {
-                withAnimation(.easeInOut(duration: 0.15)) {
+                if animateAppearance {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        self.image = loadedImage
+                    }
+                } else {
                     self.image = loadedImage
                 }
                 self.isLoading = false

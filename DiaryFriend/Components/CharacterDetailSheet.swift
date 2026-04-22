@@ -595,7 +595,7 @@ private struct AvatarHeroSlide: View {
     let url: String?
 
     var body: some View {
-        CachedAsyncImage(url: url) {
+        CachedAsyncImage(url: url, animateAppearance: false) {
             Rectangle()
                 .fill(LinearGradient(
                     gradient: Gradient(colors: [
@@ -624,7 +624,7 @@ private struct GalleryImageSlide: View {
 
     var body: some View {
         ZStack {
-            CachedAsyncImage(url: image.image_url) {
+            CachedAsyncImage(url: image.image_url, animateAppearance: false) {
                 Rectangle()
                     .fill(LinearGradient(
                         gradient: Gradient(colors: [

@@ -85,10 +85,21 @@ struct RootView: View {
         .animation(isInitialized ? .easeInOut : .none, value: authService.isNewUser)
         .task {
             guard !isInitialized else { return }
-            
+
+            // 스플래시 최소 노출 시간 — entrance 애니메이션(≈ 0.77s) 완료 + 여유
+            let minimumSplashDuration: TimeInterval = 1.0
+            let start = Date()
+
             await initializeApp()
-            
-            withAnimation(.easeOut(duration: 0.2)) {
+
+            // 로딩이 minimum 보다 빨리 끝났으면 남은 시간 대기 → 애니메이션 중간 잘림 방지
+            let elapsed = Date().timeIntervalSince(start)
+            if elapsed < minimumSplashDuration {
+                let remaining = minimumSplashDuration - elapsed
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+            }
+
+            withAnimation(.easeOut(duration: 0.35)) {
                 showLaunchScreen = false
             }
         }

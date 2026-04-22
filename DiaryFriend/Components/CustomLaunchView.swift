@@ -73,6 +73,10 @@ struct CustomLaunchView: View {
 
     var body: some View {
         ZStack {
+            // Opaque base — mesh 의 반투명 영역으로 auth/loading 화면이 비치는 것 방지.
+            Color.modernBackground
+                .ignoresSafeArea()
+
             background
                 .ignoresSafeArea()
 

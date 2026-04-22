@@ -153,6 +153,9 @@ struct CharacterDetailSheet: View {
                 .ignoresSafeArea()
             
             GeometryReader { geometry in
+                let heroWidth = min(geometry.size.width, 700)
+                let heroHeight = max(500, geometry.size.height * 0.6)
+
                 ScrollView {
                     ZStack(alignment: .bottom) {
                         // Hero Image with Gradient
@@ -168,7 +171,8 @@ struct CharacterDetailSheet: View {
                                         HStack(spacing: 0) {
                                             // 슬라이드 0 = 기본 avatar (항상 해금)
                                             AvatarHeroSlide(url: character.avatar_url)
-                                                .containerRelativeFrame([.horizontal, .vertical])
+                                                .frame(width: heroWidth, height: heroHeight)
+                                                .clipped()
                                                 .id(0)
 
                                             // 슬라이드 1~N = Character_Image
@@ -178,7 +182,8 @@ struct CharacterDetailSheet: View {
                                                     isUnlocked: character.affinity >= img.unlock_affinity,
                                                     isAnimatingUnlock: animatingSlideIndex == idx + 1
                                                 )
-                                                .containerRelativeFrame([.horizontal, .vertical])
+                                                .frame(width: heroWidth, height: heroHeight)
+                                                .clipped()
                                                 .id(idx + 1)
                                             }
                                         }
@@ -188,8 +193,7 @@ struct CharacterDetailSheet: View {
                                     .scrollPosition(id: $currentImageIndex)
                                     .scrollIndicators(.hidden)
                                 }
-                                .frame(maxWidth: min(geometry.size.width, 700))
-                                .frame(height: max(500, geometry.size.height * 0.6))
+                                .frame(width: heroWidth, height: heroHeight)
                                 .clipped()
                                 .offset(y: scrollOffset > 0 ? -scrollOffset * 0.5 : 0)
                                 .scaleEffect(scrollOffset > 0 ? 1 + (scrollOffset / 1000) : 1)

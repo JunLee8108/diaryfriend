@@ -36,6 +36,15 @@ struct CustomLaunchView: View {
 
     private var brandGreen: Color { Color(hex: "00C896") }
 
+    /// Greeting 텍스트 색 — 라이트 모드에선 배경 mesh 의 민트 톤과 구분되도록 더 진한 그린 사용.
+    private var greetingColor: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? UIColor(hex: "00C896")
+                : UIColor(hex: "00805F")
+        })
+    }
+
     /// 3×3 mesh 그리드의 9개 색상. 라이트/다크 모드별 팔레트.
     private var meshColors: [Color] {
         if colorScheme == .dark {
@@ -93,7 +102,7 @@ struct CustomLaunchView: View {
 
                 Text(greetingText)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundColor(brandGreen)
+                    .foregroundColor(greetingColor)
                     .opacity(greetingVisible ? 1 : 0)
                     .offset(y: greetingVisible ? 0 : 8)
             }
@@ -122,7 +131,7 @@ struct CustomLaunchView: View {
             // 브랜드 그린 breathing halo
             Circle()
                 .fill(brandGreen.opacity(0.28))
-                .frame(width: 220, height: 220)
+                .frame(width: 220, height: 80)
                 .blur(radius: 40)
                 .scaleEffect(reduceMotion ? 1.0 : glowScale)
 

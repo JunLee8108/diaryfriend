@@ -36,28 +36,21 @@ struct CustomLaunchView: View {
 
     private var brandGreen: Color { Color(hex: "00C896") }
 
-    /// Greeting 텍스트 색 — 라이트 모드에선 배경 mesh 의 민트 톤과 구분되도록 더 진한 그린 사용.
-    private var greetingColor: Color {
-        Color(UIColor { trait in
-            trait.userInterfaceStyle == .dark
-                ? UIColor(hex: "00C896")
-                : UIColor(hex: "00805F")
-        })
-    }
-
-    /// 3×3 mesh 그리드의 9개 색상. 라이트/다크 모드별 팔레트.
+    /// 3×3 mesh 그리드의 9개 색상. 중립 배경 + 브랜드 그린 틴트만 사용해
+    /// 거의 솔리드에 가까운 깨끗한 배경 위로 은은한 그린 빛이 흐르도록 함.
     private var meshColors: [Color] {
+        let base = Color.modernBackground
         if colorScheme == .dark {
             return [
-                Color(hex: "0A1A14"),  Color(hex: "0F3D2E"),           Color(hex: "0A1A24"),
-                Color(hex: "0A2A1E"),  brandGreen.opacity(0.38),        Color(hex: "0A1E2E"),
-                Color(hex: "121212"),  Color(hex: "1A2D38"),           Color(hex: "121212")
+                base,  brandGreen.opacity(0.10),  base,
+                base,  brandGreen.opacity(0.22),  base,
+                base,  base,                      base
             ]
         } else {
             return [
-                Color(hex: "F8F9FA"),  Color(hex: "D7F3E6"),           Color(hex: "EAF4FF"),
-                Color(hex: "E4F7ED"),  brandGreen.opacity(0.22),        Color(hex: "E6EEFB"),
-                Color(hex: "F8F9FA"),  Color(hex: "E5EEFB"),           Color(hex: "F8F9FA")
+                base,  brandGreen.opacity(0.07),  base,
+                base,  brandGreen.opacity(0.12),  base,
+                base,  base,                      base
             ]
         }
     }
@@ -94,18 +87,23 @@ struct CustomLaunchView: View {
                     .scaleEffect(logoVisible ? 1.0 : 0.85)
                     .opacity(logoVisible ? 1 : 0)
 
-                Text(appName)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                    .opacity(titleVisible ? 1 : 0)
-                    .offset(y: titleVisible ? 0 : 8)
+                VStack(spacing: 6) {
+                    Text(appName)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .tracking(-0.5)
+                        .foregroundColor(.primary)
+                        .opacity(titleVisible ? 1 : 0)
+                        .offset(y: titleVisible ? 0 : 8)
 
-                Text(greetingText)
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundColor(greetingColor)
-                    .opacity(greetingVisible ? 1 : 0)
-                    .offset(y: greetingVisible ? 0 : 8)
+                    Text(greetingText)
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
+                        .opacity(greetingVisible ? 1 : 0)
+                        .offset(y: greetingVisible ? 0 : 8)
+                }
             }
+            // 기하학적 중앙보다 살짝 위가 시각적 중앙으로 보임
+            .offset(y: -40)
         }
         .onAppear { startEntrance() }
     }
@@ -130,9 +128,9 @@ struct CustomLaunchView: View {
         ZStack {
             // 브랜드 그린 breathing halo
             Circle()
-                .fill(brandGreen.opacity(0.28))
-                .frame(width: 220, height: 80)
-                .blur(radius: 40)
+                .fill(brandGreen.opacity(0.14))
+                .frame(width: 180, height: 180)
+                .blur(radius: 50)
                 .scaleEffect(reduceMotion ? 1.0 : glowScale)
 
             Image("Logo")

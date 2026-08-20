@@ -212,13 +212,10 @@ struct QuickEntryCard: View {
     private var headerRow: some View {
         Button(action: toggleExpanded) {
             HStack(spacing: 10) {
-                Image(systemName: "square.and.pencil")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color(hex: "00C896"))
-
+                // 접힘: 조용한 초대(14 secondary) / 펼침: 카드 헤딩(15 semibold primary)
                 Text(headerText)
-                    .font(.system(size: 15, weight: isExpanded ? .semibold : .medium, design: .rounded))
-                    .foregroundColor(!isExpanded && hasDraft ? .secondary : .primary)
+                    .font(.system(size: isExpanded ? 15 : 14, weight: isExpanded ? .semibold : .medium, design: .rounded))
+                    .foregroundColor(isExpanded ? .primary : .secondary)
                     .lineLimit(1)
 
                 Spacer(minLength: 8)

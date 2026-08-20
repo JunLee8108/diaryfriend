@@ -153,7 +153,7 @@
 
 /* Quick Entry */
 "quick_entry.prompt" = "How was your day?";
-"quick_entry.collapsed_prompt" = "Ready to write about your day?";
+"quick_entry.collapsed_prompt" = "Your day, in one line";
 "quick_entry.mood_label" = "Mood";
 "quick_entry.placeholder" = "Write in one line...";
 "quick_entry.ai_toggle_label" = "Allow AI Comments";

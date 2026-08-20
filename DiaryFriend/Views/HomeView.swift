@@ -365,7 +365,13 @@ struct SlideCalendarView: View {
                 let diff = newValue - centerIndex
                 let newMonth = calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
                 currentMonth = newMonth
-                onMonthChanged(newMonth)
+                // 데이터 로드(postDates 변이 → 전체 그리드 재렌더)가 페이지 정착
+                // 애니메이션 프레임과 겹치지 않도록 살짝 지연시킨다.
+                Task {
+                    try? await Task.sleep(nanoseconds: 300_000_000)
+                    guard tabSelection == newValue else { return }
+                    onMonthChanged(newMonth)
+                }
             }
             .onAppear {
                 let nowComponents = calendar.dateComponents([.year, .month], from: Date())
@@ -394,20 +400,14 @@ struct CalendarHeader: View {
     let onGoToToday: () -> Void
     let onShowListView: () -> Void
 
-    // ⭐ 월 이름
+    // ⭐ 월 이름 (캐시된 포맷터 사용 — 렌더링 핫패스)
     private var monthName: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
-        formatter.dateFormat = "MMMM"
-        return formatter.string(from: currentMonth)
+        DateUtility.shared.displayString(from: currentMonth, format: "MMMM")
     }
 
     // ⭐ 연도
     private var yearString: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
-        formatter.dateFormat = "yyyy"
-        return formatter.string(from: currentMonth)
+        DateUtility.shared.displayString(from: currentMonth, format: "yyyy")
     }
 
     // ⭐ 한국어에서 "년" 추가
@@ -429,31 +429,41 @@ struct CalendarHeader: View {
         }
     }
 
+    /// 타이틀 크로스페이드용 월 키 (yyyy-MM)
+    private var monthKeyString: String {
+        DateUtility.shared.monthKey(from: currentMonth)
+    }
+
     var body: some View {
         HStack {
-            // 좌측: 월 타이틀
-            // 월 = 캘린더 카드의 헤딩(17 bold), 연도 = 보조 정보(13 secondary)
-            if LocalizationManager.shared.currentLanguage == .korean {
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(yearWithSuffix)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundColor(.secondary)
+            // 좌측: 월 타이틀 — 월 = 헤딩(semibold), 연도 = 보조(13 secondary)
+            // 모든 월 전환에서 일관되게 크로스페이드 (isCurrentMonth와 무관)
+            Group {
+                if LocalizationManager.shared.currentLanguage == .korean {
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        Text(yearWithSuffix)
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundColor(.secondary)
 
-                    Text(monthWithSuffix)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.primary)
-                }
-            } else {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(monthName)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.primary)
+                        Text(monthWithSuffix)
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.primary)
+                    }
+                } else {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(monthName)
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.primary)
 
-                    Text(yearString)
-                        .font(.system(size: 13, weight: .regular, design: .rounded))
-                        .foregroundColor(.secondary)
+                        Text(yearString)
+                            .font(.system(size: 13, weight: .regular, design: .rounded))
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
+            .id(monthKeyString)
+            .transition(.opacity)
+            .animation(.easeInOut(duration: 0.22), value: monthKeyString)
 
             Spacer()
 
@@ -477,6 +487,9 @@ struct CalendarHeader: View {
                 }
                 .disabled(isCurrentMonth)
                 .opacity(isCurrentMonth ? 0.35 : 1)
+                // Today 버튼의 활성/비활성 페이드만 담당 — 헤더 전체에 걸면
+                // 월 타이틀이 isCurrentMonth가 바뀔 때만 애니메이션되는 버그가 생긴다
+                .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
 
                 Button(action: onShowListView) {
                     Image(systemName: "list.bullet")
@@ -488,7 +501,6 @@ struct CalendarHeader: View {
                 }
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
     }
 }
 
@@ -553,8 +565,20 @@ struct CalendarGridView: View, Equatable {
         lhs.postDatesSet == rhs.postDatesSet
     }
 
-    /// 42개 셀 데이터를 한 번에 사전 계산
+    /// 월별 42셀 캐시. 월 데이터는 불변이므로 재렌더마다 다시 계산하지 않는다.
+    /// isToday가 셀에 구워지므로 키에 오늘 날짜를 포함해 자정 경과 시 자연 무효화.
+    private static var cellCache: [String: [CalendarCellData]] = [:]
+
     private var cells: [CalendarCellData] {
+        let key = "\(DateUtility.shared.monthKey(from: month))|\(DateUtility.shared.dateString(from: Date()))"
+        if let cached = Self.cellCache[key] { return cached }
+        let computed = Self.computeCells(for: month)
+        Self.cellCache[key] = computed
+        return computed
+    }
+
+    /// 42개 셀 데이터를 한 번에 사전 계산
+    private static func computeCells(for month: Date) -> [CalendarCellData] {
         let calendar = Calendar.current
         let current = MonthData(date: month)
 

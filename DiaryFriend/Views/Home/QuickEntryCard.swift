@@ -130,11 +130,7 @@ struct QuickEntryCard: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.modernSurfacePrimary)
-                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-            )
+            .modernCard()
             .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
             .sheet(isPresented: $showCharacterSelection) {
                 CharacterSelectionView(isPresented: $showCharacterSelection)

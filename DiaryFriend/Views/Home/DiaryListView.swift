@@ -105,12 +105,8 @@ struct DiaryListView: View {
                         }
                     }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.modernSurfacePrimary)
-                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-                )
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .modernCard()
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }

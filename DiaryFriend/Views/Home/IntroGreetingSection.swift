@@ -227,6 +227,8 @@ struct CompactStatView: View {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(color)
+                // 카운트업이 도착할 때 한 번 튀어오르는 강조
+                .symbolEffect(.bounce, value: displayValue)
 
             // Value
             Text("\(Int(displayValue))")

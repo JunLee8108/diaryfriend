@@ -86,8 +86,8 @@ struct RootView: View {
         .task {
             guard !isInitialized else { return }
 
-            // 스플래시 최소 노출 시간 — entrance 애니메이션(≈ 0.77s) 완료 + 여유
-            let minimumSplashDuration: TimeInterval = 1.0
+            // 스플래시 최소 노출 시간 — 글자 등장 + 밑줄 + greeting 애니메이션(≈ 1.45s) 완료 + 여유
+            let minimumSplashDuration: TimeInterval = 1.6
             let start = Date()
 
             await initializeApp()

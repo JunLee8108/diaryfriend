@@ -354,13 +354,9 @@ struct SlideCalendarView: View {
                 }
             }
         }
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.modernSurfacePrimary)
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
-        )
+        .modernCard()
     }
-    
+
     private func monthForIndex(_ index: Int) -> Date {
         let diff = index - centerIndex
         return calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()

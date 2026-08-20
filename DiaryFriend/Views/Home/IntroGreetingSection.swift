@@ -139,11 +139,7 @@ struct IntroGreetingSection: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 18)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.modernSurfacePrimary)
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-        )
+        .modernCard()
         .sheet(item: $selectedCharacter) { character in
             CharacterDetailSheet(
                 character: character,
@@ -157,36 +153,38 @@ struct IntroGreetingSection: View {
             )
         }
         .onAppear {
-            pickRandomCharacter()
+            pickDailyCharacter()
             playAnimation()
         }
-        .onChange(of: scenePhase) { oldPhase, newPhase in
+        .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                // Update current time when app becomes active
+                // 시간대별 인사말/이모지 최신화
                 currentDate = Date()
-
-                // Replay animation only when returning from background
-                if oldPhase == .background {
-                    pickRandomCharacter()
-                    playAnimation()
-                }
+                // 결정적 선택이라 같은 날엔 no-op, 자정을 넘겨 복귀한 경우에만 교체됨.
+                // 입장 애니메이션은 재생하지 않는다 — 복귀할 때마다 화면이 꿈틀거리지 않도록.
+                pickDailyCharacter()
             }
         }
         .onChange(of: characterStore.allCharacters.count) { _, _ in
             if greetingCharacter == nil {
-                pickRandomCharacter()
+                pickDailyCharacter()
             }
         }
     }
 
     // MARK: - Character Selection
-    private func pickRandomCharacter() {
+    /// 오늘의 캐릭터: 날짜 기반 결정적 선택 — 같은 날엔 항상 같은 캐릭터
+    private func pickDailyCharacter() {
         let candidates = characterStore.followingCharacters.isEmpty
             ? characterStore.allCharacters
             : characterStore.followingCharacters
 
         guard !candidates.isEmpty else { return }
-        greetingCharacter = candidates.randomElement()
+        let daySeed = Int(
+            DateUtility.shared.dateString(from: currentDate)
+                .replacingOccurrences(of: "-", with: "")
+        ) ?? 0
+        greetingCharacter = candidates[daySeed % candidates.count]
     }
 
     // MARK: - Animation Helper

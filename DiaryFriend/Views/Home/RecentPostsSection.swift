@@ -179,18 +179,14 @@ struct RecentPostItemView: View {
             }
             .padding(16)
             .contentShape(Rectangle())
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.modernSurfacePrimary)
-                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
-            )
+            .modernCard()
             .overlay(alignment: .topTrailing) {
                 DogEarShape()
                     .fill(item.moodColor.opacity(0.25))
                     .frame(width: 18, height: 18)
                     .shadow(color: item.moodColor.opacity(0.1), radius: 2, x: -1, y: 1)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -259,10 +255,6 @@ struct EmptyRecentView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
         .padding(.horizontal, 20)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.modernSurfacePrimary)
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
-        )
+        .modernCard()
     }
 }

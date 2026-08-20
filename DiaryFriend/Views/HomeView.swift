@@ -53,51 +53,37 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
-            Group {
-                if showListView {
-                    // 리스트 모드: 전체 단일 ScrollView
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            IntroGreetingSection()
-                                .padding(.horizontal, 20)
-                                .padding(.top, 16)
-                                .padding(.bottom, 16)
+            // 단일 ScrollView — 공통 헤더(인사말/입력 카드)는 분기 밖에 두어
+            // 캘린더 <-> 리스트 전환 시 정체성이 유지되도록 한다.
+            // (재생성으로 인한 입장 애니메이션 재생·입력 상태 유실·전체 리렌더링 방지)
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    IntroGreetingSection()
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 16)
 
-                            QuickEntryCard(hasTodayEntry: hasTodayEntry)
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 16)
+                    QuickEntryCard(hasTodayEntry: hasTodayEntry)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
 
-                            DiaryListView(
-                                currentMonth: $currentMonth,
-                                showListView: $showListView,
-                                onMonthChanged: { newMonth in
-                                    Task {
-                                        await dataStore.ensureMonthLoaded(newMonth)
-                                    }
-                                },
-                                onWriteDiary: {
-                                    showWriteDiaryDatePicker = true
+                    // 하단 섹션만 모드에 따라 교체
+                    if showListView {
+                        DiaryListView(
+                            currentMonth: $currentMonth,
+                            showListView: $showListView,
+                            onMonthChanged: { newMonth in
+                                Task {
+                                    await dataStore.ensureMonthLoaded(newMonth)
                                 }
-                            )
-                        }
-                    }
-                    .scrollIndicators(.hidden)
-                    .onTapGesture {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    }
-                } else {
-                    // 캘린더 모드 (기본)
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            IntroGreetingSection()
-                                .padding(.horizontal, 20)
-                                .padding(.top, 16)
-                                .padding(.bottom, 16)
-
-                            QuickEntryCard(hasTodayEntry: hasTodayEntry)
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 16)
-
+                            },
+                            onWriteDiary: {
+                                showWriteDiaryDatePicker = true
+                            }
+                        )
+                        .transition(.opacity)
+                    } else {
+                        VStack(spacing: 0) {
                             TodayDateLabel(showListView: $showListView)
                                 .padding(.horizontal, 24)
                                 .padding(.bottom, 14)
@@ -127,22 +113,24 @@ struct HomeView: View {
                             )
                             .padding(.bottom, 20)
                         }
-                    }
-                    .refreshable {
-                        guard networkMonitor.isConnected else {
-                            showOfflineAlert = true
-                            return
-                        }
-                        await dataStore.refresh(centerDate: currentMonth)
-                        if let error = dataStore.errorMessage {
-                            showSyncError = true
-                            syncErrorMessage = error
-                        }
-                    }
-                    .onTapGesture {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        .transition(.opacity)
                     }
                 }
+            }
+            .scrollIndicators(.hidden)
+            .refreshable {
+                guard networkMonitor.isConnected else {
+                    showOfflineAlert = true
+                    return
+                }
+                await dataStore.refresh(centerDate: currentMonth)
+                if let error = dataStore.errorMessage {
+                    showSyncError = true
+                    syncErrorMessage = error
+                }
+            }
+            .onTapGesture {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
             }
             .smoothLoading(dataStore.isLoading)
             .sheet(item: $dayPostsData) { data in

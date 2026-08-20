@@ -24,6 +24,7 @@ struct QuickEntryCard: View {
     @FocusState private var isFocused: Bool
 
     @Localized(.quick_entry_collapsed_prompt) var collapsedPromptText
+    @Localized(.quick_entry_mood_label) var moodLabelText
     @Localized(.quick_entry_placeholder) var placeholderText
     @Localized(.quick_entry_ai_toggle_label) var aiToggleLabel
     @Localized(.quick_entry_no_following_label) var noFollowingLabel
@@ -55,24 +56,6 @@ struct QuickEntryCard: View {
                 headerRow
 
                 if isExpanded {
-                    // 무드 칩 (pill 스타일)
-                    HStack(spacing: 10) {
-                        ForEach(Mood.allCases) { mood in
-                            MoodChip(
-                                mood: mood,
-                                label: moodLabel(for: mood),
-                                isSelected: selectedMood == mood,
-                                onTap: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        selectedMood = mood
-                                    }
-                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                }
-                            )
-                        }
-                    }
-                    .transition(.opacity)
-
                     // 텍스트 입력 + 마이크 + 전송
                     HStack(spacing: 10) {
                         TextField(
@@ -126,6 +109,10 @@ struct QuickEntryCard: View {
                     .animation(.easeInOut(duration: 0.2), value: text.isEmpty)
                     .animation(.easeInOut(duration: 0.2), value: speechService.isRecording)
                     .transition(.opacity)
+
+                    // 오늘의 기분 (라벨 + 컴팩트 칩)
+                    moodRow
+                        .transition(.opacity)
 
                     // AI 댓글 허용 토글 (compact inline)
                     aiToggleRow
@@ -289,6 +276,38 @@ struct QuickEntryCard: View {
         }
     }
 
+    // MARK: - Mood Row (라벨 + 컴팩트 칩)
+    private var moodRow: some View {
+        HStack(spacing: 8) {
+            Text(moodLabelText)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+
+            Spacer(minLength: 6)
+
+            HStack(spacing: 6) {
+                ForEach(Mood.allCases) { mood in
+                    MoodChip(
+                        mood: mood,
+                        label: moodLabel(for: mood),
+                        isSelected: selectedMood == mood,
+                        compact: true,
+                        onTap: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedMood = mood
+                            }
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }
+                    )
+                }
+            }
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 2)
+    }
+
     // MARK: - AI Toggle Row (Compact)
     @ViewBuilder
     private var aiToggleRow: some View {
@@ -384,6 +403,7 @@ private struct MoodChip: View {
     let mood: Mood
     let label: String
     let isSelected: Bool
+    var compact: Bool = false
     let onTap: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -403,17 +423,17 @@ private struct MoodChip: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 6) {
+            HStack(spacing: compact ? 4 : 6) {
                 Image(systemName: isSelected ? mood.filledIcon : mood.weatherIcon)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: compact ? 12 : 14, weight: .medium))
                     .foregroundColor(isSelected ? mood.accentColor : .secondary)
 
                 Text(label)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
+                    .font(.system(size: compact ? 12 : 13, weight: isSelected ? .semibold : .medium, design: .rounded))
                     .foregroundColor(isSelected ? mood.accentColor : .secondary)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.horizontal, compact ? 10 : 14)
+            .padding(.vertical, compact ? 6 : 8)
             .background(
                 RoundedRectangle(cornerRadius: 18)
                     .fill(backgroundColor)

@@ -21,12 +21,29 @@ class DateUtility {
         return Locale(identifier: languageCode)
     }
     
-    // ⭐ 헬퍼: locale 적용된 formatter
+    // ⭐ 헬퍼: locale 적용된 formatter — (format, locale) 키로 캐시.
+    // DateFormatter 생성은 비용이 커서(ms급) 렌더링 핫패스에서 반복 생성하면 안 된다.
+    private var formatterCache: [String: DateFormatter] = [:]
+    private let formatterCacheLock = NSLock()
+
     private func configuredFormatter(dateFormat: String) -> DateFormatter {
+        let localeCode = LocalizationManager.shared.currentLanguage.code
+        let key = "\(dateFormat)|\(localeCode)"
+
+        formatterCacheLock.lock()
+        defer { formatterCacheLock.unlock() }
+
+        if let cached = formatterCache[key] { return cached }
         let formatter = DateFormatter()
-        formatter.locale = currentLocale
+        formatter.locale = Locale(identifier: localeCode)
         formatter.dateFormat = dateFormat
+        formatterCache[key] = formatter
         return formatter
+    }
+
+    /// 현재 언어 locale이 적용된 표시용 문자열 (캐시된 포맷터 사용)
+    func displayString(from date: Date, format: String) -> String {
+        configuredFormatter(dateFormat: format).string(from: date)
     }
     
     // MARK: - Core Date String 변환 (yyyy-MM-dd)

@@ -20,15 +20,8 @@ struct DiaryListView: View {
     @Localized(.home_list_empty_message) var emptyMessage
 
     private var monthYearString: String {
-        let formatter = DateFormatter()
-        let languageCode = LocalizationManager.shared.currentLanguage.code
-        formatter.locale = Locale(identifier: languageCode)
-        if LocalizationManager.shared.currentLanguage == .korean {
-            formatter.dateFormat = "yyyy년 M월"
-        } else {
-            formatter.dateFormat = "MMMM yyyy"
-        }
-        return formatter.string(from: currentMonth)
+        let format = LocalizationManager.shared.currentLanguage == .korean ? "yyyy년 M월" : "MMMM yyyy"
+        return DateUtility.shared.displayString(from: currentMonth, format: format)
     }
 
     private var monthPosts: [Post] {

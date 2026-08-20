@@ -68,12 +68,9 @@ struct RecentPostsSection: View {
         posts.map { PostDisplayItem(from: $0) }
     }
     
-    // ⭐ locale 적용
+    // ⭐ locale 적용 (캐시된 포맷터 사용)
     private var monthLabel: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage.code)
-        formatter.dateFormat = "MMM"
-        return formatter.string(from: currentMonth).uppercased()
+        DateUtility.shared.displayString(from: currentMonth, format: "MMM").uppercased()
     }
     
     var body: some View {

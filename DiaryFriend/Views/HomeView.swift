@@ -477,6 +477,7 @@ struct CalendarHeader: View {
                             .fill(Color(hex: "00C896").opacity(0.12))
                     )
                 }
+                .buttonStyle(.pressable)
                 .disabled(isCurrentMonth)
                 .opacity(isCurrentMonth ? 0.35 : 1)
                 // Today 버튼의 활성/비활성 페이드만 담당 — 헤더 전체에 걸면
@@ -491,6 +492,7 @@ struct CalendarHeader: View {
                         .background(Circle().fill(Color(.systemGray6)))
                         .contentShape(Circle())
                 }
+                .buttonStyle(.pressable)
             }
         }
     }
@@ -737,6 +739,7 @@ struct OptimizedDayView: View, Equatable {
 
                 Text("\(day)")
                     .font(.system(size: 14, weight: hasPost ? .semibold : .regular))
+                    .monospacedDigit()
                     .foregroundColor(textColor)
             }
         }

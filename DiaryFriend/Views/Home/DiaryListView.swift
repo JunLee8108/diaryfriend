@@ -58,6 +58,7 @@ struct DiaryListView: View {
                             .animation(.easeInOut(duration: 0.2), value: showMonthPicker)
                     }
                 }
+                .buttonStyle(.pressable)
 
                 Spacer()
 
@@ -72,6 +73,7 @@ struct DiaryListView: View {
                         .frame(width: 28, height: 28)
                         .contentShape(Rectangle())
                 }
+                .buttonStyle(.pressable)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 12)
@@ -134,6 +136,7 @@ private struct CompactPostRow: View {
                 VStack(spacing: 2) {
                     Text(item.dayNumber)
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
                         .foregroundColor(.primary)
 
                     Text(item.weekday)

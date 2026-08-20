@@ -231,6 +231,7 @@ struct CompactStatView: View {
             // Value
             Text("\(Int(displayValue))")
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .monospacedDigit()
                 .foregroundColor(color)
                 .contentTransition(.numericText(value: displayValue))
 

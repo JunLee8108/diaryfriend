@@ -100,6 +100,15 @@ struct QuickEntryCard: View {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(.systemGray6))
                     )
+                    // 포커스 링: 입력 중임을 조용하게 표시
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                Color(hex: "00C896").opacity(isFocused ? 0.35 : 0),
+                                lineWidth: 1
+                            )
+                    )
+                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isFocused)
                     .contentShape(RoundedRectangle(cornerRadius: 12))
                     .onTapGesture {
                         if !speechService.isRecording {
@@ -215,7 +224,7 @@ struct QuickEntryCard: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.pressable)
     }
 
     private func toggleExpanded() {
@@ -344,7 +353,7 @@ struct QuickEntryCard: View {
                     }
                     .foregroundColor(Color(hex: "00A077"))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.pressable)
 
                 Toggle("", isOn: .constant(false))
                     .labelsHidden()
@@ -436,6 +445,6 @@ private struct MoodChip: View {
             )
             .scaleEffect(isSelected ? 1.03 : 1.0)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.pressable)
     }
 }

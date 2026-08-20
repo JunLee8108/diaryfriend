@@ -139,6 +139,7 @@ struct RecentPostItemView: View {
                 VStack(spacing: 4) {
                     Text(item.dayNumber)
                         .font(.system(size: 28, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
                         .foregroundColor(.primary)
                     
                     VStack(spacing: 2) {
@@ -176,16 +177,17 @@ struct RecentPostItemView: View {
             }
             .padding(16)
             .contentShape(Rectangle())
-            .modernCard()
             .overlay(alignment: .topTrailing) {
                 DogEarShape()
                     .fill(item.moodColor.opacity(0.25))
                     .frame(width: 18, height: 18)
                     .shadow(color: item.moodColor.opacity(0.1), radius: 2, x: -1, y: 1)
             }
+            // 클립을 modernCard보다 먼저 적용 — 나중에 하면 카드 그림자까지 잘려나간다
             .clipShape(RoundedRectangle(cornerRadius: 20))
+            .modernCard()
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.pressableCard)
     }
 }
 
@@ -246,6 +248,7 @@ struct EmptyRecentView: View {
                             .fill(Color(hex: "00C896").opacity(0.12))
                     )
                 }
+                .buttonStyle(.pressable)
                 .padding(.top, 2)
             }
         }

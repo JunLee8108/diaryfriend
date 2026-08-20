@@ -315,7 +315,9 @@ struct SlideCalendarView: View {
         VStack(spacing: 0) {
             // 헤더 (월 타이틀 좌측 + Today 버튼 우측)
             CalendarHeader(
-                currentMonth: currentMonth,
+                // currentMonth 바인딩은 정착 후에 지연 갱신되므로, 헤더는
+                // 로컬 tabSelection에서 직접 계산해 즉시 반응하게 한다.
+                currentMonth: monthForIndex(tabSelection),
                 isCurrentMonth: isCurrentMonth,
                 onGoToToday: {
                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -353,6 +355,9 @@ struct SlideCalendarView: View {
                         postDatesSet: postDatesSet,
                         onDateTapped: onDateTapped
                     )
+                    // == 비교를 보장해 month/선택/데이터가 안 바뀐 그리드의
+                    // body 재평가를 건너뛴다 (closure 필드는 기본 diff를 무력화함)
+                    .equatable()
                     .tag(index)
                 }
             }
@@ -362,14 +367,14 @@ struct SlideCalendarView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 18)
             .onChange(of: tabSelection) { oldValue, newValue in
-                let diff = newValue - centerIndex
-                let newMonth = calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
-                currentMonth = newMonth
-                // 데이터 로드(postDates 변이 → 전체 그리드 재렌더)가 페이지 정착
-                // 애니메이션 프레임과 겹치지 않도록 살짝 지연시킨다.
-                Task {
+                let newMonth = monthForIndex(newValue)
+                // currentMonth 쓰기(홈 전체 재렌더 + RecentPosts 교체 애니메이션)와
+                // 데이터 로드가 페이지 정착 애니메이션과 겹치지 않도록 정착 후로 지연.
+                // 헤더 타이틀은 아래에서 tabSelection 기반으로 즉시 갱신된다.
+                Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 300_000_000)
                     guard tabSelection == newValue else { return }
+                    currentMonth = newMonth
                     onMonthChanged(newMonth)
                 }
             }
@@ -387,9 +392,17 @@ struct SlideCalendarView: View {
         .modernCard()
     }
 
+    /// 이번 달의 시작(자정)으로 정규화한 기준점.
+    /// Date()를 그대로 쓰면 렌더마다 시각(초/밀리초)이 섞여 같은 월이라도
+    /// 매번 다른 Date가 되고, CalendarGridView의 Equatable 비교가 항상
+    /// false가 되어 24개 그리드가 전부 재평가된다 — 스와이프 끊김의 핵심 원인.
+    private var currentMonthStart: Date {
+        calendar.date(from: calendar.dateComponents([.year, .month], from: Date())) ?? Date()
+    }
+
     private func monthForIndex(_ index: Int) -> Date {
         let diff = index - centerIndex
-        return calendar.date(byAdding: .month, value: diff, to: Date()) ?? Date()
+        return calendar.date(byAdding: .month, value: diff, to: currentMonthStart) ?? currentMonthStart
     }
 }
 

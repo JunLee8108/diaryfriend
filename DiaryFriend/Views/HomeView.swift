@@ -58,9 +58,13 @@ struct HomeView: View {
             // (재생성으로 인한 입장 애니메이션 재생·입력 상태 유실·전체 리렌더링 방지)
             ScrollView {
                 LazyVStack(spacing: 0) {
+                    TopDateLabel()
+                        .padding(.horizontal, 24)
+                        .padding(.top, 10)
+                        .padding(.bottom, 10)
+
                     IntroGreetingSection()
                         .padding(.horizontal, 20)
-                        .padding(.top, 16)
                         .padding(.bottom, 16)
 
                     QuickEntryCard(hasTodayEntry: hasTodayEntry)
@@ -271,6 +275,23 @@ struct HomeView: View {
     }
 }
 
+// MARK: - 최상단 오늘 날짜 라벨
+struct TopDateLabel: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+
+    private var todayText: String {
+        let _ = localizationManager.currentLanguage
+        return DateUtility.shared.fullDateWithWeekday(from: Date())
+    }
+
+    var body: some View {
+        Text(todayText)
+            .font(.system(size: 12, weight: .medium, design: .rounded))
+            .foregroundColor(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 // MARK: - 슬라이드 캘린더
 struct SlideCalendarView: View {
     @Environment(\.colorScheme) var colorScheme
@@ -436,17 +457,8 @@ struct CalendarHeader: View {
 
             Spacer()
 
-            // 우측: 리스트 전환 (중립) + Today 버튼 (그린 액션)
+            // 우측: Today 버튼 (그린 액션) + 리스트 전환 (중립, 맨 오른쪽)
             HStack(spacing: 8) {
-                Button(action: onShowListView) {
-                    Image(systemName: "list.bullet")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.secondary)
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(Color(.systemGray6)))
-                        .contentShape(Circle())
-                }
-
                 // Today 버튼 (항상 표시, 현재 월이면 비활성화)
                 Button(action: onGoToToday) {
                     HStack(spacing: 4) {
@@ -465,6 +477,15 @@ struct CalendarHeader: View {
                 }
                 .disabled(isCurrentMonth)
                 .opacity(isCurrentMonth ? 0.35 : 1)
+
+                Button(action: onShowListView) {
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(Color(.systemGray6)))
+                        .contentShape(Circle())
+                }
             }
         }
         .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)

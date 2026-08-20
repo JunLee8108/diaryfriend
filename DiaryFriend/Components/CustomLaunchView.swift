@@ -2,19 +2,17 @@
 //  CustomLaunchView.swift
 //  DiaryFriend
 //
-//  앱 로딩 스플래시. MeshGradient 배경 + 글자별 순차 등장 워드마크 + 밑줄 드로잉 + 시간대별 greeting.
+//  앱 로딩 스플래시. 솔리드 배경 + 글자별 순차 등장 워드마크 + 밑줄 드로잉 + 시간대별 greeting.
 //
 
 import SwiftUI
 
 struct CustomLaunchView: View {
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var revealedLetters: Set<Int> = []
     @State private var underlineProgress: CGFloat = 0
     @State private var greetingVisible: Bool = false
-    @State private var meshPhase: Float = 0
 
     @Localized(.app_diary_friend) private var appName
 
@@ -53,50 +51,11 @@ struct CustomLaunchView: View {
 
     private var brandGreen: Color { Color(hex: "00C896") }
 
-    /// 3×3 mesh 그리드의 9개 색상. 중립 배경 + 브랜드 그린 틴트만 사용해
-    /// 거의 솔리드에 가까운 깨끗한 배경 위로 은은한 그린 빛이 흐르도록 함.
-    private var meshColors: [Color] {
-        let base = Color.modernBackground
-        if colorScheme == .dark {
-            return [
-                base,  brandGreen.opacity(0.10),  base,
-                base,  brandGreen.opacity(0.22),  base,
-                base,  base,                      base
-            ]
-        } else {
-            return [
-                base,  brandGreen.opacity(0.07),  base,
-                base,  brandGreen.opacity(0.12),  base,
-                base,  base,                      base
-            ]
-        }
-    }
-
-    /// meshPhase 에 따라 중간 컨트롤 포인트가 흐르듯 움직여 색이 섞이는 효과.
-    private var meshPoints: [SIMD2<Float>] {
-        let p = meshPhase
-        return [
-            SIMD2<Float>(0, 0),
-            SIMD2<Float>(0.5 + 0.18 * sin(p),       0),
-            SIMD2<Float>(1, 0),
-            SIMD2<Float>(0, 0.5 + 0.12 * cos(p)),
-            SIMD2<Float>(0.5, 0.5),
-            SIMD2<Float>(1, 0.5 + 0.12 * sin(p + 0.8)),
-            SIMD2<Float>(0, 1),
-            SIMD2<Float>(0.5 + 0.18 * cos(p),       1),
-            SIMD2<Float>(1, 1)
-        ]
-    }
-
     // MARK: - Body
 
     var body: some View {
         ZStack {
-            // Opaque base — mesh 의 반투명 영역으로 auth/loading 화면이 비치는 것 방지.
             Color.modernBackground
-                .ignoresSafeArea()
-
-            background
                 .ignoresSafeArea()
 
             VStack(spacing: 18) {
@@ -115,20 +74,6 @@ struct CustomLaunchView: View {
     }
 
     // MARK: - Subviews
-
-    @ViewBuilder
-    private var background: some View {
-        if reduceMotion {
-            Color.modernBackground
-        } else {
-            MeshGradient(
-                width: 3,
-                height: 3,
-                points: meshPoints,
-                colors: meshColors
-            )
-        }
-    }
 
     private var wordmark: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -186,11 +131,6 @@ struct CustomLaunchView: View {
         // 인사말은 밑줄이 그어진 뒤 마지막에
         withAnimation(.easeOut(duration: 0.45).delay(greetingDelay)) {
             greetingVisible = true
-        }
-
-        // Mesh 흐름 애니메이션 (8s 주기, GPU 부담 낮게)
-        withAnimation(.linear(duration: 8).repeatForever(autoreverses: true)) {
-            meshPhase = .pi
         }
     }
 }

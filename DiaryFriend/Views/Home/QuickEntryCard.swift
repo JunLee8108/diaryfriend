@@ -13,6 +13,7 @@ struct QuickEntryCard: View {
     @StateObject private var characterStore = CharacterStore.shared
     @StateObject private var speechService = SpeechRecognitionService()
     let hasTodayEntry: Bool
+    @State private var isExpanded = false
     @State private var selectedMood: Mood = .happy
     @State private var text: String = ""
     @State private var isSaving = false
@@ -23,6 +24,7 @@ struct QuickEntryCard: View {
     @FocusState private var isFocused: Bool
 
     @Localized(.quick_entry_prompt) var promptText
+    @Localized(.quick_entry_collapsed_prompt) var collapsedPromptText
     @Localized(.quick_entry_placeholder) var placeholderText
     @Localized(.quick_entry_ai_toggle_label) var aiToggleLabel
     @Localized(.quick_entry_no_following_label) var noFollowingLabel
@@ -51,82 +53,85 @@ struct QuickEntryCard: View {
     var body: some View {
         if !hasTodayEntry {
             VStack(spacing: 14) {
-                Text(promptText)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
+                headerRow
 
-                // 무드 칩 (pill 스타일)
-                HStack(spacing: 10) {
-                    ForEach(Mood.allCases) { mood in
-                        MoodChip(
-                            mood: mood,
-                            label: moodLabel(for: mood),
-                            isSelected: selectedMood == mood,
-                            onTap: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    selectedMood = mood
+                if isExpanded {
+                    // 무드 칩 (pill 스타일)
+                    HStack(spacing: 10) {
+                        ForEach(Mood.allCases) { mood in
+                            MoodChip(
+                                mood: mood,
+                                label: moodLabel(for: mood),
+                                isSelected: selectedMood == mood,
+                                onTap: {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        selectedMood = mood
+                                    }
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                 }
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            }
-                        )
-                    }
-                }
-
-                // 텍스트 입력 + 마이크 + 전송
-                HStack(spacing: 10) {
-                    TextField(
-                        speechService.isRecording ? micListeningText : placeholderText,
-                        text: $text
-                    )
-                        .font(.system(size: 14, design: .rounded))
-                        .focused($isFocused)
-                        .submitLabel(.done)
-                        .onSubmit { saveIfValid() }
-                        .disabled(speechService.isRecording)
-
-                    // Mic 버튼
-                    Button(action: handleMicTap) {
-                        Image(systemName: speechService.isRecording ? "mic.fill" : "mic")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(
-                                speechService.isRecording
-                                    ? Color(hex: "FF6B6B")
-                                    : .secondary
                             )
-                            .scaleEffect(speechService.isRecording && micPulse ? 1.18 : 1.0)
+                        }
                     }
-                    .disabled(isSaving)
+                    .transition(.opacity)
 
-                    // Send 버튼 — 텍스트 있고 녹음 중 아닐 때만 표시
-                    if !text.trimmingCharacters(in: .whitespaces).isEmpty
-                        && !speechService.isRecording {
-                        Button(action: saveIfValid) {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(Color(hex: "00C896"))
+                    // 텍스트 입력 + 마이크 + 전송
+                    HStack(spacing: 10) {
+                        TextField(
+                            speechService.isRecording ? micListeningText : placeholderText,
+                            text: $text
+                        )
+                            .font(.system(size: 14, design: .rounded))
+                            .focused($isFocused)
+                            .submitLabel(.done)
+                            .onSubmit { saveIfValid() }
+                            .disabled(speechService.isRecording)
+
+                        // Mic 버튼
+                        Button(action: handleMicTap) {
+                            Image(systemName: speechService.isRecording ? "mic.fill" : "mic")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(
+                                    speechService.isRecording
+                                        ? Color(hex: "FF6B6B")
+                                        : .secondary
+                                )
+                                .scaleEffect(speechService.isRecording && micPulse ? 1.18 : 1.0)
                         }
                         .disabled(isSaving)
-                        .transition(.scale(scale: 0.6).combined(with: .opacity))
-                    }
-                }
-                .frame(height: 24)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray6))
-                )
-                .contentShape(RoundedRectangle(cornerRadius: 12))
-                .onTapGesture {
-                    if !speechService.isRecording {
-                        isFocused = true
-                    }
-                }
-                .animation(.easeInOut(duration: 0.2), value: text.isEmpty)
-                .animation(.easeInOut(duration: 0.2), value: speechService.isRecording)
 
-                // AI 댓글 허용 토글 (compact inline)
-                aiToggleRow
+                        // Send 버튼 — 텍스트 있고 녹음 중 아닐 때만 표시
+                        if !text.trimmingCharacters(in: .whitespaces).isEmpty
+                            && !speechService.isRecording {
+                            Button(action: saveIfValid) {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(Color(hex: "00C896"))
+                            }
+                            .disabled(isSaving)
+                            .transition(.scale(scale: 0.6).combined(with: .opacity))
+                        }
+                    }
+                    .frame(height: 24)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemGray6))
+                    )
+                    .contentShape(RoundedRectangle(cornerRadius: 12))
+                    .onTapGesture {
+                        if !speechService.isRecording {
+                            isFocused = true
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.2), value: text.isEmpty)
+                    .animation(.easeInOut(duration: 0.2), value: speechService.isRecording)
+                    .transition(.opacity)
+
+                    // AI 댓글 허용 토글 (compact inline)
+                    aiToggleRow
+                        .transition(.opacity)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
@@ -188,6 +193,63 @@ struct QuickEntryCard: View {
             } message: {
                 Text(micPermissionMessage)
             }
+        }
+    }
+
+    // MARK: - Header (접기/펼치기 토글)
+
+    /// 접힌 상태에서 작성 중이던 드래프트가 있는지
+    private var hasDraft: Bool {
+        !text.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// 접힘: 초대 문구(드래프트 있으면 미리보기) / 펼침: 기존 프롬프트
+    private var headerText: String {
+        if isExpanded { return promptText }
+        return hasDraft ? text : collapsedPromptText
+    }
+
+    private var headerRow: some View {
+        Button(action: toggleExpanded) {
+            HStack(spacing: 10) {
+                Image(systemName: "square.and.pencil")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "00C896"))
+
+                Text(headerText)
+                    .font(.system(size: 15, weight: isExpanded ? .semibold : .medium, design: .rounded))
+                    .foregroundColor(!isExpanded && hasDraft ? .secondary : .primary)
+                    .lineLimit(1)
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    private func toggleExpanded() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            isExpanded.toggle()
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        if isExpanded {
+            // 펼침 애니메이션이 끝날 즈음 키보드 자동 표시 → 탭 한 번으로 바로 쓰기 시작
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                if isExpanded && !speechService.isRecording {
+                    isFocused = true
+                }
+            }
+        } else {
+            // 접힘은 disappear가 아니므로 녹음/포커스를 명시적으로 정리
+            isFocused = false
+            speechService.stopRecording()
         }
     }
 
@@ -310,6 +372,7 @@ struct QuickEntryCard: View {
                     isSaving = false
                     selectedMood = .happy
                     isAICommentEnabled = hasFollowingCharacters
+                    isExpanded = false
                 }
             } catch {
                 isSaving = false

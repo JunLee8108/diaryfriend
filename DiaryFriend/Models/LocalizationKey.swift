@@ -153,6 +153,7 @@ enum LocalizationKey: String {
 
     // MARK: - Quick Entry
     case quick_entry_prompt = "quick_entry.prompt"
+    case quick_entry_collapsed_prompt = "quick_entry.collapsed_prompt"
     case quick_entry_placeholder = "quick_entry.placeholder"
     case quick_entry_ai_toggle_label = "quick_entry.ai_toggle_label"
     case quick_entry_no_following_label = "quick_entry.no_following_label"
@@ -569,6 +570,8 @@ enum LocalizationKey: String {
             // Quick Entry
         case .quick_entry_prompt:
             return "How was your day?"
+        case .quick_entry_collapsed_prompt:
+            return "Ready to write about your day?"
         case .quick_entry_placeholder:
             return "Write in one line..."
         case .quick_entry_ai_toggle_label:

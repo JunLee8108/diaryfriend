@@ -95,7 +95,7 @@ struct IntroGreetingSection: View {
                 // 인사말
                 HStack(spacing: 6) {
                     Text("\(greeting), \(profileStore.currentDisplayName)")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
                         .lineLimit(1)
 

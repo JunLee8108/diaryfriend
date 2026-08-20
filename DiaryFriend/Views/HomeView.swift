@@ -407,25 +407,26 @@ struct CalendarHeader: View {
     var body: some View {
         HStack {
             // 좌측: 월 타이틀
+            // 월 = 캘린더 카드의 헤딩(17 bold), 연도 = 보조 정보(13 secondary)
             if LocalizationManager.shared.currentLanguage == .korean {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(yearWithSuffix)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundColor(.primary.opacity(0.85))
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
 
                     Text(monthWithSuffix)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
                 }
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(monthName)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
 
                     Text(yearString)
-                        .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .foregroundColor(.primary.opacity(0.65))
+                        .font(.system(size: 13, weight: .regular, design: .rounded))
+                        .foregroundColor(.secondary)
                 }
             }
 

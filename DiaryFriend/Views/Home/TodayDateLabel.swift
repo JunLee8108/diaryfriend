@@ -16,12 +16,8 @@ struct TodayDateLabel: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "calendar")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(hex: "00C896"))
-
             Text(todayText)
-                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundColor(.secondary)
 
             Spacer()

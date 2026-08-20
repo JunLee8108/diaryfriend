@@ -90,17 +90,24 @@ struct IntroGreetingSection: View {
                 }
             }
 
-            // 우측: 인사말 + stats
+            // 우측: 인사말 + 오늘 날짜 + stats
             VStack(alignment: .leading, spacing: 10) {
-                // 인사말
-                HStack(spacing: 6) {
-                    Text("\(greeting), \(profileStore.currentDisplayName)")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
+                VStack(alignment: .leading, spacing: 3) {
+                    // 인사말
+                    HStack(spacing: 6) {
+                        Text("\(greeting), \(profileStore.currentDisplayName)")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
 
-                    Text(greetingEmoji)
-                        .font(.system(size: 15))
+                        Text(greetingEmoji)
+                            .font(.system(size: 15))
+                    }
+
+                    // 오늘 날짜 캡션
+                    Text(DateUtility.shared.fullDateWithWeekday(from: currentDate))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
                 }
                 .opacity(introAnimated ? 1 : 0)
                 .offset(y: introAnimated ? 0 : 8)
@@ -230,7 +237,7 @@ struct CompactStatView: View {
 
             // Value
             Text("\(Int(displayValue))")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundColor(color)
                 .contentTransition(.numericText(value: displayValue))
 

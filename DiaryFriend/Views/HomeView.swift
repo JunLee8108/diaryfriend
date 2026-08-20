@@ -84,13 +84,10 @@ struct HomeView: View {
                         .transition(.opacity)
                     } else {
                         VStack(spacing: 0) {
-                            TodayDateLabel(showListView: $showListView)
-                                .padding(.horizontal, 24)
-                                .padding(.bottom, 14)
-
                             SlideCalendarView(
                                 currentMonth: $currentMonth,
                                 selectedDate: $selectedDate,
+                                showListView: $showListView,
                                 postDatesSet: dataStore.postDates,
                                 onMonthChanged: { newMonth in
                                     Task {
@@ -279,6 +276,7 @@ struct SlideCalendarView: View {
     @Environment(\.colorScheme) var colorScheme
     @Binding var currentMonth: Date
     @Binding var selectedDate: Date
+    @Binding var showListView: Bool
     let postDatesSet: Set<String>
     let onMonthChanged: (Date) -> Void
     let onDateTapped: (Date) -> Void
@@ -301,6 +299,11 @@ struct SlideCalendarView: View {
                 onGoToToday: {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         tabSelection = centerIndex
+                    }
+                },
+                onShowListView: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showListView = true
                     }
                 }
             )
@@ -368,6 +371,7 @@ struct CalendarHeader: View {
     let currentMonth: Date
     let isCurrentMonth: Bool
     let onGoToToday: () -> Void
+    let onShowListView: () -> Void
 
     // ⭐ 월 이름
     private var monthName: String {
@@ -415,13 +419,13 @@ struct CalendarHeader: View {
                         .foregroundColor(.secondary)
 
                     Text(monthWithSuffix)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                 }
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(monthName)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
 
                     Text(yearString)
@@ -432,24 +436,36 @@ struct CalendarHeader: View {
 
             Spacer()
 
-            // 우측: Today 버튼 (항상 표시, 현재 월이면 비활성화)
-            Button(action: onGoToToday) {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.uturn.left")
-                        .font(.system(size: 11, weight: .semibold))
-                    Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+            // 우측: 리스트 전환 (중립) + Today 버튼 (그린 액션)
+            HStack(spacing: 8) {
+                Button(action: onShowListView) {
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(Color(.systemGray6)))
+                        .contentShape(Circle())
                 }
-                .foregroundColor(Color(hex: "00C896"))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(
-                    Capsule()
-                        .fill(Color(hex: "00C896").opacity(0.12))
-                )
+
+                // Today 버튼 (항상 표시, 현재 월이면 비활성화)
+                Button(action: onGoToToday) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.uturn.left")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text(LocalizationManager.shared.currentLanguage == .korean ? "오늘" : "Today")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Color(hex: "00C896"))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(Color(hex: "00C896").opacity(0.12))
+                    )
+                }
+                .disabled(isCurrentMonth)
+                .opacity(isCurrentMonth ? 0.35 : 1)
             }
-            .disabled(isCurrentMonth)
-            .opacity(isCurrentMonth ? 0.35 : 1)
         }
         .animation(.easeInOut(duration: 0.25), value: isCurrentMonth)
     }

@@ -141,7 +141,7 @@ struct RecentPostItemView: View {
                 // 날짜 컬럼
                 VStack(spacing: 4) {
                     Text(item.dayNumber)
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(.system(size: 28, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                     
                     VStack(spacing: 2) {

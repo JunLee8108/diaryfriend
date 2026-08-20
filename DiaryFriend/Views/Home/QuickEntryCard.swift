@@ -69,7 +69,9 @@ struct QuickEntryCard: View {
 
                         // Mic 버튼
                         Button(action: handleMicTap) {
-                            Image(systemName: speechService.isRecording ? "mic.fill" : "mic")
+                            // 녹음 중엔 waveform — variableColor는 variable 레이어가 있는
+                            // 심볼에서만 웨이브로 보인다 (mic.fill은 전체 깜빡임으로 퇴화)
+                            Image(systemName: speechService.isRecording ? "waveform" : "mic")
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundColor(
                                     speechService.isRecording
@@ -82,6 +84,8 @@ struct QuickEntryCard: View {
                                     options: .repeating,
                                     isActive: speechService.isRecording
                                 )
+                                // mic ↔ waveform 심볼 교체를 부드럽게
+                                .contentTransition(.symbolEffect(.replace))
                         }
                         .disabled(isSaving)
 

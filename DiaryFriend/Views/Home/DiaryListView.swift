@@ -140,7 +140,7 @@ private struct CompactPostRow: View {
                 // 날짜
                 VStack(spacing: 2) {
                     Text(item.dayNumber)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
 
                     Text(item.weekday)

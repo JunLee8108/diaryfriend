@@ -118,6 +118,12 @@ struct RecentPostsSection: View {
                     RecentPostItemView(item: item)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
+                        // 화면 하단에서 올라올 때 살짝 아래에서 페이드인
+                        .scrollTransition(.animated(.easeOut(duration: 0.3))) { content, phase in
+                            content
+                                .opacity(phase.isIdentity ? 1 : 0.5)
+                                .offset(y: phase.isIdentity ? 0 : 8)
+                        }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .topLeading)

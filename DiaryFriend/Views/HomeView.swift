@@ -697,6 +697,10 @@ struct OptimizedDayView: View, Equatable {
     let weekdayColor: Color?
     let onTap: () -> Void
 
+    /// 형광펜 밑줄 드로잉 진행도. 기본 1(이미 그어짐) — 화면에 떠 있는 동안
+    /// hasPost가 false→true로 바뀌는 순간(일기 저장)에만 왼쪽부터 그어진다.
+    @State private var underlineDraw: CGFloat = 1
+
     // ⭐ Equatable 구현
     static func == (lhs: OptimizedDayView, rhs: OptimizedDayView) -> Bool {
         lhs.day == rhs.day &&
@@ -734,6 +738,7 @@ struct OptimizedDayView: View, Equatable {
                     HighlighterUnderline()
                         .fill(Color(hex:"00C896").opacity(0.3))
                         .frame(width: 22, height: 20)
+                        .scaleEffect(x: underlineDraw, y: 1, anchor: .leading)
                         .offset(y: 3)
                 }
 
@@ -746,6 +751,15 @@ struct OptimizedDayView: View, Equatable {
         .frame(width: 40, height: 40)
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
+        .onChange(of: hasPost) { oldValue, newValue in
+            // 저장 보상 모션: 방금 일기가 생긴 날짜에 형광펜이 손으로 긋듯 그어진다
+            if !oldValue && newValue {
+                underlineDraw = 0
+                withAnimation(.easeOut(duration: 0.5).delay(0.15)) {
+                    underlineDraw = 1
+                }
+            }
+        }
     }
 }
 

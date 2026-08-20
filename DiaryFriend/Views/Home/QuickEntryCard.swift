@@ -20,7 +20,6 @@ struct QuickEntryCard: View {
     @State private var isAICommentEnabled: Bool = false
     @State private var showCharacterSelection: Bool = false
     @State private var showMicPermissionAlert: Bool = false
-    @State private var micPulse: Bool = false
     @FocusState private var isFocused: Bool
 
     @Localized(.quick_entry_collapsed_prompt) var collapsedPromptText
@@ -77,7 +76,12 @@ struct QuickEntryCard: View {
                                         ? Color(hex: "FF6B6B")
                                         : .secondary
                                 )
-                                .scaleEffect(speechService.isRecording && micPulse ? 1.18 : 1.0)
+                                // 녹음 중 네이티브 웨이브 이펙트 (수제 scale pulse 대체)
+                                .symbolEffect(
+                                    .variableColor.iterative,
+                                    options: .repeating,
+                                    isActive: speechService.isRecording
+                                )
                         }
                         .disabled(isSaving)
 
@@ -159,18 +163,6 @@ struct QuickEntryCard: View {
                     text = newValue
                 }
             }
-            // Speech: 녹음 상태 변화 → pulse 애니메이션 + 음성 종료 후 focus
-            .onChange(of: speechService.isRecording) { _, recording in
-                if recording {
-                    withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
-                        micPulse = true
-                    }
-                } else {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        micPulse = false
-                    }
-                }
-            }
             // 카드 사라지거나 앱 백그라운드 진입 시 녹음 정지
             .onDisappear {
                 speechService.stopRecording()
@@ -221,6 +213,7 @@ struct QuickEntryCard: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.secondary)
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    .symbolEffect(.bounce, value: isExpanded)
             }
             .contentShape(Rectangle())
         }

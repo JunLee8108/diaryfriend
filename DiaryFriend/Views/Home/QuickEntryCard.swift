@@ -312,14 +312,6 @@ struct QuickEntryCard: View {
     @ViewBuilder
     private var aiToggleRow: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 12))
-                .foregroundColor(
-                    hasFollowingCharacters
-                        ? Color(hex: "00C896")
-                        : .secondary
-                )
-
             if hasFollowingCharacters {
                 Text(aiToggleLabel)
                     .font(.system(size: 13, weight: .medium, design: .rounded))

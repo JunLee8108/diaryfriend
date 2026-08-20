@@ -572,7 +572,7 @@ enum LocalizationKey: String {
         case .quick_entry_prompt:
             return "How was your day?"
         case .quick_entry_collapsed_prompt:
-            return "Ready to write about your day?"
+            return "Your day, in one line"
         case .quick_entry_mood_label:
             return "Mood"
         case .quick_entry_placeholder:

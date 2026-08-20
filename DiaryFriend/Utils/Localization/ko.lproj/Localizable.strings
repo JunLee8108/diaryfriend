@@ -147,7 +147,7 @@
 /* Quick Entry */
 "quick_entry.prompt" = "오늘 하루는 어떠셨나요?";
 "quick_entry.collapsed_prompt" = "오늘 하루를 작성해보실래요?";
-"quick_entry.mood_label" = "오늘의 기분";
+"quick_entry.mood_label" = "기분";
 "quick_entry.placeholder" = "한 줄로 남겨보세요...";
 "quick_entry.ai_toggle_label" = "AI 댓글 허용";
 "quick_entry.no_following_label" = "팔로우하는 캐릭터가 없어요";

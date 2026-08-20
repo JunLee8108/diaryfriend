@@ -58,13 +58,9 @@ struct HomeView: View {
             // (재생성으로 인한 입장 애니메이션 재생·입력 상태 유실·전체 리렌더링 방지)
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    TopDateLabel()
-                        .padding(.horizontal, 24)
-                        .padding(.top, 10)
-                        .padding(.bottom, 10)
-
                     IntroGreetingSection()
                         .padding(.horizontal, 20)
+                        .padding(.top, 16)
                         .padding(.bottom, 16)
 
                     QuickEntryCard(hasTodayEntry: hasTodayEntry)
@@ -272,23 +268,6 @@ struct HomeView: View {
         } else {
             dayPostsData = DayPostsData(dateString: dateString)
         }
-    }
-}
-
-// MARK: - 최상단 오늘 날짜 라벨
-struct TopDateLabel: View {
-    @ObservedObject private var localizationManager = LocalizationManager.shared
-
-    private var todayText: String {
-        let _ = localizationManager.currentLanguage
-        return DateUtility.shared.fullDateWithWeekday(from: Date())
-    }
-
-    var body: some View {
-        Text(todayText)
-            .font(.system(size: 12, weight: .medium, design: .rounded))
-            .foregroundColor(.secondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

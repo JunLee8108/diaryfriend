@@ -486,11 +486,10 @@ struct CalendarHeader: View {
 
                 Button(action: onShowListView) {
                     Image(systemName: "list.bullet")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
                         .frame(width: 28, height: 28)
-                        .background(Circle().fill(Color(.systemGray6)))
-                        .contentShape(Circle())
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.pressable)
             }

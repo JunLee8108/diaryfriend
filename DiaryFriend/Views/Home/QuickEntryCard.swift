@@ -23,7 +23,6 @@ struct QuickEntryCard: View {
     @State private var micPulse: Bool = false
     @FocusState private var isFocused: Bool
 
-    @Localized(.quick_entry_prompt) var promptText
     @Localized(.quick_entry_collapsed_prompt) var collapsedPromptText
     @Localized(.quick_entry_placeholder) var placeholderText
     @Localized(.quick_entry_ai_toggle_label) var aiToggleLabel
@@ -203,20 +202,22 @@ struct QuickEntryCard: View {
         !text.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
-    /// 접힘: 초대 문구(드래프트 있으면 미리보기) / 펼침: 기존 프롬프트
-    private var headerText: String {
-        if isExpanded { return promptText }
-        return hasDraft ? text : collapsedPromptText
+    /// 접힘 상태 문구: 초대 문구 (드래프트 있으면 미리보기)
+    private var collapsedText: String {
+        hasDraft ? text : collapsedPromptText
     }
 
     private var headerRow: some View {
         Button(action: toggleExpanded) {
             HStack(spacing: 10) {
-                // 접힘: 조용한 초대(14 secondary) / 펼침: 카드 헤딩(15 semibold primary)
-                Text(headerText)
-                    .font(.system(size: isExpanded ? 15 : 14, weight: isExpanded ? .semibold : .medium, design: .rounded))
-                    .foregroundColor(isExpanded ? .primary : .secondary)
-                    .lineLimit(1)
+                // 펼치면 문구 없이 chevron만 남아 콘텐츠(무드 칩)가 바로 시작됨
+                if !isExpanded {
+                    Text(collapsedText)
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .transition(.opacity)
+                }
 
                 Spacer(minLength: 8)
 

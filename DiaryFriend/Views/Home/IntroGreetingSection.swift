@@ -90,24 +90,17 @@ struct IntroGreetingSection: View {
                 }
             }
 
-            // 우측: 인사말 + 오늘 날짜 + stats
+            // 우측: 인사말 + stats
             VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 3) {
-                    // 인사말
-                    HStack(spacing: 6) {
-                        Text("\(greeting), \(profileStore.currentDisplayName)")
-                            .font(.system(size: 16, weight: .semibold, design: .rounded))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
+                // 인사말
+                HStack(spacing: 6) {
+                    Text("\(greeting), \(profileStore.currentDisplayName)")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
 
-                        Text(greetingEmoji)
-                            .font(.system(size: 15))
-                    }
-
-                    // 오늘 날짜 캡션
-                    Text(DateUtility.shared.fullDateWithWeekday(from: currentDate))
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundColor(.secondary)
+                    Text(greetingEmoji)
+                        .font(.system(size: 15))
                 }
                 .opacity(introAnimated ? 1 : 0)
                 .offset(y: introAnimated ? 0 : 8)

@@ -279,7 +279,7 @@ struct PostContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // 날짜 헤더
-                HStack(alignment: .center, spacing: 20) {
+                HStack(alignment: .center, spacing: 10) {
                     Text(dayNumber)
                         .font(.system(size: 48, weight: .bold, design: .rounded))
                     
@@ -324,8 +324,8 @@ struct PostContentView: View {
 
                 // 본문 — UI(rounded)와 구분되는 세리프 서체로 "글"의 질감을 살림
                 Text(detail.plainContent)
-                    .font(.system(size: 17, design: .serif))
-                    .lineSpacing(9)
+                    .font(.system(size: 16, design: .serif))
+                    .lineSpacing(7)
                     .foregroundColor(.primary.opacity(0.92))
                 
                 // 이미지 섹션

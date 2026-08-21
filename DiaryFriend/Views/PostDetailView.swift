@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct PostDetailView: View {
     let postId: Int
@@ -321,10 +322,11 @@ struct PostContentView: View {
                     }
                 }
 
-                // 본문
+                // 본문 — UI(rounded)와 구분되는 세리프 서체로 "글"의 질감을 살림
                 Text(detail.plainContent)
-                    .font(.system(size: 16))
-                    .lineSpacing(8)
+                    .font(.system(size: 17, design: .serif))
+                    .lineSpacing(9)
+                    .foregroundColor(.primary.opacity(0.92))
                 
                 // 이미지 섹션
                 if let images = detail.Image, !images.isEmpty {
@@ -371,7 +373,7 @@ struct PostContentView: View {
                         .padding(.vertical, 20)
                 } else {
                     VStack(alignment: .leading, spacing: 20) {
-                        ForEach(enrichedComments) { enrichedComment in
+                        ForEach(Array(enrichedComments.enumerated()), id: \.element.id) { index, enrichedComment in
                             CommentRowView(
                                 enrichedComment: enrichedComment,
                                 onCharacterTap: {
@@ -381,9 +383,17 @@ struct PostContentView: View {
                                     onDeleteComment?(enrichedComment)
                                 } : nil
                             )
+                            // AI 친구들이 하나씩 찾아오듯 순차 스프링 등장
+                            .transition(
+                                .opacity
+                                    .combined(with: .offset(y: 14))
+                                    .animation(
+                                        .spring(response: 0.45, dampingFraction: 0.75)
+                                            .delay(Double(index) * 0.08)
+                                    )
+                            )
                         }
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                     .animation(.easeInOut(duration: 0.3), value: enrichedComments.count)
                 }
             }
@@ -391,6 +401,12 @@ struct PostContentView: View {
         }
         .safeAreaInset(edge: .bottom) {
             Color.clear.frame(height: 20)
+        }
+        // 새 댓글(AI 친구)이 도착하면 부드러운 햅틱
+        .onChange(of: enrichedComments.count) { oldCount, newCount in
+            if newCount > oldCount {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            }
         }
         .sheet(item: $selectedCharacter) { character in
             CharacterDetailSheet(

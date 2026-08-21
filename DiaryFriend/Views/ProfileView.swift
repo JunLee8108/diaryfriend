@@ -99,6 +99,11 @@ struct ProfileView: View {
                 .padding(.horizontal)
             }
             .padding(.top, 16)
+            // 스크롤 시작하면 키보드가 따라 내려가고, 빈 곳 탭으로도 닫힘
+            .scrollDismissesKeyboard(.interactively)
+            .onTapGesture {
+                isSearchFocused = false
+            }
             .safeAreaInset(edge: .bottom) {
                 // TabBar 높이를 고려한 안전 영역 확보
                 Color.clear.frame(height: 20)
@@ -329,15 +334,17 @@ struct ProfileView: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemGray6))
         )
-        // 포커스 링: Quick Entry 입력창과 동일한 패턴
+        // 포커스 링: Quick Entry 입력창과 동일한 패턴.
+        // 애니메이션은 링에만 국한 — 필드 전체에 걸면 포커스 순간
+        // 키보드 회피 레이아웃 이동까지 애니메이션되어 크기가 변하는 것처럼 보인다.
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .strokeBorder(
                     Color(hex: "00C896").opacity(isSearchFocused ? 0.35 : 0),
                     lineWidth: 1
                 )
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isSearchFocused)
         )
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isSearchFocused)
         .animation(.easeInOut(duration: 0.15), value: searchText.isEmpty)
     }
 }

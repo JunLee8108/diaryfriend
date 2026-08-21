@@ -104,7 +104,9 @@ enum LocalizationKey: String {
     case profile_show_more = "profile.show_more"
     case profile_show_less = "profile.show_less"
     case profile_classic_characters = "profile.classic_characters"
-    
+    case profile_search_placeholder = "profile.search_placeholder"
+    case profile_search_no_results = "profile.search_no_results"
+
     // MARK: - Search View ✅
     case search_placeholder = "search.placeholder"
     case search_empty_title = "search.empty_title"
@@ -499,6 +501,10 @@ enum LocalizationKey: String {
             return "Show Less"
         case .profile_classic_characters:
             return "Classic Characters"
+        case .profile_search_placeholder:
+            return "Search characters"
+        case .profile_search_no_results:
+            return "No matching characters"
             
             // Search View
         case .search_placeholder:

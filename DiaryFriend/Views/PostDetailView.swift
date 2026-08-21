@@ -68,7 +68,8 @@ struct PostDetailView: View {
                 await reloadPostDetail()
             }
         }
-        .background(Color.modernBackground)
+        // 일기 읽기 화면은 종이 질감 배경 — 세리프 본문과 한 세트
+        .background(PaperBackground())
         .confirmationModal(
             isPresented: $showDeleteConfirmation,
             title: deleteTitle,

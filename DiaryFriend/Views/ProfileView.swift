@@ -328,6 +328,9 @@ struct ProfileView: View {
                 .buttonStyle(.pressable)
             }
         }
+        // 높이 고정 — TextField는 플레이스홀더/편집 상태의 고유 높이가 미세하게
+        // 달라서, 고정하지 않으면 포커스 순간 필드가 줄어들어 보인다
+        .frame(height: 24)
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
         .background(

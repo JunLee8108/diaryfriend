@@ -128,25 +128,4 @@ class NotificationManager {
         return bodies.randomElement() ?? bodies[0]
     }
 
-    // MARK: - Debug
-
-    #if DEBUG
-    func sendTestNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "DiaryFriend"
-        content.body = randomNotificationBody()
-        content.sound = .default
-
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
-        let request = UNNotificationRequest(identifier: "test_notification", content: content, trigger: trigger)
-
-        center.add(request) { error in
-            if let error {
-                print("❌ Test notification failed: \(error)")
-            } else {
-                print("✅ Test notification will appear in 5 seconds (go to background!)")
-            }
-        }
-    }
-    #endif
 }

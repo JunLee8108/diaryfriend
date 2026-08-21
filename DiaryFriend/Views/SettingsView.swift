@@ -180,22 +180,6 @@ struct SettingsView: View {
                             .buttonStyle(.pressable)
                         }
 
-                        #if DEBUG
-                        rowDivider
-
-                        Button("🔔 Send Test Notification (5s)") {
-                            Task {
-                                let granted = await NotificationManager.shared.requestPermission()
-                                if granted {
-                                    NotificationManager.shared.sendTestNotification()
-                                }
-                            }
-                        }
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color(hex: "00C896"))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        #endif
                     }
                 }
 

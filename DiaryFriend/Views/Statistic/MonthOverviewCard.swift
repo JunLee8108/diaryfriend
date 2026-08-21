@@ -103,11 +103,7 @@ struct MonthOverviewCard: View {
                 }
             }
             .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.modernSurfacePrimary)
-                    .shadow(color: .black.opacity(0.03), radius: 12, x: 0, y: 4)
-            )
+            .modernCard()
         }
     }
 }

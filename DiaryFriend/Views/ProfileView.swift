@@ -185,10 +185,9 @@ struct ProfileView: View {
             }
         }
         .padding()
-        .background(Color.modernSurfacePrimary)
-        .cornerRadius(12)
+        .modernCard()
     }
-    
+
     // MARK: - Settings Button
     private var settingsButton: some View {
         NavigationLink(destination: SettingsView()) {
@@ -202,9 +201,9 @@ struct ProfileView: View {
                     .foregroundColor(.secondary)
             }
             .padding()
-            .background(Color.modernSurfacePrimary)
-            .cornerRadius(12)
+            .modernCard()
         }
+        .buttonStyle(.pressableCard)
     }
     
     // MARK: - Characters Section (통합: modern + classic 단일 리스트 + 검색)
@@ -239,8 +238,7 @@ struct ProfileView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 32)
-                    .background(Color.modernSurfacePrimary)
-                    .cornerRadius(12)
+                    .modernCard()
             } else {
                 VStack(spacing: 0) {
                     LazyVStack(spacing: 0) {
@@ -298,9 +296,10 @@ struct ProfileView: View {
                         .padding(.top, 8)
                     }
                 }
-                .background(Color.modernSurfacePrimary)
-                .cornerRadius(12)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                // 클립을 modernCard보다 먼저 — 더보기 버튼 배경을 모서리에 맞추면서
+                // 카드 그림자는 잘리지 않게
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .modernCard()
             }
         }
     }

@@ -89,8 +89,7 @@ struct CharacterSelectionView: View {
                             }
                         }
                         .padding(.vertical, 8)
-                        .background(Color.modernSurfacePrimary)
-                        .cornerRadius(12)
+                        .modernCard()
                         .padding(.horizontal, 20)
                     }
                     .scrollDismissesKeyboard(.interactively)

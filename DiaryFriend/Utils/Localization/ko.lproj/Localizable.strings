@@ -97,6 +97,8 @@
 "profile.show_more" = "%d개 더보기";
 "profile.show_less" = "접기";
 "profile.classic_characters" = "클래식 캐릭터";
+"profile.search_placeholder" = "캐릭터 검색";
+"profile.search_no_results" = "검색 결과가 없어요";
 
 /* Search View */
 "search.placeholder" = "게시물, 날짜, 기분 검색...";

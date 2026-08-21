@@ -25,7 +25,8 @@ struct ProfileView: View {
     @Localized(.profile_following) var followingText
     @Localized(.profile_no_characters) var noCharactersText
     @Localized(.profile_show_less) var showLessText
-    @Localized(.profile_classic_characters) var classicCharactersTitle
+    @Localized(.profile_search_placeholder) var searchPlaceholderText
+    @Localized(.profile_search_no_results) var searchNoResultsText
 
     // Sign Out 관련 State
     @State private var showSignOutConfirmation = false
@@ -35,27 +36,46 @@ struct ProfileView: View {
     // Character 관련 State
     @State private var selectedCharacter: CharacterWithAffinity?
     @State private var isExpanded = false
-    @State private var isClassicExpanded = true
+    @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
 
     // 처음 표시할 캐릭터 수
     private let initialDisplayCount = 6
 
-    // Modern 캐릭터 표시
-    private var displayedModernCharacters: [CharacterWithAffinity] {
-        let modern = characterStore.modernCharacters
-        if isExpanded {
-            return modern
-        } else {
-            return Array(modern.prefix(initialDisplayCount))
+    /// 통합 캐릭터 목록 (modern 먼저, classic 뒤 — 기존 섹션 순서 유지)
+    private var combinedCharacters: [CharacterWithAffinity] {
+        characterStore.modernCharacters + characterStore.classicCharacters
+    }
+
+    private var trimmedSearch: String {
+        searchText.trimmingCharacters(in: .whitespaces)
+    }
+
+    private var isSearching: Bool { !trimmedSearch.isEmpty }
+
+    /// 검색 필터 — 영문 name과 한국어 korean_name 모두 부분 일치
+    private var filteredCharacters: [CharacterWithAffinity] {
+        guard isSearching else { return combinedCharacters }
+        return combinedCharacters.filter { character in
+            character.name.localizedCaseInsensitiveContains(trimmedSearch)
+                || (character.korean_name?.localizedCaseInsensitiveContains(trimmedSearch) ?? false)
         }
     }
 
+    /// 실제 표시 목록 — 검색 중이면 매칭 전체, 아니면 접힘 상태에 따라 6개 제한
+    private var displayedCharacters: [CharacterWithAffinity] {
+        if isSearching || isExpanded {
+            return filteredCharacters
+        }
+        return Array(filteredCharacters.prefix(initialDisplayCount))
+    }
+
     private var shouldShowExpandButton: Bool {
-        characterStore.modernCharacters.count > initialDisplayCount
+        !isSearching && combinedCharacters.count > initialDisplayCount
     }
 
     private var remainingCount: Int {
-        max(0, characterStore.modernCharacters.count - initialDisplayCount)
+        max(0, combinedCharacters.count - initialDisplayCount)
     }
 
     // ⭐ "Show X More" 동적 텍스트
@@ -182,21 +202,8 @@ struct ProfileView: View {
         }
     }
     
-    // MARK: - Characters Section
+    // MARK: - Characters Section (통합: modern + classic 단일 리스트 + 검색)
     private var charactersSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Modern Characters Section
-            modernCharactersSection
-
-            // Classic Characters Section (Accordion)
-            if !characterStore.classicCharacters.isEmpty {
-                classicCharactersSection
-            }
-        }
-    }
-
-    // MARK: - Modern Characters
-    private var modernCharactersSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(aiCharactersTitle)
@@ -209,19 +216,30 @@ struct ProfileView: View {
                     .foregroundColor(.secondary)
             }
 
+            characterSearchField
+
             if characterStore.isLoading && characterStore.allCharacters.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
-            } else if characterStore.modernCharacters.isEmpty {
+            } else if combinedCharacters.isEmpty {
                 Text(noCharactersText)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
+            } else if displayedCharacters.isEmpty {
+                // 검색 결과 없음
+                Text(searchNoResultsText)
+                    .font(.system(size: 14, design: .rounded))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                    .background(Color.modernSurfacePrimary)
+                    .cornerRadius(12)
             } else {
                 VStack(spacing: 0) {
                     LazyVStack(spacing: 0) {
-                        ForEach(Array(displayedModernCharacters.enumerated()), id: \.element.id) { index, character in
+                        ForEach(Array(displayedCharacters.enumerated()), id: \.element.id) { index, character in
                             VStack(spacing: 0) {
                                 CharacterCard(
                                     character: character,
@@ -234,14 +252,14 @@ struct ProfileView: View {
                                     selectedCharacter = character
                                 }
 
-                                if character.id != displayedModernCharacters.last?.id {
+                                if character.id != displayedCharacters.last?.id {
                                     Divider()
                                         .padding(.leading, 62)
                                 }
                             }
                         }
                     }
-                    .animation(.easeInOut(duration: 0.3), value: isExpanded)
+                    .animation(.easeInOut(duration: 0.3), value: displayedCharacters.count)
 
                     if shouldShowExpandButton {
                         Button(action: {
@@ -282,57 +300,44 @@ struct ProfileView: View {
         }
     }
 
-    // MARK: - Classic Characters (Accordion)
-    private var classicCharactersSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Accordion Header
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isClassicExpanded.toggle()
+    // MARK: - Character Search Field
+    private var characterSearchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.secondary)
+
+            TextField(searchPlaceholderText, text: $searchText)
+                .font(.system(size: 14, design: .rounded))
+                .focused($isSearchFocused)
+                .autocorrectionDisabled()
+
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary.opacity(0.6))
                 }
-            }) {
-                HStack {
-                    Text(classicCharactersTitle)
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundColor(.primary)
-
-                    Spacer()
-
-                    Image(systemName: isClassicExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            // Accordion Content
-            if isClassicExpanded {
-                VStack(spacing: 0) {
-                    LazyVStack(spacing: 0) {
-                        ForEach(Array(characterStore.classicCharacters.enumerated()), id: \.element.id) { index, character in
-                            VStack(spacing: 0) {
-                                CharacterCard(
-                                    character: character,
-                                    onFollowToggle: {
-                                        await characterStore.toggleFollowing(characterId: character.id)
-                                    },
-                                    index: index
-                                )
-                                .onTapGesture {
-                                    selectedCharacter = character
-                                }
-
-                                if character.id != characterStore.classicCharacters.last?.id {
-                                    Divider()
-                                        .padding(.leading, 62)
-                                }
-                            }
-                        }
-                    }
-                }
-                .background(Color.modernSurfacePrimary)
-                .cornerRadius(12)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .buttonStyle(.pressable)
             }
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemGray6))
+        )
+        // 포커스 링: Quick Entry 입력창과 동일한 패턴
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(
+                    Color(hex: "00C896").opacity(isSearchFocused ? 0.35 : 0),
+                    lineWidth: 1
+                )
+        )
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isSearchFocused)
+        .animation(.easeInOut(duration: 0.15), value: searchText.isEmpty)
     }
 }

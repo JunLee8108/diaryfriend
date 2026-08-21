@@ -104,6 +104,8 @@
 "profile.show_more" = "Show %d More";
 "profile.show_less" = "Show Less";
 "profile.classic_characters" = "Classic Characters";
+"profile.search_placeholder" = "Search characters";
+"profile.search_no_results" = "No matching characters";
 
 /* Search View */
 "search.placeholder" = "Search posts, dates, moods...";

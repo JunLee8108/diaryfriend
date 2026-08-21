@@ -108,15 +108,17 @@ struct QuickEntryCard: View {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(.systemGray6))
                     )
-                    // 포커스 링: 입력 중임을 조용하게 표시
+                    // 포커스 링: 입력 중임을 조용하게 표시.
+                    // 애니메이션은 링에만 국한 (필드 전체에 걸면 키보드 회피
+                    // 레이아웃 이동까지 애니메이션되어 크기가 변해 보임)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .strokeBorder(
                                 Color(hex: "00C896").opacity(isFocused ? 0.35 : 0),
                                 lineWidth: 1
                             )
+                            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isFocused)
                     )
-                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isFocused)
                     .contentShape(RoundedRectangle(cornerRadius: 12))
                     .onTapGesture {
                         if !speechService.isRecording {

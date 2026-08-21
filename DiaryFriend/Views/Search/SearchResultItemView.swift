@@ -18,7 +18,8 @@ struct SearchResultItemView: View {
                 // 날짜 컬럼
                 VStack(spacing: 4) {
                     Text(item.dayNumber)
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(.system(size: 28, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
                         .foregroundColor(.primary)
                     
                     VStack(spacing: 2) {
@@ -57,12 +58,8 @@ struct SearchResultItemView: View {
             }
             .padding(16)
             .contentShape(Rectangle())
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.modernSurfacePrimary)
-                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
-            )
+            .modernCard()
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.pressableCard)
     }
 }

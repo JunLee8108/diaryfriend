@@ -42,10 +42,6 @@ struct StatisticsEmptyStateCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 60)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.modernSurfacePrimary)
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
-        )
+        .modernCard()
     }
 }

@@ -384,14 +384,8 @@ struct PostContentView: View {
                                 } : nil
                             )
                             // AI 친구들이 하나씩 찾아오듯 순차 스프링 등장
-                            .transition(
-                                .opacity
-                                    .combined(with: .offset(y: 14))
-                                    .animation(
-                                        .spring(response: 0.45, dampingFraction: 0.75)
-                                            .delay(Double(index) * 0.08)
-                                    )
-                            )
+                            // (onAppear 구동이라 화면 최초 진입에서도 재생됨)
+                            .modifier(CommentAppearEffect(index: index))
                         }
                     }
                     .animation(.easeInOut(duration: 0.3), value: enrichedComments.count)
@@ -454,6 +448,35 @@ struct PostDetailImageCard: View {
 struct IdentifiableString: Identifiable {
     let id = UUID()
     let value: String
+}
+
+// MARK: - Comment Appear Effect (순차 등장)
+/// transition은 이미 그려진 화면에 뷰가 삽입될 때만 재생되므로,
+/// 화면 최초 진입에서도 재생되도록 onAppear로 구동한다.
+/// 행 identity가 유지되는 동안은 재생되지 않고(appeared 유지),
+/// 실시간으로 도착한 새 댓글 행만 자기 딜레이로 등장한다.
+private struct CommentAppearEffect: ViewModifier {
+    let index: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var appeared = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 14)
+            .onAppear {
+                if reduceMotion {
+                    appeared = true
+                    return
+                }
+                withAnimation(
+                    .spring(response: 0.45, dampingFraction: 0.75)
+                        .delay(Double(index) * 0.08)
+                ) {
+                    appeared = true
+                }
+            }
+    }
 }
 
 // MARK: - Comment Row

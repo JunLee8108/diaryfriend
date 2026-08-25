@@ -252,6 +252,8 @@ struct PostAIConversationView: View {
             }
         }
         .background(Color.modernBackground)
+        // pop 시작 전에 키보드를 내리는 UIKit 가드 (전환 오염 방지)
+        .background(KeyboardPopDismissGuard())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

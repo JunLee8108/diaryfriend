@@ -45,14 +45,10 @@ struct PostManualWriteView: View {
     }
     
     var body: some View {
-        ZStack {
-            // Background
-            Color.modernBackground
-                .ignoresSafeArea()
-        }
-        .safeAreaInset(edge: .bottom) {
-            // Main Content
-            ScrollView {
+        // 콘텐츠를 빈 ZStack의 bottom safeAreaInset으로 매달던 이전 구조는
+        // 키보드가 열린 채 pop할 때 이전 화면 safe area가 유령 키보드 인셋으로
+        // 고착되어 레이아웃이 찌그러지는 원인이었다 → 표준 구조로 교체
+        ScrollView {
                 VStack(spacing: 28) {
                     // Header Section
                     HeaderSection(dateTitle: dateTitle)
@@ -95,13 +91,15 @@ struct PostManualWriteView: View {
                         action: saveEntry
                     )
                 }
-            }
-            .onTapGesture {
-                // Hide keyboard when tapping outside
-                hideKeyboard()
-            }
-            .safeAreaPadding(.bottom, 50)
+                .padding(.bottom, 50)
         }
+        .background(Color.modernBackground.ignoresSafeArea())
+        .onTapGesture {
+            // Hide keyboard when tapping outside
+            hideKeyboard()
+        }
+        // pop 전환과 키보드 dismiss가 겹치지 않도록 이탈 시 즉시 포커스 해제
+        .onDisappear { isTextEditorFocused = false }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

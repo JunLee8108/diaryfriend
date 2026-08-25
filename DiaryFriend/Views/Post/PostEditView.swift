@@ -62,12 +62,8 @@ struct PostEditView: View {
     }
     
     var body: some View {
-        ZStack {
-            Color.modernBackground
-                .ignoresSafeArea()
-        }
-        .safeAreaInset(edge: .bottom) {
-            ScrollView {
+        // 키보드 인셋 고착을 유발하던 빈 ZStack + safeAreaInset 구조 대신 표준 구조
+        ScrollView {
                 VStack(spacing: 28) {
                     HeaderSection(dateTitle: dateTitle)
                     
@@ -91,12 +87,13 @@ struct PostEditView: View {
                         maxImages: 3
                     )
                 }
-            }
-            .onTapGesture {
-                hideKeyboard()
-            }
-            .safeAreaPadding(.bottom, 50)
+                .padding(.bottom, 50)
         }
+        .background(Color.modernBackground.ignoresSafeArea())
+        .onTapGesture {
+            hideKeyboard()
+        }
+        .onDisappear { isTextEditorFocused = false }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {

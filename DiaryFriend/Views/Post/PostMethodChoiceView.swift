@@ -78,7 +78,9 @@ struct PostMethodChoiceView: View {
         .onAppear {
             creationManager.setSelectedDate(selectedDate)
         }
-        .background(Color.modernBackground)
+        .background(Color.modernBackground.ignoresSafeArea())
+        // 작성 화면에서 키보드가 열린 채 pop되어도 유령 키보드 인셋에 압축되지 않도록
+        .ignoresSafeArea(.keyboard)
     }
 }
 

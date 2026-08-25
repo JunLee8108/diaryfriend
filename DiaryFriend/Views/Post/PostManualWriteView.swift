@@ -41,7 +41,7 @@ struct PostManualWriteView: View {
     
     // Validation
     private var isValid: Bool {
-        diaryText.count >= 5 && diaryText.count <= 1000
+        diaryText.count >= DiaryLimits.minCharacters && diaryText.count <= DiaryLimits.maxCharacters
     }
     
     var body: some View {

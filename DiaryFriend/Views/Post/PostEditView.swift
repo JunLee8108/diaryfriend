@@ -51,7 +51,7 @@ struct PostEditView: View {
     }
     
     private var isValid: Bool {
-        editedContent.count >= 5 && editedContent.count <= 1000
+        editedContent.count >= DiaryLimits.minCharacters && editedContent.count <= DiaryLimits.maxCharacters
     }
     
     private var dateTitle: String {

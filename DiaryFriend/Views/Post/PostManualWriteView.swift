@@ -94,6 +94,9 @@ struct PostManualWriteView: View {
                 .padding(.bottom, 50)
         }
         .background(Color.modernBackground.ignoresSafeArea())
+        // 키보드 safe area 완전 제외 — 에디터가 화면 상단에 있어 회피가 불필요하고,
+        // 자동 회피 인셋이 pop 전환 중 레이아웃을 오염시키는 것이 레이아웃 붕괴의 원인
+        .ignoresSafeArea(.keyboard)
         .onTapGesture {
             // Hide keyboard when tapping outside
             hideKeyboard()

@@ -202,6 +202,7 @@ enum LocalizationKey: String {
     // MARK: - Diary Text Section
     case diary_section_title = "diary.section_title"
     case diary_placeholder = "diary.placeholder"
+    case diary_min_characters = "diary.min_characters"
     
     // MARK: - Mood Selection
     case mood_selection_title = "mood.selection_title"
@@ -661,6 +662,8 @@ enum LocalizationKey: String {
             return "Today's story"
         case .diary_placeholder:
             return "Share your thoughts, feelings, or anything that happened today..."
+        case .diary_min_characters:
+            return "At least %d characters"
             
             // Mood Selection
         case .mood_selection_title:

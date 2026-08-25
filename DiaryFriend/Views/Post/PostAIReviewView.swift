@@ -47,7 +47,7 @@ struct PostAIReviewView: View {
     
     // Validation
     private var isValid: Bool {
-        editedContent.count >= 5 && editedContent.count <= 1000
+        editedContent.count >= DiaryLimits.minCharacters && editedContent.count <= DiaryLimits.maxCharacters
     }
     
     init(characterId: Int, selectedDate: Date, sessionId: UUID,

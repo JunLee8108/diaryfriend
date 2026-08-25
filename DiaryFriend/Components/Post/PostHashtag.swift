@@ -28,9 +28,16 @@ struct HashtagSection: View {
                 
                 Spacer()
                 
-                Text("\(hashtags.count)/3")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.secondary.opacity(0.6))
+                // 가득 차면 브랜드 그린으로 강조 (이미지 카운터와 동일 패턴)
+                Text("\(hashtags.count)/\(maxCount)")
+                    .font(.system(size: 12, weight: hashtags.count >= maxCount ? .semibold : .medium, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(
+                        hashtags.count >= maxCount
+                            ? Color(hex: "00C896")
+                            : .secondary.opacity(0.6)
+                    )
+                    .animation(.easeInOut(duration: 0.2), value: hashtags.count >= maxCount)
             }
             .padding(.horizontal, 24)
             
@@ -47,7 +54,7 @@ struct HashtagSection: View {
                         )
                     }
                     
-                    if hashtags.count < 3 {
+                    if hashtags.count < maxCount {
                         AddTagButton {
                             tempInput = ""
                             showingSheet = true
@@ -123,6 +130,7 @@ struct AddHashtagSheet: View {
     @Binding var tempInput: String
     @Binding var hashtags: [String]
     @Binding var isPresented: Bool
+    var maxCount: Int = 3
     @FocusState private var isInputFocused: Bool
     
     @Localized(.hashtag_sheet_title) var sheetTitle
@@ -186,7 +194,7 @@ struct AddHashtagSheet: View {
     
     private func addTag() {
         let trimmedTag = tempInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedTag.isEmpty && !hashtags.contains(trimmedTag) && hashtags.count < 3 {
+        if !trimmedTag.isEmpty && !hashtags.contains(trimmedTag) && hashtags.count < maxCount {
             withAnimation {
                 hashtags.append(trimmedTag)
             }

@@ -195,6 +195,7 @@
 /* Diary Text Section */
 "diary.section_title" = "오늘의 이야기";
 "diary.placeholder" = "오늘의 생각, 감정, 또는 일어난 일을 자유롭게 적어보세요...";
+"diary.min_characters" = "최소 %d자";
 
 /* Diary Mood Title */
 "mood.selection_title" = "기분이 어떠셨나요?";

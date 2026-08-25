@@ -7,22 +7,42 @@
 
 import SwiftUI
 
+// MARK: - Diary Limits
+/// 일기 본문 글자 수 제한. 에디터 표시와 각 화면의 isValid 검증이
+/// 같은 값을 참조하도록 한 곳에서 관리한다.
+enum DiaryLimits {
+    static let minCharacters = 5
+    static let maxCharacters = 1000
+}
+
 // MARK: - Diary Text Section
 
 struct DiaryTextSection: View {
     @Binding var diaryText: String
     @FocusState var isTextEditorFocused: Bool
-    
+
     @Localized(.diary_section_title) var sectionTitle
     @Localized(.diary_placeholder) var placeholder
     @Localized(.common_done) var doneText
-    
-    private let maxCharacters = 1000
-    
+
+    private let maxCharacters = DiaryLimits.maxCharacters
+
     private var characterCount: Int {
         diaryText.count
     }
-    
+
+    /// 썼는데 최소 글자에 못 미칠 때만 힌트 표시 (0자에서는 placeholder가 안내 역할)
+    private var showsMinHint: Bool {
+        characterCount > 0 && characterCount < DiaryLimits.minCharacters
+    }
+
+    private var minHintText: String {
+        String(
+            format: LocalizationManager.shared.localized(.diary_min_characters),
+            DiaryLimits.minCharacters
+        )
+    }
+
     private var characterCountColor: Color {
         if characterCount > 900 {
             return Color(hex: "FF6B6B")
@@ -89,16 +109,26 @@ struct DiaryTextSection: View {
                     Spacer()
                 }
                 
-                // Character counter
+                // Character counter + 최소 글자 힌트
                 VStack {
                     Spacer()
-                    HStack {
+                    HStack(spacing: 6) {
                         Spacer()
+
+                        if showsMinHint {
+                            Text(minHintText)
+                                .font(.system(size: 10, weight: .medium, design: .rounded))
+                                .foregroundColor(Color(hex: "FFB6A3"))
+                                .transition(.opacity)
+                        }
+
                         Text("\(characterCount)/\(maxCharacters)")
                             .font(.system(size: 10, weight: .medium, design: .rounded))
                             .foregroundColor(characterCountColor)
-                            .padding(10)
+                            .monospacedDigit()
                     }
+                    .padding(10)
+                    .animation(.easeInOut(duration: 0.2), value: showsMinHint)
                 }
             }
             .frame(height: 250)

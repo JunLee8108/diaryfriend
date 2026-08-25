@@ -202,6 +202,7 @@
 /* Diary Text Section */
 "diary.section_title" = "Today's story";
 "diary.placeholder" = "Share your thoughts, feelings, or anything that happened today...";
+"diary.min_characters" = "At least %d characters";
 
 /* Diary Mood Title */
 "mood.selection_title" = "How are you feeling?";

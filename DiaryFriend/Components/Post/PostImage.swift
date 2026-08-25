@@ -10,6 +10,12 @@
 import SwiftUI
 import PhotosUI
 
+// MARK: - Image Limits
+/// 일기당 첨부 이미지 제한. 카운터/접근성 문구가 같은 값을 참조한다.
+enum ImageLimits {
+    static let maxImages = 3
+}
+
 // MARK: - Identifiable Image Wrapper
 
 struct IdentifiableImage: Identifiable {
@@ -30,7 +36,7 @@ struct ImageAttachmentSection: View {
     @Localized(.image_section_title) var sectionTitle
     @Localized(.image_processing) var processingText
     
-    private let maxImages = 3
+    private let maxImages = ImageLimits.maxImages
     
     private var remainingSlots: Int {
         max(0, maxImages - selectedImages.count)
@@ -46,9 +52,16 @@ struct ImageAttachmentSection: View {
                 
                 Spacer()
                 
+                // 가득 차면 브랜드 그린으로 강조 — 추가 버튼이 사라진 이유를 색으로 전달
                 Text("\(selectedImages.count)/\(maxImages)")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.secondary.opacity(0.6))
+                    .font(.system(size: 12, weight: selectedImages.count >= maxImages ? .semibold : .medium, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(
+                        selectedImages.count >= maxImages
+                            ? Color(hex: "00C896")
+                            : .secondary.opacity(0.6)
+                    )
+                    .animation(.easeInOut(duration: 0.2), value: selectedImages.count >= maxImages)
             }
             .padding(.horizontal, 24)
             
@@ -282,7 +295,7 @@ struct ImageThumbnailCard: View {
             onTap()
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Photo \(index + 1) of 3")
+        .accessibilityLabel("Photo \(index + 1) of \(ImageLimits.maxImages)")
         .accessibilityHint("Tap to view full size, or tap X to remove")
     }
 }

@@ -46,9 +46,16 @@ struct ImageEditSection: View {
                 
                 Spacer()
                 
+                // 가득 차면 브랜드 그린으로 강조 (PostImage와 동일 패턴)
                 Text("\(totalCount)/\(maxImages)")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.secondary.opacity(0.6))
+                    .font(.system(size: 12, weight: totalCount >= maxImages ? .semibold : .medium, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(
+                        totalCount >= maxImages
+                            ? Color(hex: "00C896")
+                            : .secondary.opacity(0.6)
+                    )
+                    .animation(.easeInOut(duration: 0.2), value: totalCount >= maxImages)
             }
             .padding(.horizontal, 24)
             

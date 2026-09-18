@@ -240,9 +240,7 @@ struct SettingsView: View {
             EditNameView(
                 currentName: profileStore.currentDisplayName,
                 onSave: { newName in
-                    Task {
-                        try await profileStore.updateDisplayName(newName)
-                    }
+                    try await profileStore.updateDisplayName(newName)
                 }
             )
             .presentationDetents([.fraction(0.45)])
@@ -255,9 +253,7 @@ struct SettingsView: View {
                 currentLanguage: profileStore.currentLanguage ?? .english,
                 isLoadingBinding: $isLanguageLoading,  // ⭐ binding 전달
                 onSelect: { language in
-                    Task {
-                        try await profileStore.updateLanguage(language.rawValue)
-                    }
+                    try await profileStore.updateLanguage(language.rawValue)
                 }
             )
             .presentationDetents([.fraction(0.45)])
